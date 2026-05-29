@@ -799,3 +799,6 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'app.theme_engine'
 2026-05-29 20:36:29 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 20:36:29
 2026-05-29 20:55:39 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 20:55:39
+2026-05-29 21:12:21 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:12:21
+2026-05-29 21:13:53 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:13:53
+2026-05-29 21:28:33 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:28:33

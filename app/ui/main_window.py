@@ -11,7 +11,8 @@ Thay đổi so với phiên bản cũ:
   - _navigate() KHÔNG còn gọi frame.refresh() ngay lập tức.
     Dùng QTimer.singleShot(50, ...) để refresh sau khi frame đã visible.
   - Thêm _LoadingPlaceholder làm placeholder trong khi frame nặng đang load.
-  - Không thay đổi bất kỳ logic nghiệp vụ nào.
+  - Thêm trang "Chi tiêu" (SpendingFrame) vào sidebar và _create_page().
+  - Không thay đổi bất kỳ logic nghiệp vụ nào khác.
 """
 
 from PyQt6.QtWidgets import (
@@ -241,16 +242,24 @@ class Sidebar(QWidget):
         nav_layout.setContentsMargins(10, 10, 10, 10)
         nav_layout.setSpacing(2)
 
+        # ── THÊM "Chi tiêu" vào section CHÍNH ────────────────────────────────
         sections = {
-            "CHÍNH": ["Dashboard", "Giao dịch", "Ngân sách"],
+            "CHÍNH": ["Dashboard", "Chi tiêu", "Giao dịch", "Ngân sách"],
             "AI":    ["Dự báo", "Chatbot AI"],
             "NHÓM":  ["Gia đình"],
             "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt"],
         }
         icons = {
-            "Dashboard":  "📊", "Giao dịch":  "💳", "Ngân sách": "💰",
-            "Dự báo":     "📈", "Chatbot AI": "🤖", "Gia đình":  "👨‍👩‍👧",
-            "Hồ sơ":      "👤", "Báo cáo":    "📄", "Cài đặt":   "⚙️",
+            "Dashboard":  "📊",
+            "Chi tiêu":   "💸",   # ← icon mới cho trang Chi tiêu
+            "Giao dịch":  "💳",
+            "Ngân sách":  "💰",
+            "Dự báo":     "📈",
+            "Chatbot AI": "🤖",
+            "Gia đình":   "👨\u200d👩\u200d👧",
+            "Hồ sơ":      "👤",
+            "Báo cáo":    "📄",
+            "Cài đặt":    "⚙️",
         }
         for section_name, pages in sections.items():
             sec_lbl = QLabel(section_name)
@@ -486,7 +495,6 @@ class MainWindow(QMainWindow):
 
         # Dùng singleShot(0) để nhường event-loop paint cửa sổ lần đầu,
         # sau đó mới bắt đầu load Dashboard.
-        # delay=0 ms đủ để Qt flush paint queue trước khi import matplotlib.
         QTimer.singleShot(0, lambda: self._navigate("Dashboard"))
 
     # ── Build skeleton ────────────────────────────────────────────────────────
@@ -576,6 +584,11 @@ class MainWindow(QMainWindow):
         if page == "Dashboard":
             from app.ui.dashboard_frame import DashboardFrame
             return DashboardFrame(main_window=self)
+        # ── TRANG MỚI: Chi tiêu ───────────────────────────────────────────────
+        if page == "Chi tiêu":
+            from app.ui.spending_frame import SpendingFrame
+            return SpendingFrame(main_window=self)
+        # ─────────────────────────────────────────────────────────────────────
         if page == "Giao dịch":
             from app.ui.transaction_frame import TransactionFrame
             return TransactionFrame(main_window=self)
