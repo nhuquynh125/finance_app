@@ -1,0 +1,557 @@
+
+<h2 class="sr-only">Finance AI app — full architecture and technical analysis</h2>
+
+<style>
+:root {
+  --nav-w: 168px;
+}
+body { margin: 0; font-size: 14px; }
+.shell { display: flex; gap: 0; min-height: 560px; }
+.nav {
+  width: var(--nav-w);
+  flex-shrink: 0;
+  border-right: 0.5px solid var(--color-border-tertiary);
+  padding: 8px 0;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+}
+.nav-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: 0;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s;
+}
+.nav-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.nav-btn.active { border-left-color: #378ADD; background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+.content { flex: 1; min-width: 0; padding: 20px 24px; }
+.section { display: none; }
+.section.visible { display: block; }
+
+h3 { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 12px; }
+h4 { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 16px 0 6px; }
+p, li { font-size: 13px; color: var(--color-text-secondary); line-height: 1.65; margin: 0 0 6px; }
+ul { padding-left: 18px; margin: 0 0 10px; }
+code { font-family: var(--font-mono); font-size: 11.5px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; color: var(--color-text-primary); }
+
+.layer-card {
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.layer-head {
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.layer-head i { font-size: 15px; }
+.layer-body { padding: 10px 14px 12px; border-top: 0.5px solid var(--color-border-tertiary); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+}
+
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.feat-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 12px;
+}
+.feat-card .fc-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.feat-card .fc-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+.feat-card .fc-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.55; }
+
+.algo-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.algo-row:last-child { border-bottom: none; }
+.algo-badge {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  min-width: 72px;
+  text-align: center;
+}
+.algo-text { flex: 1; }
+.algo-text .at-name { font-size: 12.5px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.algo-text .at-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.55; }
+
+.b-ml { background: #EEEDFE; color: #3C3489; }
+.b-ds { background: #E6F1FB; color: #0C447C; }
+.b-ui { background: #EAF3DE; color: #27500A; }
+.b-db { background: #FAEEDA; color: #633806; }
+.b-pat { background: #FBEAF0; color: #72243E; }
+.b-sec { background: #FCEBEB; color: #791F1F; }
+
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  padding: 8px 0;
+  color: var(--color-text-secondary);
+}
+.flow-box {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 4px;
+  padding: 3px 9px;
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+.flow-arrow { color: var(--color-text-secondary); font-size: 13px; }
+
+.dep-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.dep-table th { text-align: left; font-weight: 500; color: var(--color-text-secondary); font-size: 11.5px; padding: 5px 10px 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.dep-table td { padding: 6px 10px 6px 0; vertical-align: top; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+.dep-table td:first-child { color: var(--color-text-primary); font-family: var(--font-mono); font-size: 11.5px; }
+.dep-table tr:last-child td { border-bottom: none; }
+
+.stat-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; flex: 1; min-width: 90px; }
+.stat-box .s-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); line-height: 1.2; }
+.stat-box .s-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+</style>
+
+<div class="shell">
+  <nav class="nav" aria-label="Sections">
+    <button class="nav-btn active" onclick="show('arch')"><i class="ti ti-layout-sidebar" aria-hidden="true"></i> Architecture</button>
+    <button class="nav-btn" onclick="show('struct')"><i class="ti ti-folder-open" aria-hidden="true"></i> Structure</button>
+    <button class="nav-btn" onclick="show('features')"><i class="ti ti-list-check" aria-hidden="true"></i> Features</button>
+    <button class="nav-btn" onclick="show('ai')"><i class="ti ti-brain" aria-hidden="true"></i> AI subsystem</button>
+    <button class="nav-btn" onclick="show('algo')"><i class="ti ti-cpu" aria-hidden="true"></i> Algorithms</button>
+    <button class="nav-btn" onclick="show('patterns')"><i class="ti ti-puzzle" aria-hidden="true"></i> Patterns</button>
+    <button class="nav-btn" onclick="show('data')"><i class="ti ti-database" aria-hidden="true"></i> Data layer</button>
+    <button class="nav-btn" onclick="show('deps')"><i class="ti ti-package" aria-hidden="true"></i> Dependencies</button>
+  </nav>
+
+  <div class="content">
+
+    <div id="arch" class="section visible">
+      <h3>App architecture overview</h3>
+      <p>Finance AI is a <strong>desktop GUI application</strong> built with PyQt6. It follows a classic <strong>Layered + Event-Driven</strong> hybrid architecture, decomposed into four horizontal layers that communicate primarily through a central <code>EventBus</code> (observer/pub-sub pattern) rather than direct coupling.</p>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="s-val">37</div><div class="s-lbl">source files</div></div>
+        <div class="stat-box"><div class="s-val">4</div><div class="s-lbl">arch layers</div></div>
+        <div class="stat-box"><div class="s-val">3</div><div class="s-lbl">AI engines</div></div>
+        <div class="stat-box"><div class="s-val">8</div><div class="s-lbl">UI frames</div></div>
+        <div class="stat-box"><div class="s-val">12</div><div class="s-lbl">DB tables</div></div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-head" style="background:#E6F1FB;">
+          <i class="ti ti-layout-dashboard" aria-hidden="true" style="color:#0C447C;"></i>
+          <span style="color:#0C447C;">UI layer — <code>app/ui/</code></span>
+        </div>
+        <div class="layer-body">
+          <p>8 full-page <code>QWidget</code> frames loaded lazily via <code>QStackedWidget</code>. Navigation is sidebar-driven, not tab-based. Each frame is self-contained — it subscribes to bus signals for updates.</p>
+          <div class="tag-row">
+            <span class="tag">login_window</span><span class="tag">main_window</span><span class="tag">dashboard_frame</span><span class="tag">transaction_frame</span>
+            <span class="tag">budget_frame</span><span class="tag">forecast_frame</span><span class="tag">chatbot_frame</span><span class="tag">report_frame</span>
+            <span class="tag">settings_frame</span><span class="tag">family_frame</span><span class="tag">notification</span><span class="tag">command_palette</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-head" style="background:#EAF3DE;">
+          <i class="ti ti-settings" aria-hidden="true" style="color:#27500A;"></i>
+          <span style="color:#27500A;">Core / Business Logic — <code>app/core/</code></span>
+        </div>
+        <div class="layer-body">
+          <p>Orchestrates domain operations. <code>TransactionManager</code> is the primary facade; <code>EventBus</code> decouples all frame-to-frame communication. <code>ThemeEngine</code> applies QSS globally at runtime.</p>
+          <div class="tag-row">
+            <span class="tag">transaction_manager</span><span class="tag">event_bus</span><span class="tag">theme_engine</span><span class="tag">settings_manager</span>
+            <span class="tag">csv_importer</span><span class="tag">report_generator</span><span class="tag">sync_manager</span><span class="tag">error_handler</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-head" style="background:#EEEDFE;">
+          <i class="ti ti-brain" aria-hidden="true" style="color:#3C3489;"></i>
+          <span style="color:#3C3489;">AI subsystem — <code>app/ai/</code></span>
+        </div>
+        <div class="layer-body">
+          <p>Three swappable inference engines behind a <code>BaseAIPlugin</code> interface, all executed as <code>QThread</code> workers to keep the UI non-blocking. Forecasting and anomaly detection are separate ML pipelines.</p>
+          <div class="tag-row">
+            <span class="tag">base_plugin (strategy)</span><span class="tag">gemini_worker</span><span class="tag">local_llm (Ollama)</span><span class="tag">embedded_llm (TinyLlama)</span>
+            <span class="tag">forecaster (Prophet/MA)</span><span class="tag">anomaly_detector (IsoForest)</span><span class="tag">classifier (TF-IDF + RF)</span>
+            <span class="tag">fine_tuner (DistilGPT2)</span><span class="tag">nlp_parser</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-head" style="background:#FAEEDA;">
+          <i class="ti ti-database" aria-hidden="true" style="color:#633806;"></i>
+          <span style="color:#633806;">Data layer — <code>app/data/</code></span>
+        </div>
+        <div class="layer-body">
+          <p>SQLite via the <code>Repository</code> pattern. <code>DatabaseManager</code> is a thread-safe singleton with WAL mode enabled. <code>AuthManager</code> handles salted-hash auth stored in the same DB.</p>
+          <div class="tag-row">
+            <span class="tag">models (DatabaseManager)</span><span class="tag">repositories</span><span class="tag">auth_manager</span>
+            <span class="tag">DBContext (context manager)</span><span class="tag">db_session (generator)</span>
+          </div>
+        </div>
+      </div>
+
+      <h4>Cross-cutting concerns</h4>
+      <div class="tag-row" style="margin-bottom:10px;">
+        <span class="tag">notification.py — toast overlay</span>
+        <span class="tag">command_palette.py — Ctrl+K</span>
+        <span class="tag">error_handler.py — global sys.excepthook</span>
+        <span class="tag">theme_engine — live QSS injection</span>
+      </div>
+    </div>
+
+    <div id="struct" class="section">
+      <h3>Project structure</h3>
+      <p>All files are currently flat (no subdirectory nesting in the snapshot), but the naming convention makes the intended package layout clear. The logical structure maps to:</p>
+      <pre style="font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--color-text-secondary); background: var(--color-background-secondary); padding: 12px 14px; border-radius: var(--border-radius-md); overflow-x: auto;">finance_ai/
+├── main.py                     # entry point, venv bootstrap
+├── config.py                   # (implied) paths, constants
+├── settings.json               # persisted user prefs
+├── session.json                # remembered login token
+│
+├── app/ui/                     # 8 frames + shared UI widgets
+│   ├── login_window.py         # auth + register + forgot-pw
+│   ├── main_window.py          # shell + sidebar + routing
+│   ├── dashboard_frame.py      # overview charts & KPIs
+│   ├── transaction_frame.py    # CRUD table + CSV import
+│   ├── budget_frame.py         # budget cards + alerts
+│   ├── forecast_frame.py       # forecast chart + anomaly list
+│   ├── chatbot_frame.py        # AI chat UI + engine selector
+│   ├── report_frame.py         # PDF generation + history
+│   ├── settings_frame.py       # all app settings
+│   ├── family_frame.py         # multi-user group features
+│   ├── notification.py         # toast overlay + history center
+│   └── command_palette.py      # Ctrl+K palette + shortcuts
+│
+├── app/core/
+│   ├── event_bus.py            # pub-sub via PyQt signals
+│   ├── theme_engine.py         # live QSS theming
+│   ├── transaction_manager.py  # high-level CRUD facade
+│   ├── settings_manager.py     # JSON settings + .env API keys
+│   ├── csv_importer.py         # multi-bank CSV parser
+│   ├── report_generator.py     # ReportLab PDF builder
+│   ├── sync_manager.py         # Supabase cloud sync
+│   └── error_handler.py        # global exception hook
+│
+├── app/ai/
+│   ├── base_plugin.py          # plugin interface + registry
+│   ├── gemini_worker.py        # Google Gemini streaming worker
+│   ├── local_llm.py            # Ollama REST worker
+│   ├── embedded_llm.py         # HuggingFace transformers worker
+│   ├── forecaster.py           # Prophet + moving-average
+│   ├── anomaly_detector.py     # Isolation Forest pipeline
+│   ├── classifier.py           # TF-IDF + RandomForest
+│   ├── fine_tuner.py           # DistilGPT2 fine-tuning
+│   ├── nlp_parser.py           # quick-add regex parser
+│   └── goal_tracker.py         # savings goals (utility)
+│
+└── app/data/
+    ├── models.py               # DatabaseManager singleton + schema
+    ├── repositories.py         # CRUD repos (Tx, Budget, Category…)
+    └── auth_manager.py         # login, register, sessions</pre>
+    </div>
+
+    <div id="features" class="section">
+      <h3>Feature breakdown</h3>
+
+      <h4>Authentication & session</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">auth_manager</div><div class="fc-name">login / register / reset</div><div class="fc-desc">SHA-256 + random salt password hashing; session remembered as JSON file; auto-fills username on relaunch.</div></div>
+        <div class="feat-card"><div class="fc-label">login_window</div><div class="fc-name">3-panel auth UI</div><div class="fc-desc">Login, register, and forgot-password panels share a <code>QStackedWidget</code> inside one card; animated gradient branding panel on the left.</div></div>
+      </div>
+
+      <h4>Transaction management</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">transaction_frame</div><div class="fc-name">Full CRUD table</div><div class="fc-desc">Live filter by month/type/category/search. Double-click to edit. Context menu for anomaly feedback and delete. AI auto-classify button.</div></div>
+        <div class="feat-card"><div class="fc-label">csv_importer</div><div class="fc-name">Bank CSV import</div><div class="fc-desc">Detects 5 Vietnamese bank formats (Vietcombank, BIDV, Techcombank, MB, VPBank) or generic CSV. Debit/credit column normalisation, multi-encoding support.</div></div>
+        <div class="feat-card"><div class="fc-label">transaction_manager</div><div class="fc-name">Budget alert on add</div><div class="fc-desc">After each expense insert, checks budget thresholds and emits <code>bus.notify_warning</code> if the category is over its alert percentage.</div></div>
+        <div class="feat-card"><div class="fc-label">nlp_parser</div><div class="fc-name">Quick-add NLP</div><div class="fc-desc">Regex parses natural-language inputs like "ăn phở 45k" into structured transaction fields with amount-unit normalisation (k, nghìn, triệu).</div></div>
+      </div>
+
+      <h4>Budget system</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">budget_frame</div><div class="fc-name">Budget cards</div><div class="fc-desc">Per-category monthly budget with configurable alert threshold (default 80%). Progress bar colour transitions: green → amber → red based on status.</div></div>
+        <div class="feat-card"><div class="fc-label">budget_repo.sync_spent</div><div class="fc-name">Auto-sync spent amounts</div><div class="fc-desc">Recalculates <code>spent_amount</code> from real transactions on every frame refresh, preventing drift.</div></div>
+        <div class="feat-card"><div class="fc-label">budget_frame</div><div class="fc-name">AI tips panel</div><div class="fc-desc">Rule-based tip generation: over-budget categories get named callouts; all-ok state gets positive reinforcement.</div></div>
+      </div>
+
+      <h4>Dashboard & visualisation</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">dashboard_frame</div><div class="fc-name">KPI cards with trend</div><div class="fc-desc">Income, expense, savings, AI forecast — each card shows % change vs previous month with directional colour coding.</div></div>
+        <div class="feat-card"><div class="fc-label">matplotlib embeds</div><div class="fc-name">Inline charts</div><div class="fc-desc">Grouped bar chart (6-month history) and donut/pie chart (category split) rendered via <code>FigureCanvasQTAgg</code> — matplotlib inside a PyQt6 layout.</div></div>
+        <div class="feat-card"><div class="fc-label">dashboard_frame</div><div class="fc-name">Recent transactions panel</div><div class="fc-desc">Last 7 transactions with anomaly flag, signed amounts, and deep-link to the Giao dịch page.</div></div>
+      </div>
+
+      <h4>AI / ML features</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">classifier</div><div class="fc-name">Auto-categorisation</div><div class="fc-desc">TF-IDF character n-grams + RandomForest. Seeds on 48 labelled examples; retrains incrementally when user edits a category.</div></div>
+        <div class="feat-card"><div class="fc-label">forecaster</div><div class="fc-name">Spending forecast</div><div class="fc-desc">Chooses Prophet (if installed) for ≥3 months of data, else falls back to 3-month moving average. Outputs prediction + confidence interval.</div></div>
+        <div class="feat-card"><div class="fc-label">anomaly_detector</div><div class="fc-name">Anomaly detection</div><div class="fc-desc">Isolation Forest on 5 engineered features (log amount, z-score per category, amount ratio, hour-of-day flag, day-of-week).</div></div>
+        <div class="feat-card"><div class="fc-label">fine_tuner</div><div class="fc-name">Local model fine-tuning</div><div class="fc-desc">Generates Q&A training data from the user's own DB, then fine-tunes DistilGPT2 with HuggingFace Trainer. GPU optional.</div></div>
+        <div class="feat-card"><div class="fc-label">chatbot_frame</div><div class="fc-name">AI chat assistant</div><div class="fc-desc">Builds a data-enriched system prompt from live DB stats (income, expense, top categories, over-budget alerts), then streams responses.</div></div>
+      </div>
+
+      <h4>Reporting & sync</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">report_generator</div><div class="fc-name">PDF reports</div><div class="fc-desc">ReportLab builds multi-section A4 PDF: header, summary cards, category table with inline bar charts, transaction list, AI forecast table, footer.</div></div>
+        <div class="feat-card"><div class="fc-label">sync_manager</div><div class="fc-name">Cloud backup</div><div class="fc-desc">Uploads the raw SQLite file to Supabase Storage via REST API (upsert). Falls back to a custom API URL (base64 JSON) if Supabase not configured.</div></div>
+        <div class="feat-card"><div class="fc-label">settings_manager</div><div class="fc-name">Local backup / restore</div><div class="fc-desc">Timestamped .db backups; restore creates a safety backup before overwriting. Excel export via pandas + openpyxl across all tables.</div></div>
+      </div>
+
+      <h4>UX / shell features</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">command_palette</div><div class="fc-name">Ctrl+K palette</div><div class="fc-desc">Fuzzy search over all navigation and action commands. Scored ranking (prefix → contains → keyword). Ctrl+1–7 page shortcuts. F5 refresh.</div></div>
+        <div class="feat-card"><div class="fc-label">notification</div><div class="fc-name">Toast system</div><div class="fc-desc">Non-blocking overlay toasts (success/warning/error/info) with auto-dismiss timers. Notification centre dialog shows history of last 200 items.</div></div>
+        <div class="feat-card"><div class="fc-label">theme_engine</div><div class="fc-name">Live theming</div><div class="fc-desc">Light / dark / system modes + 6 accent colours. QSS is regenerated and re-applied instantly without restart. Preferences persisted in <code>QSettings</code>.</div></div>
+      </div>
+    </div>
+
+    <div id="ai" class="section">
+      <h3>AI subsystem deep-dive</h3>
+
+      <h4>Plugin architecture — Strategy + Registry</h4>
+      <p>All three LLM backends implement <code>BaseAIPlugin</code> (abstract class). The registry holds a dict of <code>engine_id → plugin</code>. <code>ChatbotFrame</code> calls <code>registry.get(engine_id).create_worker(...)</code> — it never imports a specific worker class directly.</p>
+      <div class="flow">
+        <span class="flow-box">ChatbotFrame</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">registry.get(id)</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">BaseAIPlugin.create_worker()</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">QThread worker</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">token_received signal</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-box">UI bubble.append_text()</span>
+      </div>
+
+      <h4>Three inference engines</h4>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="fc-label">Gemini (cloud)</div><div class="fc-name">GeminiWorker</div><div class="fc-desc">SSE streaming via <code>urllib</code> (no extra SDK). Converts chat history to Gemini <code>contents</code> format. Handles 429 rate-limits and 400 bad-request distinctly.</div></div>
+        <div class="feat-card"><div class="fc-label">Ollama (local)</div><div class="fc-name">OllamaWorker</div><div class="fc-desc">HTTP POST to <code>localhost:11434/api/chat</code> with streaming JSON lines. Auto-selects first available non-cloud model from the Ollama tag list.</div></div>
+        <div class="feat-card"><div class="fc-label">Embedded (offline)</div><div class="fc-name">EmbeddedLLMWorker</div><div class="fc-desc">HuggingFace <code>AutoModelForCausalLM</code> + <code>TextIteratorStreamer</code>. Uses fine-tuned DistilGPT2 if available, else downloads TinyLlama-1.1B-Chat. GPU auto-detected via <code>torch.cuda</code>.</div></div>
+      </div>
+
+      <h4>ML pipelines</h4>
+      <div class="algo-row">
+        <span class="algo-badge b-ml">classifier</span>
+        <div class="algo-text">
+          <div class="at-name">TF-IDF (char n-grams 2–4) + RandomForest, 200 estimators</div>
+          <div class="at-desc">Single sklearn Pipeline. Seeds from 48 hard-coded labelled pairs; extends with every user transaction that has a category. Singleton with double-checked locking; persisted as pickle. Retrains on demand when user corrects a category.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ml">forecaster</span>
+        <div class="algo-text">
+          <div class="at-name">Prophet (preferred) / 3-month moving average (fallback)</div>
+          <div class="at-desc">Selects Prophet when ≥3 months of data exist and the library is installed. Prophet configured with monthly seasonality disabled; <code>changepoint_prior_scale=0.3</code>; 80% confidence interval. MA uses numpy mean + std.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ml">anomaly</span>
+        <div class="algo-text">
+          <div class="at-name">Isolation Forest (sklearn), contamination=0.08</div>
+          <div class="at-desc">5 engineered features: log-amount, per-category Z-score, global amount ratio, binary late-hour flag, day-of-week. StandardScaler normalisation before fitting. 200 trees, n_jobs=-1. <code>score_samples()</code> output converted to risk_score (0–99). Results written back to <code>transactions.is_anomaly</code>.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ml">fine-tuner</span>
+        <div class="algo-text">
+          <div class="at-name">DistilGPT2 fine-tune via HuggingFace Trainer</div>
+          <div class="at-desc">Generates Q&A training pairs from actual DB data (monthly summaries, category totals, plus static financial-literacy examples). Causal LM objective, max_length=256, 3 epochs, fp16 on GPU. Saves model + tokenizer locally for EmbeddedLLMWorker to load.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="algo" class="section">
+      <h3>Core algorithms & CS concepts</h3>
+
+      <div class="algo-row">
+        <span class="algo-badge b-ds">pub-sub</span>
+        <div class="algo-text">
+          <div class="at-name">Event Bus — Observer pattern via PyQt signals</div>
+          <div class="at-desc"><code>_EventBus(QObject)</code> is a singleton with 20+ typed signals. Frames subscribe via <code>bus.signal.connect(slot)</code>. Debounce implemented with <code>QTimer</code> dict to coalesce burst events (e.g. bulk CSV imports).</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">concurrency</span>
+        <div class="algo-text">
+          <div class="at-name">Thread isolation for all I/O-bound and CPU-bound work</div>
+          <div class="at-desc">Every AI inference (LLM, forecast, anomaly, classifier) runs in a <code>QThread</code> subclass. Results are communicated back via <code>pyqtSignal</code> — never touching Qt widgets from the background thread. <code>DatabaseManager</code> uses a <code>threading.Lock</code> for write serialisation on the shared SQLite connection.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">data structure</span>
+        <div class="algo-text">
+          <div class="at-name">Context manager for DB transactions</div>
+          <div class="at-desc"><code>DBContext.__enter__/__exit__</code> wraps every SQL block with commit-on-success / rollback-on-exception. Prevents partial writes. A generator variant <code>db_session()</code> provides the same guarantee via <code>contextlib.contextmanager</code>.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">search</span>
+        <div class="algo-text">
+          <div class="at-name">Scored fuzzy search in command palette</div>
+          <div class="at-desc"><code>Command.score(query)</code> returns 100 (prefix match), 50 (substring in title), 10 (keyword match). Results are sorted descending, capped at 12 items. Runs synchronously on keypress — fast enough for &lt;50 commands.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">regex/NLP</span>
+        <div class="algo-text">
+          <div class="at-name">Regex-based amount normalisation</div>
+          <div class="at-desc"><code>nlp_parser.py</code> uses a single compiled regex <code>(\d+(?:[.,]\d+)?)\s*(k|nghìn|triệu|tr|đ|đồng)?</code> to capture amounts and unit suffixes. Handles Vietnamese decimal/thousands ambiguity (comma vs dot), then multiplies by 1,000 or 1,000,000 as needed.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">parsing</span>
+        <div class="algo-text">
+          <div class="at-name">Multi-profile CSV column detection</div>
+          <div class="at-desc"><code>CsvImporter._map_columns()</code> performs fuzzy column header matching: for each profile's candidate list, tries <code>cand in col or col in cand</code> — handles partial/translated headers. Bank auto-detection checks filename then first-500-char content for bank-specific keywords.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">singleton</span>
+        <div class="algo-text">
+          <div class="at-name">Thread-safe Singleton for DatabaseManager and TransactionClassifier</div>
+          <div class="at-desc">Both use the <code>__new__</code> override with a class-level <code>threading.Lock</code> for double-checked locking. <code>DatabaseManager</code> also probes with <code>SELECT 1</code> to detect stale connections and reconnects automatically.</div>
+        </div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-ds">lazy loading</span>
+        <div class="algo-text">
+          <div class="at-name">On-demand page instantiation</div>
+          <div class="at-desc"><code>MainWindow._navigate(page)</code> checks <code>self._pages</code> dict before creating a frame. First visit constructs and adds to <code>QStackedWidget</code>; subsequent visits just switch the active widget. Avoids constructing all 8 frames at startup.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="patterns" class="section">
+      <h3>Design patterns applied</h3>
+
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Strategy</span>
+        <div class="algo-text"><div class="at-name">AI plugin system</div><div class="at-desc"><code>BaseAIPlugin</code> defines <code>create_worker()</code> and <code>check_status()</code>. Three concrete strategies: <code>GeminiPlugin</code>, <code>OllamaPlugin</code>, <code>EmbeddedPlugin</code>. Swapped at runtime via combobox in the chat UI — no conditional branches in the calling code.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Observer</span>
+        <div class="algo-text"><div class="at-name">Event Bus (PyQt signals)</div><div class="at-desc">Completely decoupled pub-sub. <code>DashboardFrame</code> never imports <code>TransactionFrame</code>; it just subscribes to <code>bus.transaction_added</code>. <code>BusConnectMixin</code> provides lifecycle-safe connect/disconnect hooks.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Repository</span>
+        <div class="algo-text"><div class="at-name">Data access abstraction</div><div class="at-desc"><code>TransactionRepo</code>, <code>BudgetRepo</code>, <code>CategoryRepo</code>, <code>AccountRepo</code>, <code>UserProfileRepo</code> encapsulate all SQL. Domain logic never writes raw queries. Repo methods validate input via <code>DataModel.validate()</code> before executing.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Facade</span>
+        <div class="algo-text"><div class="at-name">TransactionManager</div><div class="at-desc">UI frames call <code>self.tm.add_transaction()</code> — the manager internally calls the repo, updates the account balance, checks budgets, and emits bus events. Simplifies the UI layer: one method call triggers the full domain chain.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Singleton</span>
+        <div class="algo-text"><div class="at-name">DatabaseManager, TransactionClassifier, EventBus, Notifier, ThemeEngine, AIPluginRegistry</div><div class="at-desc">All 6 are module-level singletons instantiated once at import time (or via <code>__new__</code>). Ensures one DB connection, one classifier model in memory, one event hub.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Factory</span>
+        <div class="algo-text"><div class="at-name">MainWindow._create_page()</div><div class="at-desc">Centralised factory method maps page names to frame classes. Keeps <code>_navigate()</code> clean and makes adding new pages a one-line change.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Template Method</span>
+        <div class="algo-text"><div class="at-name">ReportGenerator sections</div><div class="at-desc"><code>generate_monthly_report()</code> defines a fixed sequence of build steps (<code>_build_header → _build_summary_cards → _build_category_section → ...</code>). Each step is a separate overridable method returning a ReportLab flowable list.</div></div>
+      </div>
+      <div class="algo-row">
+        <span class="algo-badge b-pat">Proxy</span>
+        <div class="algo-text"><div class="at-name">DatabaseManager.__getattr__</div><div class="at-desc">Forwards unknown attribute access to the underlying <code>sqlite3.Connection</code>, so callers can use <code>conn.execute()</code> directly without an explicit getter. Transparent wrapper.</div></div>
+      </div>
+    </div>
+
+    <div id="data" class="section">
+      <h3>Data layer</h3>
+      <h4>Database schema — 12 tables</h4>
+      <table class="dep-table">
+        <tr><th>Table</th><th>Purpose</th><th>Key relations</th></tr>
+        <tr><td>users</td><td>Auth — username, hashed pw, salt, role, last_login</td><td>—</td></tr>
+        <tr><td>accounts</td><td>Bank/cash accounts with running balance</td><td>—</td></tr>
+        <tr><td>categories</td><td>Income/expense categories with colour and icon</td><td>self-ref parent_id</td></tr>
+        <tr><td>transactions</td><td>Core financial records; owner_username multi-user column added via migration</td><td>→ accounts, categories</td></tr>
+        <tr><td>budgets</td><td>Monthly limits per category + alert threshold</td><td>→ categories</td></tr>
+        <tr><td>ai_predictions</td><td>Forecasted spend per category per month</td><td>→ categories</td></tr>
+        <tr><td>chat_history</td><td>LLM conversation log (role + content)</td><td>—</td></tr>
+        <tr><td>savings_goals</td><td>Named savings targets with progress</td><td>—</td></tr>
+        <tr><td>user_profiles</td><td>Full name, avatar colour, currency per user</td><td>—</td></tr>
+        <tr><td>family_groups</td><td>Named group with owner + invite code</td><td>—</td></tr>
+        <tr><td>group_members</td><td>Many-to-many group ↔ user with role</td><td>→ family_groups</td></tr>
+        <tr><td>user_shared_data</td><td>Read/write permission grants between users</td><td>—</td></tr>
+      </table>
+
+      <h4>Connection strategy</h4>
+      <p><code>PRAGMA journal_mode = WAL</code> allows concurrent reads while writing. <code>PRAGMA foreign_keys = ON</code>. Write operations serialised with a class-level <code>threading.Lock</code>. Two access paths coexist: the legacy <code>DatabaseManager</code> singleton (shared connection) and the newer <code>db_session()</code> generator (per-call connection, cleaner isolation) — both are used in the codebase.</p>
+    </div>
+
+    <div id="deps" class="section">
+      <h3>Dependencies</h3>
+      <table class="dep-table">
+        <tr><th>Package</th><th>Used for</th><th>Required?</th></tr>
+        <tr><td>PyQt6</td><td>All UI, event loop, signals, threading</td><td>Always</td></tr>
+        <tr><td>matplotlib</td><td>Bar + pie charts embedded in QWidget via QtAgg backend</td><td>Always</td></tr>
+        <tr><td>pandas</td><td>DataFrame manipulation in forecaster, importer, Excel export</td><td>Always</td></tr>
+        <tr><td>numpy</td><td>Z-score, log, mean, std in anomaly detector</td><td>Always</td></tr>
+        <tr><td>scikit-learn</td><td>TF-IDF + RandomForest classifier; Isolation Forest; StandardScaler</td><td>AI features</td></tr>
+        <tr><td>prophet</td><td>Time-series forecasting (optional, falls back to MA)</td><td>Optional</td></tr>
+        <tr><td>reportlab</td><td>PDF report generation with charts and tables</td><td>Reports</td></tr>
+        <tr><td>openpyxl</td><td>Excel export via pandas ExcelWriter</td><td>Export</td></tr>
+        <tr><td>transformers</td><td>TinyLlama / DistilGPT2 inference and fine-tuning</td><td>Embedded AI</td></tr>
+        <tr><td>torch</td><td>Model execution; GPU detection for fine-tuner</td><td>Embedded AI</td></tr>
+        <tr><td>datasets</td><td>HuggingFace Dataset for fine-tuning pipeline</td><td>Fine-tuning</td></tr>
+        <tr><td>requests</td><td>Ollama HTTP API calls</td><td>Ollama engine</td></tr>
+        <tr><td>urllib (stdlib)</td><td>Gemini API + Supabase sync — no external HTTP lib needed</td><td>Always</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.currentTarget.classList.add('active');
+}
+</script>

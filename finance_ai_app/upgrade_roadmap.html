@@ -1,0 +1,152 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0}
+.phase{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:14px;overflow:hidden}
+.ph-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ph-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-arch{background:#EEEDFE;color:#3C3489}
+.badge-ui{background:#E6F1FB;color:#0C447C}
+.badge-ai{background:#E1F5EE;color:#085041}
+.badge-sec{background:#FAEEDA;color:#633806}
+.ph-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.ph-sub{font-size:12px;color:var(--color-text-secondary);margin-left:auto;white-space:nowrap}
+.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0}
+.item{padding:12px 18px;border-right:0.5px solid var(--color-border-tertiary);border-top:0.5px solid var(--color-border-tertiary)}
+.item:last-child{border-right:none}
+.item-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.item-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.d-purple{background:#7F77DD}
+.d-blue{background:#378ADD}
+.d-teal{background:#1D9E75}
+.d-amber{background:#BA7517}
+.impact{display:flex;gap:16px;padding:10px 18px;background:var(--color-background-secondary);align-items:center}
+.impact-label{font-size:11px;color:var(--color-text-tertiary)}
+.stars{color:#BA7517;font-size:13px;letter-spacing:1px}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+</style>
+<div class="wrap">
+
+<div class="phase">
+  <div class="ph-header">
+    <span class="ph-badge badge-arch">P1 — Kiến trúc</span>
+    <span class="ph-title">Nền tảng & khả năng mở rộng</span>
+    <span class="ph-sub">Ưu tiên #1</span>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-title"><span class="dot d-purple"></span>Repository pattern</div>
+      <div class="item-desc">Tách DB query ra lớp riêng. TransactionRepo, CategoryRepo — UI không gọi SQL trực tiếp nữa</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-purple"></span>Event bus nội bộ</div>
+      <div class="item-desc">QObject signal trung tâm. Các frame subscribe thay vì main_window.refresh_all() gọi tất cả</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-purple"></span>Plugin system cho AI</div>
+      <div class="item-desc">BaseAIPlugin interface. Thêm engine mới không sửa chatbot_frame. Dễ hot-swap</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-purple"></span>Multi-user / family</div>
+      <div class="item-desc">Bảng user_profiles riêng. Mỗi user có data space độc lập, share được theo nhóm</div>
+    </div>
+  </div>
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars">★★★★★</span>
+    <span class="tag">Kiến trúc</span><span class="tag">Mở rộng</span>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-header">
+    <span class="ph-badge badge-ui">P2 — UI/UX</span>
+    <span class="ph-title">Trải nghiệm người dùng</span>
+    <span class="ph-sub">Ưu tiên #2</span>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-title"><span class="dot d-blue"></span>Theme engine</div>
+      <div class="item-desc">Dark mode + custom accent color. QSS token system, thay đổi realtime không restart</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-blue"></span>Dashboard v2</div>
+      <div class="item-desc">Widget layout kéo thả. Net worth tracker, sparkline mini-chart, quick-add shortcut</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-blue"></span>Notification system</div>
+      <div class="item-desc">Toast overlay + budget alert. Không dùng QMessageBox chặn UI. In-app notification center</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-blue"></span>Keyboard shortcuts</div>
+      <div class="item-desc">Ctrl+N thêm GD, Ctrl+F tìm kiếm, Ctrl+1-7 nav tab. Command palette (Ctrl+K)</div>
+    </div>
+  </div>
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars">★★★★☆</span>
+    <span class="tag">UI/UX</span>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-header">
+    <span class="ph-badge badge-ai">P3 — AI nâng cao</span>
+    <span class="ph-title">Tính năng AI thông minh hơn</span>
+    <span class="ph-sub">Ưu tiên #3</span>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-title"><span class="dot d-teal"></span>Smart categorizer v2</div>
+      <div class="item-desc">Học từ correction của user. Khi user sửa category → auto retrain incremental</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-teal"></span>Natural language input</div>
+      <div class="item-desc">"Hôm nay ăn phở 45k" → tự parse thành giao dịch. Tích hợp vào chatbot</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-teal"></span>Goal tracking AI</div>
+      <div class="item-desc">Đặt mục tiêu tiết kiệm, AI dự báo ngày đạt được, cảnh báo khi lệch kế hoạch</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-teal"></span>Spending insights</div>
+      <div class="item-desc">Weekly digest tự động. So sánh với tháng trước, detect thói quen chi tiêu mới</div>
+    </div>
+  </div>
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars">★★★★☆</span>
+    <span class="tag">AI</span>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-header">
+    <span class="ph-badge badge-sec">P4 — Bảo mật & Errors</span>
+    <span class="ph-title">Robustness</span>
+    <span class="ph-sub">Ưu tiên #4</span>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-title"><span class="dot d-amber"></span>DB context manager</div>
+      <div class="item-desc">get_connection() trả DBContext, dùng with statement. Tự commit/rollback, không leak</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-amber"></span>Global error handler</div>
+      <div class="item-desc">sys.excepthook bắt unhandled exception. Log file, user-friendly dialog, không crash im lặng</div>
+    </div>
+    <div class="item">
+      <div class="item-title"><span class="dot d-amber"></span>Data validation layer</div>
+      <div class="item-desc">Pydantic-style model cho Transaction, Budget. Validate trước khi lưu DB</div>
+    </div>
+  </div>
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars">★★★★★</span>
+    <span class="tag">Bảo mật</span><span class="tag">Error handling</span>
+  </div>
+</div>
+
+</div>

@@ -1,0 +1,11 @@
+{
+  "currency": "VND",
+  "date_format": "dd/MM/yyyy",
+  "default_month": "current",
+  "auto_refresh": true,
+  "auto_classification": true,
+  "anomaly_detection": true,
+  "forecast_method": "auto",
+  "chat_engine": "gemini",
+  "window_mode": "default"
+}
