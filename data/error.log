@@ -1,0 +1,801 @@
+
+========================================
+Timestamp: 1779376195.3490431
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode())
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779376195.3490431
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode())
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779553857.4568064
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode())
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779553862.3418403
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode())
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779554334.9264028
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode())
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779554341.2275927
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 131, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 193, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 256, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 292, in _create_page
+    return SettingsFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 29, in __init__
+    self._initial_refresh()
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 38, in _initial_refresh
+    self._set_combo_data(self.theme_combo, theme_engine.mode)
+                                           ^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object is not callable
+
+========================================
+Timestamp: 1779554475.145161
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\login_window.py", line 377, in _do_register
+    result = self.auth.register(username, password, fullname)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\data\auth_manager.py", line 155, in register
+    from models import init_database
+ModuleNotFoundError: No module named 'models'
+
+========================================
+Timestamp: 1779595624.957405
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\login_window.py", line 236, in _do_login
+    result = self.auth.login(username, password,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\data\auth_manager.py", line 111, in login
+    from models import init_database
+ModuleNotFoundError: No module named 'models'
+
+========================================
+Timestamp: 1779595680.0000768
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 149, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 209, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 318, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 19, in <module>
+    from app.core.sync_manager import SyncManager
+  File "D:\dacs1\finance_ai_app\app\core\sync_manager.py", line 8, in <module>
+    from app.data.models import DB_PATH
+ImportError: cannot import name 'DB_PATH' from 'app.data.models' (D:\dacs1\finance_ai_app\app\data\models.py)
+
+========================================
+Timestamp: 1779596431.8235552
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 149, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 209, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 318, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 19, in <module>
+    from app.core.sync_manager import SyncManager
+  File "D:\dacs1\finance_ai_app\app\core\sync_manager.py", line 8, in <module>
+    from app.data.models import DB_PATH
+ImportError: cannot import name 'DB_PATH' from 'app.data.models' (D:\dacs1\finance_ai_app\app\data\models.py)
+
+========================================
+Timestamp: 1779596647.0497386
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 149, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 209, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 318, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 19, in <module>
+    from app.core.sync_manager import SyncManager
+  File "D:\dacs1\finance_ai_app\app\core\sync_manager.py", line 8, in <module>
+    from app.data.models import DB_PATH
+ImportError: cannot import name 'DB_PATH' from 'app.data.models' (D:\dacs1\finance_ai_app\app\data\models.py)
+
+========================================
+Timestamp: 1779596674.376379
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 149, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 209, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 318, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 19, in <module>
+    from app.core.sync_manager import SyncManager
+  File "D:\dacs1\finance_ai_app\app\core\sync_manager.py", line 8, in <module>
+    from app.data.models import DB_PATH
+ImportError: cannot import name 'DB_PATH' from 'app.data.models' (D:\dacs1\finance_ai_app\app\data\models.py)
+
+========================================
+Timestamp: 1779596730.0198379
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 149, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 209, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 318, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 19, in <module>
+    from app.core.sync_manager import SyncManager
+  File "D:\dacs1\finance_ai_app\app\core\sync_manager.py", line 8, in <module>
+    from app.data.models import DB_PATH
+ImportError: cannot import name 'DB_PATH' from 'app.data.models' (D:\dacs1\finance_ai_app\app\data\models.py)
+2026-05-24 21:45:09 [finance_ai] INFO: Finance AI khởi động — 2026-05-24 21:45:09
+2026-05-24 21:53:35 [finance_ai] INFO: Finance AI khởi động — 2026-05-24 21:53:35
+
+============================================================
+Timestamp : 2026-05-24 21:54:10
+User: nhu quynh (user)
+Exception : ModuleNotFoundError: No module named 'app.repositories'
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 250, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 297, in _create_page
+    from app.ui.dashboard_frame import DashboardFrame
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 14, in <module>
+    from app.core.transaction_manager import TransactionManager
+  File "D:\dacs1\finance_ai_app\app\core\transaction_manager.py", line 3, in <module>
+    from app.repositories import TransactionRepo, TransactionModel
+ModuleNotFoundError: No module named 'app.repositories'
+2026-05-24 21:54:10 [finance_ai] ERROR: Unhandled exception: ModuleNotFoundError: No module named 'app.repositories'
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 250, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 283, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 297, in _create_page
+    from app.ui.dashboard_frame import DashboardFrame
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 14, in <module>
+    from app.core.transaction_manager import TransactionManager
+  File "D:\dacs1\finance_ai_app\app\core\transaction_manager.py", line 3, in <module>
+    from app.repositories import TransactionRepo, TransactionModel
+ModuleNotFoundError: No module named 'app.repositories'
+2026-05-25 15:20:44 [finance_ai] INFO: Finance AI khởi động — 2026-05-25 15:20:44
+2026-05-25 15:39:55 [finance_ai] INFO: Finance AI khởi động — 2026-05-25 15:39:55
+2026-05-26 14:25:27 [finance_ai] INFO: Finance AI khởi động — 2026-05-26 14:25:27
+2026-05-27 13:42:27 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 13:42:27
+2026-05-27 13:46:17 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 13:46:17
+
+============================================================
+Timestamp : 2026-05-27 13:48:25
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 13:48:25 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+
+============================================================
+Timestamp : 2026-05-27 13:49:08
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 258, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 416, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 13:49:08 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 258, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 416, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+
+============================================================
+Timestamp : 2026-05-27 13:54:05
+User: nhu_quynh (user)
+Exception : ModuleNotFoundError: No module named 'requests'
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 350, in _check_engine_status
+    from app.ai.local_llm import check_ollama_running, get_available_models
+  File "D:\dacs1\finance_ai_app\app\ai\local_llm.py", line 7, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+2026-05-27 13:54:05 [finance_ai] ERROR: Unhandled exception: ModuleNotFoundError: No module named 'requests'
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 350, in _check_engine_status
+    from app.ai.local_llm import check_ollama_running, get_available_models
+  File "D:\dacs1\finance_ai_app\app\ai\local_llm.py", line 7, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+2026-05-27 14:00:14 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 14:00:14
+2026-05-27 14:00:31 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 14:00:31
+
+============================================================
+Timestamp : 2026-05-27 14:00:46
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 14:00:46 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+
+============================================================
+Timestamp : 2026-05-27 14:02:10
+User: hung_phu (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 565, in _reopen_main
+    new_window = MainWindow(current_user=user)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 14:02:10 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 565, in _reopen_main
+    new_window = MainWindow(current_user=user)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 14:04:37 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 14:04:37
+
+============================================================
+Timestamp : 2026-05-27 14:04:52
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 14:04:52 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 21:06:20 [finance_ai] INFO: Finance AI khởi động — 2026-05-27 21:06:20
+
+============================================================
+Timestamp : 2026-05-27 21:06:37
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 21:06:37 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\main.py", line 52, in on_login_success
+    window = MainWindow(current_user=user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 458, in __init__
+    self._navigate("Dashboard")
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+
+============================================================
+Timestamp : 2026-05-27 21:09:50
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 258, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 416, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-27 21:09:50 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 258, in <lambda>
+    btn.clicked.connect(lambda _, p=page: self._navigate(p))
+                                          ^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 416, in _navigate
+    self._on_navigate(page)
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 491, in _navigate
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 506, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 107, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 125, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 162, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 15:40:22 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 15:40:22
+2026-05-29 17:52:44 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 17:52:44
+
+============================================================
+Timestamp : 2026-05-29 17:54:27
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 17:54:27 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 18:10:18 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 18:10:18
+
+============================================================
+Timestamp : 2026-05-29 18:10:25
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 18:10:25 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+
+============================================================
+Timestamp : 2026-05-29 18:16:38
+User: nhu_quynh (user)
+Exception : UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel("\U0001f4c5  " + datetime.now().strftime("%d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 18:16:38 [finance_ai] ERROR: Unhandled exception: UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 578, in _create_page
+    return DashboardFrame(main_window=self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 123, in __init__
+    self._build()
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 147, in _build
+    layout.addWidget(self._build_toolbar())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 181, in _build_toolbar
+    today_lbl = QLabel("\U0001f4c5  " + datetime.now().strftime("%d/%m/%Y"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
+2026-05-29 18:16:49 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 18:16:49
+
+============================================================
+Timestamp : 2026-05-29 18:17:23
+User: nhu_quynh (user)
+Exception : ModuleNotFoundError: No module named 'app.theme_engine'
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 601, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 32, in <module>
+    from app.theme_engine import theme_engine
+ModuleNotFoundError: No module named 'app.theme_engine'
+2026-05-29 18:17:23 [finance_ai] ERROR: Unhandled exception: ModuleNotFoundError: No module named 'app.theme_engine'
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 558, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 601, in _create_page
+    from app.ui.settings_frame import SettingsFrame
+  File "D:\dacs1\finance_ai_app\app\ui\settings_frame.py", line 32, in <module>
+    from app.theme_engine import theme_engine
+ModuleNotFoundError: No module named 'app.theme_engine'
+2026-05-29 20:36:29 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 20:36:29
+2026-05-29 20:55:39 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 20:55:39
