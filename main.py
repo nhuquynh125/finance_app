@@ -42,6 +42,15 @@ from app.data.models import init_auth_database
 from app.ui.login_window import LoginWindow
 from app.ui.main_window import MainWindow
 from app.core.error_handler import setup_global_handler
+<<<<<<< HEAD
+=======
+from pyQt6.QtGui import QIcon
+
+def _set_app_icon(app: QApplication):
+    icon_path = Path(__file__).resolve().parent / "finance_ai_app" / "logo-AI.png"
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
 
 def main():
     app = QApplication(sys.argv)

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance AI — Kế hoạch nâng cấp</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafaf8;--card:#fff;--border:#e8e7e2;--border2:#d4d2cc;
+  --text:#1a1916;--muted:#7a7872;--hint:#b0aea6;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-m:#378ADD;
+  --green:#0F6E56;--green-l:#E1F5EE;--green-m:#1D9E75;
+  --amber:#854F0B;--amber-l:#FAEEDA;--amber-m:#BA7517;
+  --red:#791F1F;--red-l:#FCEBEB;--red-m:#E24B4A;
+  --purple:#3C3489;--purple-l:#EEEDFE;--purple-m:#7F77DD;
+  --teal:#085041;--teal-l:#E1F5EE;--teal-m:#1D9E75;
+  --gray-l:#F1EFE8;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1916;--card:#252420;--border:#3a3830;--border2:#4a4840;
+    --text:#e8e6e0;--muted:#9a9890;--hint:#6a6860;
+    --blue-l:#0C2A4A;--green-l:#0a2820;--amber-l:#2a1a04;
+    --red-l:#2a1010;--purple-l:#1a1838;--gray-l:#2a2820;
+  }
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.6;padding:24px}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.subtitle{color:var(--muted);font-size:12px;margin-bottom:28px}
+
+/* Phase blocks */
+.phase{background:var(--card);border:0.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden}
+.ph-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:0.5px solid var(--border)}
+.ph-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.2px}
+.b-arch{background:var(--purple-l);color:var(--purple)}
+.b-ui{background:var(--blue-l);color:var(--blue)}
+.b-ai{background:var(--green-l);color:var(--green)}
+.b-sec{background:var(--amber-l);color:var(--amber)}
+.ph-title{font-size:14px;font-weight:600;flex:1}
+.ph-effort{font-size:11px;color:var(--muted);background:var(--gray-l);padding:2px 8px;border-radius:10px}
+
+/* Items grid */
+.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0}
+.item{padding:14px 18px;border-right:0.5px solid var(--border);border-top:0.5px solid var(--border)}
+.item:nth-child(even){border-right:none}
+@media(max-width:680px){.item{border-right:none}}
+.item-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.item-title{font-size:13px;font-weight:600}
+.item-desc{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+.files-label{font-size:10px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.file-tag{display:inline-block;font-size:10px;font-family:'Cascadia Code','Fira Code',monospace;background:var(--gray-l);border:0.5px solid var(--border2);border-radius:4px;padding:1px 6px;margin:1px 2px 1px 0;color:var(--muted)}
+.code-block{font-family:'Cascadia Code','Fira Code',monospace;font-size:11px;background:var(--gray-l);border:0.5px solid var(--border2);border-radius:6px;padding:10px 12px;margin-top:8px;line-height:1.6;overflow-x:auto;color:var(--text)}
+.kw{color:var(--blue-m);font-weight:600}
+.cm{color:var(--hint)}
+.st{color:var(--green-m)}
+.fn{color:var(--amber-m)}
+
+/* Impact row */
+.impact{display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--gray-l);flex-wrap:wrap}
+.impact-label{font-size:11px;color:var(--hint)}
+.stars{font-size:13px;letter-spacing:1px}
+.star-full{color:var(--amber-m)}
+.star-empty{color:var(--border2)}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;border:0.5px solid var(--border2);color:var(--muted);background:var(--card)}
+
+/* Family section */
+.family-block{background:var(--card);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px}
+.family-head{padding:14px 18px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.family-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:680px){.family-grid{grid-template-columns:1fr}}
+.family-item{padding:14px 18px;border-right:0.5px solid var(--border);border-top:0.5px solid var(--border)}
+.family-item:nth-child(even){border-right:none}
+.table-small{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
+.table-small th{text-align:left;color:var(--hint);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:4px 0;border-bottom:0.5px solid var(--border)}
+.table-small td{padding:5px 0;border-bottom:0.5px solid var(--border);color:var(--muted);vertical-align:top}
+.table-small td:first-child{color:var(--text);font-weight:500;width:40%;padding-right:8px}
+.table-small tr:last-child td{border-bottom:none}
+
+/* Check list */
+.checklist{list-style:none;margin-top:8px}
+.checklist li{font-size:12px;color:var(--muted);padding:3px 0;display:flex;gap:6px;align-items:flex-start}
+.check-icon{color:var(--green-m);font-size:12px;margin-top:1px;flex-shrink:0}
+.warn-icon{color:var(--amber-m);font-size:12px;margin-top:1px;flex-shrink:0}
+
+/* Migration steps */
+.steps{counter-reset:step;list-style:none;margin-top:10px}
+.steps li{counter-increment:step;display:flex;gap:10px;font-size:12px;padding:6px 0;border-bottom:0.5px solid var(--border);color:var(--muted)}
+.steps li:last-child{border-bottom:none}
+.steps li::before{content:counter(step);min-width:20px;height:20px;background:var(--blue-l);color:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* Timeline */
+.timeline{display:flex;gap:0;margin:0 0 18px;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
+.tl-item{flex:1;padding:12px 14px;border-right:0.5px solid var(--border);min-width:0}
+.tl-item:last-child{border-right:none}
+.tl-phase{font-size:10px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.tl-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.tl-sub{font-size:11px;color:var(--muted)}
+.tl-bar{height:3px;border-radius:2px;margin-top:8px}
+
+/* DB schema */
+.schema-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+.schema-table th{background:var(--gray-l);color:var(--hint);font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:600;padding:5px 8px;text-align:left;border-bottom:0.5px solid var(--border)}
+.schema-table td{padding:4px 8px;border-bottom:0.5px solid var(--border);vertical-align:top}
+.schema-table tr:last-child td{border-bottom:none}
+.schema-table td.col-name{font-weight:600;color:var(--text);font-family:monospace}
+.schema-table td.col-type{color:var(--blue-m);font-family:monospace}
+.schema-table td.col-note{color:var(--muted)}
+.schema-new{color:var(--green-m);font-size:10px;font-weight:700;margin-left:4px}
+
+/* Patch pill */
+.patch{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.patch-fix{background:var(--amber-l);color:var(--amber)}
+.patch-add{background:var(--green-l);color:var(--green)}
+.patch-break{background:var(--red-l);color:var(--red)}
+.patch-opt{background:var(--blue-l);color:var(--blue)}
+
+/* Summary bar */
+.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.sum-card{flex:1;min-width:120px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px}
+.sum-num{font-size:22px;font-weight:700;margin-bottom:2px}
+.sum-lbl{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<h1>Finance AI — Kế hoạch nâng cấp chi tiết</h1>
+<p class="subtitle">Phân tích từ codebase thực tế · 4 phase · Giữ nguyên PyQt6 + SQLite + offline</p>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="sum-card"><div class="sum-num" style="color:var(--purple-m)">4</div><div class="sum-lbl">Phase nâng cấp</div></div>
+  <div class="sum-card"><div class="sum-num" style="color:var(--blue-m)">17</div><div class="sum-lbl">File cần sửa/thêm</div></div>
+  <div class="sum-card"><div class="sum-num" style="color:var(--green-m)">6</div><div class="sum-lbl">File thêm mới</div></div>
+  <div class="sum-card"><div class="sum-num" style="color:var(--amber-m)">0</div><div class="sum-lbl">File bị xóa</div></div>
+</div>
+
+<!-- Timeline -->
+<div class="timeline">
+  <div class="tl-item">
+    <div class="tl-phase">Phase 1</div>
+    <div class="tl-label">Kiến trúc</div>
+    <div class="tl-sub">repositories.py + event_bus.py + base_plugin.py đã có sườn</div>
+    <div class="tl-bar" style="background:var(--purple-m)"></div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-phase">Phase 2</div>
+    <div class="tl-label">UI/UX</div>
+    <div class="tl-sub">theme_engine + notification + command_palette đã có sườn</div>
+    <div class="tl-bar" style="background:var(--blue-m)"></div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-phase">Phase 3</div>
+    <div class="tl-label">Nhóm/Gia đình</div>
+    <div class="tl-sub">Thêm vào không xóa tính năng cũ</div>
+    <div class="tl-bar" style="background:var(--green-m)"></div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-phase">Phase 4</div>
+    <div class="tl-label">Robustness</div>
+    <div class="tl-sub">Global error handler + DB context manager</div>
+    <div class="tl-bar" style="background:var(--amber-m)"></div>
+  </div>
+</div>
+
+<!-- Phase 1 -->
+<div class="phase">
+  <div class="ph-head">
+    <span class="ph-badge b-arch">P1 — Kiến trúc</span>
+    <span class="ph-title">Kết nối sườn đã có vào toàn bộ app</span>
+    <span class="ph-effort">Ưu tiên #1</span>
+  </div>
+
+  <div class="items">
+    <!-- 1.1 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--purple-m)"></span>
+        <span class="item-title">Hoàn thiện repositories.py <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">File đã có đầy đủ TransactionRepo, CategoryRepo, BudgetRepo nhưng <strong>chưa được dùng ở đâu</strong>. Cần refactor transaction_manager.py và budget_frame.py để gọi qua repo thay vì SQL trực tiếp.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">transaction_manager.py</span>
+      <span class="file-tag">budget_frame.py</span>
+      <span class="file-tag">transaction_frame.py</span>
+      <div class="code-block"><span class="cm"># transaction_manager.py — thay thế SQL trực tiếp:</span>
+<span class="kw">from</span> app.data.repositories <span class="kw">import</span> TransactionRepo, TransactionModel
+
+<span class="kw">class</span> <span class="fn">TransactionManager</span>:
+    <span class="kw">def</span> <span class="fn">add_transaction</span>(self, account_id, amount, type_,
+                         description, date, category_id, note=<span class="st">""</span>):
+        repo = TransactionRepo()
+        model = TransactionModel(
+            account_id=account_id, amount=amount, type_=type_,
+            description=description, date=date,
+            category_id=category_id, note=note
+        )
+        tx_id = repo.add(model)   <span class="cm"># validation trong model.validate()</span>
+        <span class="kw">return</span> self._check_budget_alert(category_id, date)</div>
+    </div>
+
+    <!-- 1.2 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--purple-m)"></span>
+        <span class="item-title">Kích hoạt event_bus.py <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">event_bus.py đã định nghĩa đầy đủ signals nhưng <strong>chưa được connect</strong>. Main window vẫn đang dùng <code>refresh_all()</code> gọi thủ công. Cần connect bus vào main_window và tất cả frames.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main_window.py</span>
+      <span class="file-tag">dashboard_frame.py</span>
+      <span class="file-tag">transaction_frame.py</span>
+      <span class="file-tag">budget_frame.py</span>
+      <div class="code-block"><span class="cm"># main_window.py — connect bus vào navigation:</span>
+<span class="kw">from</span> app.core.event_bus <span class="kw">import</span> bus
+
+<span class="kw">class</span> <span class="fn">MainWindow</span>(QMainWindow):
+    <span class="kw">def</span> <span class="fn">_build</span>(self):
+        <span class="cm"># ... existing code ...</span>
+        bus.navigate_to.connect(self._navigate)
+        bus.balance_changed.connect(self.sidebar.refresh_balance)
+        bus.transaction_added.connect(self._on_data_changed)
+        bus.notify_success.connect(notifier.success)
+        bus.notify_warning.connect(notifier.warning)
+
+<span class="cm"># dashboard_frame.py — subscribe thay vì refresh_all:</span>
+<span class="kw">from</span> app.core.event_bus <span class="kw">import</span> bus, BusConnectMixin
+
+<span class="kw">class</span> <span class="fn">DashboardFrame</span>(QWidget, BusConnectMixin):
+    <span class="kw">def</span> <span class="fn">_connect_bus</span>(self):
+        bus.transaction_added.connect(self.refresh)
+        bus.balance_changed.connect(self._update_cards)</div>
+    </div>
+
+    <!-- 1.3 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--purple-m)"></span>
+        <span class="item-title">Kích hoạt base_plugin.py + registry <span class="patch patch-opt">tối ưu</span></span>
+      </div>
+      <div class="item-desc">base_plugin.py đã có GeminiPlugin, OllamaPlugin, EmbeddedPlugin nhưng chatbot_frame.py vẫn dùng <code>if self._engine == "gemini"</code> hardcode. Cần refactor chatbot_frame để dùng registry.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">chatbot_frame.py</span>
+      <div class="code-block"><span class="cm"># chatbot_frame.py — dùng registry thay hardcode:</span>
+<span class="kw">from</span> app.ai.base_plugin <span class="kw">import</span> registry
+
+<span class="kw">def</span> <span class="fn">_send</span>(self, text):
+    plugin = registry.get(self._engine)
+    <span class="kw">if not</span> plugin:
+        self._on_error(<span class="st">"Engine không khả dụng"</span>)
+        <span class="kw">return</span>
+    self.worker = plugin.create_worker(
+        self._history.copy(), self._build_system_prompt()
+    )
+    self.worker.token_received.connect(self._on_token)
+    self.worker.finished.connect(self._on_finished)
+    self.worker.error.connect(self._on_error)
+    self.worker.start()
+
+<span class="cm"># Dropdown tự động từ registry:</span>
+<span class="kw">for</span> eid, label <span class="kw">in</span> registry.labels().items():
+    self.engine_combo.addItem(label, userData=eid)</div>
+    </div>
+
+    <!-- 1.4 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--purple-m)"></span>
+        <span class="item-title">Kích hoạt ShortcutManager <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">command_palette.py đã hoàn thiện ShortcutManager nhưng chưa được khởi tạo trong main_window. Thêm 2 dòng vào <code>_build()</code> là xong.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main_window.py</span>
+      <div class="code-block"><span class="cm"># main_window.py — _build() thêm vào cuối:</span>
+<span class="kw">from</span> app.ui.command_palette <span class="kw">import</span> ShortcutManager
+<span class="kw">from</span> app.ui.notification <span class="kw">import</span> notifier
+
+<span class="kw">def</span> <span class="fn">_build</span>(self):
+    <span class="cm"># ... existing code ...</span>
+    self.shortcut_mgr = ShortcutManager(self)
+    self.shortcut_mgr.setup()
+    notifier.set_parent(self)   <span class="cm"># toast overlay</span>
+
+<span class="cm"># Kết quả: Ctrl+K, Ctrl+1-7, Ctrl+N, F5 hoạt động ngay</span></div>
+    </div>
+  </div>
+
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars"><span class="star-full">★★★★★</span></span>
+    <span class="tag">Kiến trúc</span><span class="tag">0 feature mới</span><span class="tag">Chỉ connect các file đã có</span>
+  </div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase">
+  <div class="ph-head">
+    <span class="ph-badge b-ui">P2 — UI/UX</span>
+    <span class="ph-title">Kích hoạt Theme Engine + Notification + Dashboard nâng cao</span>
+    <span class="ph-effort">Ưu tiên #2</span>
+  </div>
+
+  <div class="items">
+    <!-- 2.1 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--blue-m)"></span>
+        <span class="item-title">Kích hoạt theme_engine.py <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">theme_engine.py đã có đầy đủ QSS + dark mode + accent color nhưng chưa được gọi <code>theme_engine.apply(app)</code>. Cần thêm vào main entry point và settings_frame.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main.py (entry point)</span>
+      <span class="file-tag">settings_frame.py</span>
+      <div class="code-block"><span class="cm"># main.py — entry point của app:</span>
+<span class="kw">from</span> app.core.theme_engine <span class="kw">import</span> theme_engine
+
+app = QApplication(sys.argv)
+theme_engine.apply(app)   <span class="cm"># áp QSS ngay khi khởi động</span>
+
+<span class="cm"># settings_frame.py — thêm UI đổi theme:</span>
+<span class="cm"># Thêm vào _build_general_settings():</span>
+self.theme_combo = QComboBox()
+self.theme_combo.addItem(<span class="st">"Sáng"</span>, <span class="st">"light"</span>)
+self.theme_combo.addItem(<span class="st">"Tối"</span>, <span class="st">"dark"</span>)
+self.theme_combo.addItem(<span class="st">"Theo hệ thống"</span>, <span class="st">"auto"</span>)
+self.theme_combo.currentIndexChanged.connect(
+    <span class="kw">lambda</span>: theme_engine.set_mode(self.theme_combo.currentData())
+)
+
+<span class="cm"># Accent color picker:</span>
+<span class="kw">for</span> name, hex_color <span class="kw">in</span> theme_engine.ACCENTS.items():
+    btn = QPushButton()
+    btn.setFixedSize(<span class="st">24</span>, <span class="st">24</span>)
+    btn.clicked.connect(<span class="kw">lambda</span> _, c=hex_color: theme_engine.set_accent(c))</div>
+    </div>
+
+    <!-- 2.2 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--blue-m)"></span>
+        <span class="item-title">Notification center hoàn chỉnh <span class="patch patch-opt">tối ưu</span></span>
+      </div>
+      <div class="item-desc">notification.py đã có ToastContainer và NotificationCenter. Cần thêm bell icon vào sidebar và connect với event_bus để hiện toast khi budget bị vượt hoặc AI xong.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main_window.py (sidebar)</span>
+      <span class="file-tag">transaction_manager.py</span>
+      <div class="code-block"><span class="cm"># Sidebar footer — thêm bell button:</span>
+btn_bell = QPushButton(<span class="st">"🔔 Thông báo"</span>)
+btn_bell.clicked.connect(
+    <span class="kw">lambda</span>: notifier.show_center(self)
+)
+
+<span class="cm"># transaction_manager.py — emit toast thay QMessageBox:</span>
+<span class="kw">from</span> app.core.event_bus <span class="kw">import</span> bus
+
+<span class="kw">if</span> ratio >= budget[<span class="st">"alert_threshold"</span>]:
+    bus.notify_warning.emit(
+        <span class="st">f"Ngân sách '{cat_name}'"</span>,
+        <span class="st">f"Đã dùng {ratio:.0%} — còn {remaining:,.0f}đ"</span>
+    )
+    <span class="cm"># Không return alert dict nữa — bus xử lý</span>
+
+<span class="cm"># Kết quả: toast xuất hiện góc phải không block UI</span></div>
+    </div>
+
+    <!-- 2.3 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--blue-m)"></span>
+        <span class="item-title">Dashboard v2 — Net worth + Sparklines <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">dashboard_frame.py hiện có 4 metric cards và 2 biểu đồ. Nâng cấp thêm: net worth tracker theo thời gian, trend indicator (↑/↓ so tháng trước), quick-add inline.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">dashboard_frame.py</span>
+      <div class="code-block"><span class="cm"># Thêm trend indicator vào card:</span>
+<span class="kw">def</span> <span class="fn">_build_metric_card</span>(self, label, value, color, prev_value=<span class="kw">None</span>):
+    <span class="cm"># ... existing card code ...</span>
+    <span class="kw">if</span> prev_value <span class="kw">is not None</span>:
+        delta = value - prev_value
+        pct = (delta / prev_value * <span class="st">100</span>) <span class="kw">if</span> prev_value <span class="kw">else</span> <span class="st">0</span>
+        arrow = <span class="st">"↑"</span> <span class="kw">if</span> delta > <span class="st">0</span> <span class="kw">else</span> <span class="st">"↓"</span>
+        color_trend = <span class="st">"#1D9E75"</span> <span class="kw">if</span> delta > <span class="st">0</span> <span class="kw">else</span> <span class="st">"#E24B4A"</span>
+        trend = QLabel(<span class="st">f"{arrow} {abs(pct):.1f}% vs tháng trước"</span>)
+        trend.setStyleSheet(<span class="st">f"color:{color_trend}; font-size:10px;"</span>)
+
+<span class="cm"># Net worth card mới — lịch sử 12 tháng:</span>
+worth_data = self._get_net_worth_history(<span class="st">12</span>)
+self._draw_sparkline(worth_data)   <span class="cm"># mini line chart 60px</span></div>
+    </div>
+
+    <!-- 2.4 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--blue-m)"></span>
+        <span class="item-title">Kết nối theme với sidebar active state <span class="patch patch-fix">sửa</span></span>
+      </div>
+      <div class="item-desc">SidebarButton hiện dùng màu hardcode <code>#E6F1FB / #0C447C</code>. Cần đổi sang CSS variable để tự động adapt khi theme thay đổi. Cũng fix border-bottom sidebar trong dark mode.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main_window.py</span>
+      <div class="code-block"><span class="cm"># Thay hardcode trong SidebarButton:</span>
+STYLE_ACTIVE = <span class="st">"""
+QPushButton {
+    background: rgba(55,138,221,0.12);
+    color: palette(highlight);
+    border: none; border-radius: 6px;
+    text-align: left; padding: 8px 12px;
+    font-size: 13px; font-weight: 500;
+}"""</span>
+<span class="cm"># theme_engine sẽ override màu highlight tự động</span>
+
+<span class="cm"># Sidebar subscribe theme change:</span>
+<span class="kw">from</span> app.core.event_bus <span class="kw">import</span> bus
+bus.theme_changed.connect(<span class="kw">lambda</span> _: self._refresh_button_styles())</div>
+    </div>
+  </div>
+
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars"><span class="star-full">★★★★</span><span class="star-empty">☆</span></span>
+    <span class="tag">UI/UX</span><span class="tag">Dark mode</span><span class="tag">Non-blocking alerts</span>
+  </div>
+</div>
+
+<!-- Phase 3 Family -->
+<div class="phase">
+  <div class="ph-head">
+    <span class="ph-badge b-ai">P3 — Nhóm / Gia đình</span>
+    <span class="ph-title">Thêm multi-user — giữ nguyên chức năng cũ</span>
+    <span class="ph-effort">Ưu tiên #3</span>
+  </div>
+
+  <div class="items">
+    <!-- 3.1 Schema -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--green-m)"></span>
+        <span class="item-title">DB schema — thêm 2 bảng mới <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Thêm vào cuối <code>init_database()</code> trong models.py. Không đụng bảng cũ.</div>
+      <table class="schema-table">
+        <tr><th>Bảng</th><th>Cột chính</th><th>Ghi chú</th></tr>
+        <tr>
+          <td class="col-name">user_profiles <span class="schema-new">MỚI</span></td>
+          <td class="col-type">id, username, full_name, color, currency, avatar_initials</td>
+          <td class="col-note">Mở rộng bảng users hiện tại, join qua username</td>
+        </tr>
+        <tr>
+          <td class="col-name">family_groups <span class="schema-new">MỚI</span></td>
+          <td class="col-type">id, name, owner_username, invite_code</td>
+          <td class="col-note">Tạo nhóm gia đình, có invite code 6 ký tự</td>
+        </tr>
+        <tr>
+          <td class="col-name">group_members <span class="schema-new">MỚI</span></td>
+          <td class="col-type">group_id, username, role (owner/member/viewer), joined_at</td>
+          <td class="col-note">Phân quyền trong nhóm</td>
+        </tr>
+        <tr>
+          <td class="col-name">transactions</td>
+          <td class="col-type"><strong>+ owner_username TEXT</strong> (DEFAULT current user)</td>
+          <td class="col-note">Migration: ALTER TABLE ADD COLUMN</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 3.2 Family frame -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--green-m)"></span>
+        <span class="item-title">family_frame.py — trang mới <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Trang mới trong sidebar mục "Nhóm". Không xóa hay sửa giao diện cũ. User đơn vẫn dùng bình thường.</div>
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span>Tạo nhóm gia đình, đặt tên, chọn màu avatar</li>
+        <li><span class="check-icon">✓</span>Sinh invite code 6 ký tự, share cho thành viên</li>
+        <li><span class="check-icon">✓</span>Xem tổng hợp chi tiêu của cả nhóm theo tháng</li>
+        <li><span class="check-icon">✓</span>Toggle: xem "Của tôi" hoặc "Cả nhóm"</li>
+        <li><span class="check-icon">✓</span>Thành viên Viewer chỉ xem, Member thêm được GD</li>
+        <li><span class="warn-icon">⚠</span>Offline-first: sync qua file share hoặc Supabase đã có</li>
+      </ul>
+      <div class="code-block"><span class="cm"># main_window.py — thêm vào sections dict:</span>
+sections = {
+    <span class="st">"CHÍNH"</span>: [<span class="st">"Dashboard"</span>, <span class="st">"Giao dịch"</span>, <span class="st">"Ngân sách"</span>],
+    <span class="st">"AI"</span>:    [<span class="st">"Dự báo"</span>, <span class="st">"Chatbot AI"</span>],
+    <span class="st">"NHÓM"</span>:  [<span class="st">"Gia đình"</span>],   <span class="cm"># ← thêm section mới</span>
+    <span class="st">"KHÁC"</span>:  [<span class="st">"Báo cáo"</span>, <span class="st">"Cài đặt"</span>],
+}</div>
+    </div>
+
+    <!-- 3.3 Filter by user -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--green-m)"></span>
+        <span class="item-title">Filter giao dịch theo thành viên <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Thêm ComboBox "Thành viên" vào filter bar của transaction_frame. Nếu user đơn: ẩn ComboBox này. Nếu trong nhóm: hiện dropdown chọn thành viên.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">transaction_frame.py</span>
+      <span class="file-tag">transaction_manager.py</span>
+      <div class="code-block"><span class="cm"># transaction_frame.py — filter bar:</span>
+self.cb_member = QComboBox()
+self.cb_member.addItem(<span class="st">"Tất cả thành viên"</span>)
+self.cb_member.setVisible(is_in_group())  <span class="cm"># ẩn nếu đơn</span>
+
+<span class="cm"># transaction_manager.py — get_transactions thêm param:</span>
+<span class="kw">def</span> <span class="fn">get_transactions</span>(self, month=<span class="kw">None</span>, account_id=<span class="kw">None</span>,
+                      owner_username=<span class="kw">None</span>, limit=<span class="st">200</span>):
+    <span class="cm"># owner_username=None → lấy tất cả trong nhóm</span>
+    <span class="cm"># owner_username=username → lấy của riêng người đó</span></div>
+    </div>
+
+    <!-- 3.4 Profile frame -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--green-m)"></span>
+        <span class="item-title">Avatar + Profile trong Sidebar <span class="patch patch-opt">tối ưu</span></span>
+      </div>
+      <div class="item-desc">Sidebar hiện có user_w block với avatar 👤 hardcode. Nâng cấp thành avatar initials có màu, click vào mở profile popup.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">main_window.py</span>
+      <div class="code-block"><span class="cm"># Thay avatar 👤 emoji:</span>
+profile = UserProfileRepo().get(current_user[<span class="st">"username"</span>])
+color = profile[<span class="st">"color"</span>] <span class="kw">if</span> profile <span class="kw">else</span> <span class="st">"#378ADD"</span>
+initials = <span class="st">"".join</span>(w[<span class="st">0</span>] <span class="kw">for</span> w <span class="kw">in</span> full_name.split()[:<span class="st">2</span>]).upper()
+
+avatar = QLabel(initials)
+avatar.setFixedSize(<span class="st">32</span>, <span class="st">32</span>)
+avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+avatar.setStyleSheet(<span class="st">f"""
+    background:{color}; color:#fff;
+    border-radius:16px; font-size:13px; font-weight:700;
+"""</span>)
+avatar.setCursor(Qt.CursorShape.PointingHandCursor)
+<span class="cm"># Click → mở ProfileDialog</span></div>
+    </div>
+  </div>
+
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars"><span class="star-full">★★★★</span><span class="star-empty">☆</span></span>
+    <span class="tag">Multi-user</span><span class="tag">Thêm, không xóa</span><span class="tag">Offline-first</span>
+  </div>
+</div>
+
+<!-- Phase 4 -->
+<div class="phase">
+  <div class="ph-head">
+    <span class="ph-badge b-sec">P4 — Robustness</span>
+    <span class="ph-title">Global error handler + DB context + Validation</span>
+    <span class="ph-effort">Ưu tiên #4</span>
+  </div>
+
+  <div class="items">
+    <!-- 4.1 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--amber-m)"></span>
+        <span class="item-title">Global exception handler <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Hiện tại unhandled exception = app crash im lặng. Thêm sys.excepthook để log ra file và hiện dialog thân thiện.</div>
+      <div class="files-label">File mới: app/core/error_handler.py</div>
+      <div class="code-block"><span class="cm"># error_handler.py — file mới:</span>
+<span class="kw">import</span> sys, traceback, logging
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> PyQt6.QtWidgets <span class="kw">import</span> QMessageBox
+
+LOG_FILE = Path(<span class="st">"data/error.log"</span>)
+
+<span class="kw">def</span> <span class="fn">setup_global_handler</span>(app):
+    <span class="kw">def</span> <span class="fn">handle_exception</span>(exc_type, exc_value, exc_tb):
+        <span class="kw">if</span> issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_tb)
+            <span class="kw">return</span>
+        tb_str = <span class="st">"".join</span>(traceback.format_exception(exc_type, exc_value, exc_tb))
+        logging.error(<span class="st">f"Unhandled exception:\n{tb_str}"</span>)
+        <span class="kw">with</span> LOG_FILE.open(<span class="st">"a"</span>) <span class="kw">as</span> f:
+            f.write(tb_str)
+        QMessageBox.critical(<span class="kw">None</span>, <span class="st">"Lỗi không mong muốn"</span>,
+            <span class="st">f"Đã xảy ra lỗi. Chi tiết đã lưu vào:\n{LOG_FILE}\n\n{exc_value}"</span>)
+    sys.excepthook = handle_exception
+
+<span class="cm"># main.py — gọi ngay sau tạo QApplication:</span>
+<span class="kw">from</span> app.core.error_handler <span class="kw">import</span> setup_global_handler
+setup_global_handler(app)</div>
+    </div>
+
+    <!-- 4.2 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--amber-m)"></span>
+        <span class="item-title">Fix DatabaseManager singleton <span class="patch patch-fix">sửa</span></span>
+      </div>
+      <div class="item-desc">models.py hiện dùng singleton DatabaseManager nhưng <code>get_connection()</code> trả về chính DatabaseManager thay vì connection. Gây nhầm lẫn khi dùng context manager. Cần thêm DBContext từ repositories.</div>
+      <div class="files-label">Files cần sửa</div>
+      <span class="file-tag">models.py</span>
+      <div class="code-block"><span class="cm"># models.py — thêm alias để dễ migrate dần:</span>
+<span class="kw">from</span> app.data.repositories <span class="kw">import</span> db_session, DBContext
+
+<span class="cm"># get_connection() vẫn hoạt động để không break code cũ</span>
+<span class="cm"># Nhưng code mới dùng db_session():</span>
+
+<span class="cm"># CÁCH MỚI (trong code mới):</span>
+<span class="kw">with</span> db_session() <span class="kw">as</span> db:
+    rows = db.fetchall(<span class="st">"SELECT * FROM transactions"</span>)
+    <span class="cm"># auto commit khi thoát with, auto rollback khi exception</span>
+
+<span class="cm"># CÁCH CŨ (vẫn hoạt động — không break):</span>
+conn = get_connection()
+rows = conn.execute(<span class="st">"SELECT * FROM transactions"</span>).fetchall()
+conn.close()</div>
+    </div>
+
+    <!-- 4.3 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--amber-m)"></span>
+        <span class="item-title">Natural language input trong chatbot <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Chatbot parse câu như "Hôm nay ăn phở 45k" → tự tạo giao dịch. Dùng regex + Gemini/Ollama để extract thông tin.</div>
+      <div class="files-label">File mới: app/ai/nlp_parser.py</div>
+      <div class="code-block"><span class="cm"># nlp_parser.py — regex nhanh, không cần AI:</span>
+<span class="kw">import</span> re
+<span class="kw">from</span> datetime <span class="kw">import</span> date
+
+AMOUNT_PATTERN = <span class="st">r'(\d+(?:[.,]\d+)?)\s*(k|nghìn|triệu|tr|đ|đồng)?'</span>
+
+<span class="kw">def</span> <span class="fn">parse_quick_add</span>(text: str) -> dict | None:
+    <span class="st">"""
+    Input:  "ăn phở 45k"
+    Output: {amount:45000, desc:"ăn phở", type:"expense", date:today}
+    """</span>
+    m = re.search(AMOUNT_PATTERN, text, re.IGNORECASE)
+    <span class="kw">if not</span> m: <span class="kw">return None</span>
+    raw, unit = m.group(<span class="st">1</span>), (m.group(<span class="st">2</span>) <span class="kw">or</span> <span class="st">""</span>).lower()
+    amount = float(raw.replace(<span class="st">","</span>, <span class="st">"."</span>))
+    <span class="kw">if</span> unit <span class="kw">in</span> (<span class="st">"k"</span>, <span class="st">"nghìn"</span>): amount *= <span class="st">1000</span>
+    <span class="kw">elif</span> unit <span class="kw">in</span> (<span class="st">"triệu"</span>, <span class="st">"tr"</span>): amount *= <span class="st">1000000</span>
+    desc = re.sub(AMOUNT_PATTERN, <span class="st">""</span>, text).strip()
+    <span class="kw">return</span> {<span class="st">"amount"</span>: amount, <span class="st">"description"</span>: desc,
+            <span class="st">"type"</span>: <span class="st">"expense"</span>, <span class="st">"date"</span>: str(date.today())}
+
+<span class="cm"># chatbot_frame.py — detect và confirm với user:</span>
+parsed = parse_quick_add(user_text)
+<span class="kw">if</span> parsed:
+    self._add_assistant_message(
+        <span class="st">f"Tôi hiểu: chi {parsed['amount']:,.0f}đ cho '{parsed['description']}'. Thêm vào không?"</span>
+    )</div>
+    </div>
+
+    <!-- 4.4 -->
+    <div class="item">
+      <div class="item-head">
+        <span class="dot" style="background:var(--amber-m)"></span>
+        <span class="item-title">Goal tracking — tiết kiệm có mục tiêu <span class="patch patch-add">thêm</span></span>
+      </div>
+      <div class="item-desc">Thêm bảng savings_goals vào DB. Hiển thị trong Dashboard card thứ 5. AI dự báo ngày đạt mục tiêu dựa vào lịch sử tiết kiệm.</div>
+      <div class="files-label">File mới: app/ai/goal_tracker.py</div>
+      <table class="schema-table">
+        <tr><th>Bảng savings_goals</th><th>Kiểu</th><th>Mô tả</th></tr>
+        <tr><td class="col-name">id</td><td class="col-type">INTEGER PK</td><td class="col-note"></td></tr>
+        <tr><td class="col-name">name</td><td class="col-type">TEXT</td><td class="col-note">Tên mục tiêu (Mua xe, Du lịch...)</td></tr>
+        <tr><td class="col-name">target_amount</td><td class="col-type">REAL</td><td class="col-note">Số tiền cần đạt</td></tr>
+        <tr><td class="col-name">current_amount</td><td class="col-type">REAL</td><td class="col-note">Đã tiết kiệm được</td></tr>
+        <tr><td class="col-name">target_date</td><td class="col-type">TEXT</td><td class="col-note">Ngày muốn đạt</td></tr>
+        <tr><td class="col-name">color</td><td class="col-type">TEXT</td><td class="col-note">Màu hiển thị</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="impact">
+    <span class="impact-label">Tác động điểm số</span>
+    <span class="stars"><span class="star-full">★★★★★</span></span>
+    <span class="tag">Bảo mật</span><span class="tag">Error handling</span><span class="tag">Tính năng AI mới</span>
+  </div>
+</div>
+
+<!-- Bug fixes hiện tại -->
+<div class="phase">
+  <div class="ph-head">
+    <span class="ph-badge" style="background:var(--red-l);color:var(--red)">Bugs cần fix ngay</span>
+    <span class="ph-title">Vấn đề trong code hiện tại</span>
+    <span class="ph-effort">Quan trọng</span>
+  </div>
+  <div class="items">
+    <div class="item">
+      <div class="item-head"><span class="dot" style="background:var(--red-m)"></span><span class="item-title">chatbot_frame.py — datetime.timedelta thiếu import</span></div>
+      <div class="item-desc">Dòng <code>now.replace(day=1) - datetime.timedelta(days=1)</code> sẽ crash vì thiếu <code>from datetime import timedelta</code>.</div>
+      <div class="code-block"><span class="cm"># Sửa import trong chatbot_frame.py:</span>
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta
+
+<span class="cm"># Dòng 338 sửa thành:</span>
+prev_month = (now.replace(day=<span class="st">1</span>) - timedelta(days=<span class="st">1</span>)).strftime(<span class="st">"%Y-%m"</span>)</div>
+    </div>
+    <div class="item">
+      <div class="item-head"><span class="dot" style="background:var(--red-m)"></span><span class="item-title">csv_importer.py — import_file trả sai kiểu</span></div>
+      <div class="item-desc">transaction_frame.py gọi <code>count = CsvImporter().import_file(path)</code> nhưng hàm trả <code>(count, warnings_list)</code> — tuple. Sẽ crash khi hiển thị count.</div>
+      <div class="code-block"><span class="cm"># transaction_frame.py — sửa _import_csv:</span>
+count, warnings = CsvImporter().import_file(path)
+msg = <span class="st">f"Đã nhập {count} giao dịch"</span>
+<span class="kw">if</span> warnings:
+    msg += <span class="st">f"\n\nLog:\n"</span> + <span class="st">"\n"</span>.join(warnings)
+QMessageBox.information(self, <span class="st">"Thành công"</span>, msg)</div>
+    </div>
+    <div class="item">
+      <div class="item-head"><span class="dot" style="background:var(--red-m)"></span><span class="item-title">models.py — DatabaseManager singleton không thread-safe đúng cách</span></div>
+      <div class="item-desc">SQLite singleton dùng check_same_thread=False nhưng không có WAL mode ảnh hưởng AI workers chạy song song. WAL đã được set nhưng cần verify không bị ghi đè.</div>
+      <div class="code-block"><span class="cm"># models.py — đã có PRAGMA WAL, nhưng thêm verify:</span>
+<span class="kw">def</span> <span class="fn">get_connection</span>(self):
+    <span class="cm"># Sau khi tạo conn mới:</span>
+    mode = self._conn.execute(<span class="st">"PRAGMA journal_mode"</span>).fetchone()[<span class="st">0</span>]
+    <span class="kw">assert</span> mode == <span class="st">"wal"</span>, <span class="st">f"Expected WAL, got {mode}"</span></div>
+    </div>
+    <div class="item">
+      <div class="item-head"><span class="dot" style="background:var(--amber-m)"></span><span class="item-title">settings_frame.py — _refresh_package_status không được gọi</span></div>
+      <div class="item-desc">Hàm <code>_refresh_package_status()</code> đã viết nhưng không được gọi ở đâu — badge luôn hiển thị "thiếu" dù đã cài.</div>
+      <div class="code-block"><span class="cm"># settings_frame.py — thêm vào _build_ai_settings():</span>
+QTimer.singleShot(<span class="st">200</span>, self._refresh_package_status)
+<span class="cm"># Hoặc trong refresh():</span>
+self._refresh_package_status()</div>
+    </div>
+  </div>
+</div>
+
+<!-- Migration checklist -->
+<div class="family-block">
+  <div class="family-head">
+    <span class="ph-badge b-arch">Thứ tự thực hiện</span>
+    <span style="font-size:14px;font-weight:600;flex:1">Checklist migration từng bước</span>
+  </div>
+  <div class="family-grid">
+    <div class="family-item">
+      <div class="files-label">Tuần 1 — Fix bugs + Connect sườn</div>
+      <ol class="steps">
+        <li>Fix import <code>timedelta</code> trong chatbot_frame.py</li>
+        <li>Fix <code>import_file</code> trả tuple trong transaction_frame.py</li>
+        <li>Gọi <code>_refresh_package_status()</code> trong settings</li>
+        <li>Thêm <code>shortcut_mgr.setup()</code> vào MainWindow._build()</li>
+        <li>Thêm <code>notifier.set_parent(self)</code> vào MainWindow._build()</li>
+        <li>Connect <code>bus.navigate_to</code> vào <code>self._navigate</code></li>
+      </ol>
+    </div>
+    <div class="family-item">
+      <div class="files-label">Tuần 2 — Repository + Event bus</div>
+      <ol class="steps">
+        <li>Refactor TransactionManager.add_transaction dùng TransactionRepo</li>
+        <li>Refactor BudgetFrame dùng BudgetRepo.sync_spent()</li>
+        <li>Thêm BusConnectMixin vào DashboardFrame + TransactionFrame</li>
+        <li>Thay QMessageBox budget alert bằng bus.notify_warning</li>
+        <li>Refactor ChatbotFrame._send() dùng registry.get(engine_id)</li>
+      </ol>
+    </div>
+    <div class="family-item">
+      <div class="files-label">Tuần 3 — Theme + UI nâng cao</div>
+      <ol class="steps">
+        <li>Gọi <code>theme_engine.apply(app)</code> trong main.py</li>
+        <li>Thêm theme combo + accent picker vào settings_frame</li>
+        <li>Fix SidebarButton dùng CSS variable thay hardcode</li>
+        <li>Thêm trend indicator vào Dashboard cards</li>
+        <li>Thêm bell button vào sidebar → notifier.show_center()</li>
+      </ol>
+    </div>
+    <div class="family-item">
+      <div class="files-label">Tuần 4 — Family mode + Error handler</div>
+      <ol class="steps">
+        <li>Tạo error_handler.py + gọi setup_global_handler(app)</li>
+        <li>ALTER TABLE transactions ADD COLUMN owner_username</li>
+        <li>Tạo bảng family_groups + group_members trong init_database()</li>
+        <li>Tạo family_frame.py mới</li>
+        <li>Tạo nlp_parser.py + tích hợp vào chatbot_frame</li>
+        <li>Tạo savings_goals table + goal_tracker.py</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

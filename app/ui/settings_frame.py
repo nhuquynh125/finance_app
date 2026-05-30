@@ -29,7 +29,11 @@ from app.core.settings_manager import (
     get_exports_dir, _get_settings_path, _get_db_path
 )
 from app.core.sync_manager import SyncManager
+<<<<<<< HEAD
 from app.core.theme_engine import theme_engine
+=======
+from app.theme_engine import theme_engine
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
 
 try:
     from config import APP_NAME, APP_VERSION, DATA_DIR, DB_PATH

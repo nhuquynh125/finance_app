@@ -178,7 +178,11 @@ class DashboardFrame(QWidget, BusConnectMixin):
         title.setStyleSheet(f"color:{NAVY}; border:none;")
         layout.addWidget(title)
 
+<<<<<<< HEAD
         today_lbl = QLabel("\U0001f4c5  " + datetime.now().strftime("%d/%m/%Y"))
+=======
+        today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
         today_lbl.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
         layout.addWidget(today_lbl)
 

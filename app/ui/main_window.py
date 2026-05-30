@@ -11,8 +11,12 @@ Thay đổi so với phiên bản cũ:
   - _navigate() KHÔNG còn gọi frame.refresh() ngay lập tức.
     Dùng QTimer.singleShot(50, ...) để refresh sau khi frame đã visible.
   - Thêm _LoadingPlaceholder làm placeholder trong khi frame nặng đang load.
+<<<<<<< HEAD
   - Thêm trang "Chi tiêu" (SpendingFrame) vào sidebar và _create_page().
   - Không thay đổi bất kỳ logic nghiệp vụ nào khác.
+=======
+  - Không thay đổi bất kỳ logic nghiệp vụ nào.
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
 """
 
 from PyQt6.QtWidgets import (
@@ -242,14 +246,20 @@ class Sidebar(QWidget):
         nav_layout.setContentsMargins(10, 10, 10, 10)
         nav_layout.setSpacing(2)
 
+<<<<<<< HEAD
         # ── THÊM "Chi tiêu" vào section CHÍNH ────────────────────────────────
         sections = {
             "CHÍNH": ["Dashboard", "Chi tiêu", "Giao dịch", "Ngân sách"],
+=======
+        sections = {
+            "CHÍNH": ["Dashboard", "Giao dịch", "Ngân sách"],
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
             "AI":    ["Dự báo", "Chatbot AI"],
             "NHÓM":  ["Gia đình"],
             "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt"],
         }
         icons = {
+<<<<<<< HEAD
             "Dashboard":  "📊",
             "Chi tiêu":   "💸",   # ← icon mới cho trang Chi tiêu
             "Giao dịch":  "💳",
@@ -260,6 +270,11 @@ class Sidebar(QWidget):
             "Hồ sơ":      "👤",
             "Báo cáo":    "📄",
             "Cài đặt":    "⚙️",
+=======
+            "Dashboard":  "📊", "Giao dịch":  "💳", "Ngân sách": "💰",
+            "Dự báo":     "📈", "Chatbot AI": "🤖", "Gia đình":  "👨‍👩‍👧",
+            "Hồ sơ":      "👤", "Báo cáo":    "📄", "Cài đặt":   "⚙️",
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
         }
         for section_name, pages in sections.items():
             sec_lbl = QLabel(section_name)
@@ -495,6 +510,10 @@ class MainWindow(QMainWindow):
 
         # Dùng singleShot(0) để nhường event-loop paint cửa sổ lần đầu,
         # sau đó mới bắt đầu load Dashboard.
+<<<<<<< HEAD
+=======
+        # delay=0 ms đủ để Qt flush paint queue trước khi import matplotlib.
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
         QTimer.singleShot(0, lambda: self._navigate("Dashboard"))
 
     # ── Build skeleton ────────────────────────────────────────────────────────
@@ -584,11 +603,14 @@ class MainWindow(QMainWindow):
         if page == "Dashboard":
             from app.ui.dashboard_frame import DashboardFrame
             return DashboardFrame(main_window=self)
+<<<<<<< HEAD
         # ── TRANG MỚI: Chi tiêu ───────────────────────────────────────────────
         if page == "Chi tiêu":
             from app.ui.spending_frame import SpendingFrame
             return SpendingFrame(main_window=self)
         # ─────────────────────────────────────────────────────────────────────
+=======
+>>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
         if page == "Giao dịch":
             from app.ui.transaction_frame import TransactionFrame
             return TransactionFrame(main_window=self)

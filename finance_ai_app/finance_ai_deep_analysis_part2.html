@@ -1,0 +1,483 @@
+
+<h2 class="sr-only">Finance AI — data flows, code quality audit, and refactoring roadmap</h2>
+<style>
+:root { --nav-w: 168px; }
+.shell { display: flex; gap: 0; min-height: 560px; }
+.nav { width: var(--nav-w); flex-shrink: 0; border-right: 0.5px solid var(--color-border-tertiary); padding: 8px 0; position: sticky; top: 0; align-self: flex-start; }
+.nav-btn { display: block; width: 100%; text-align: left; padding: 7px 14px; font-size: 12.5px; border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; border-radius: 0; border-left: 2px solid transparent; transition: background 0.12s, color 0.12s; }
+.nav-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.nav-btn.active { border-left-color: #1D9E75; background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+.content { flex: 1; min-width: 0; padding: 20px 24px; }
+.section { display: none; }
+.section.visible { display: block; }
+h3 { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 12px; }
+h4 { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 18px 0 7px; }
+p, li { font-size: 13px; color: var(--color-text-secondary); line-height: 1.65; margin: 0 0 6px; }
+ul { padding-left: 18px; margin: 0 0 10px; }
+code { font-family: var(--font-mono); font-size: 11.5px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; color: var(--color-text-primary); }
+
+.flow-col { display: flex; flex-direction: column; gap: 0; margin: 10px 0 16px; }
+.flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 9px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); margin-bottom: 2px; }
+.flow-num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; }
+.flow-step-body { flex: 1; }
+.flow-step-body .fs-title { font-size: 12.5px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.flow-step-body .fs-detail { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.flow-arrow-down { text-align: center; font-size: 14px; color: var(--color-text-secondary); line-height: 1.2; margin: 1px 0; }
+
+.audit-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.audit-row:last-child { border-bottom: none; }
+.sev { flex-shrink: 0; font-size: 10.5px; font-weight: 500; padding: 3px 8px; border-radius: 4px; min-width: 68px; text-align: center; }
+.sev-high { background: #FCEBEB; color: #791F1F; }
+.sev-med  { background: #FAEEDA; color: #633806; }
+.sev-low  { background: #EAF3DE; color: #27500A; }
+.sev-note { background: #E6F1FB; color: #0C447C; }
+.audit-body { flex: 1; }
+.audit-body .ab-title { font-size: 12.5px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.audit-body .ab-loc { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+.audit-body .ab-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.55; }
+
+.road-item { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 10px; overflow: hidden; }
+.road-head { display: flex; align-items: center; gap: 10px; padding: 9px 13px; background: var(--color-background-secondary); cursor: pointer; }
+.road-head .rh-pri { font-size: 10.5px; font-weight: 500; padding: 2px 8px; border-radius: 3px; flex-shrink: 0; }
+.road-head .rh-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+.road-head .rh-effort { font-size: 11px; color: var(--color-text-secondary); }
+.road-body { padding: 10px 13px 12px; border-top: 0.5px solid var(--color-border-tertiary); }
+.road-body p { font-size: 12px; margin-bottom: 5px; }
+.road-body code { font-size: 11px; }
+
+.matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.mx-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.mx-card .mc-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 5px; }
+.mx-card li { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 3px; }
+
+.signal-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.signal-table th { text-align: left; font-weight: 500; color: var(--color-text-secondary); font-size: 11.5px; padding: 5px 10px 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.signal-table td { padding: 6px 10px 6px 0; vertical-align: top; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); font-size: 12px; }
+.signal-table td:first-child { color: var(--color-text-primary); font-family: var(--font-mono); font-size: 11px; }
+.signal-table tr:last-child td { border-bottom: none; }
+
+.tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); margin: 2px 2px 2px 0; }
+
+.score-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.score-box { flex: 1; min-width: 80px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.score-box .sv { font-size: 22px; font-weight: 500; }
+.score-box .sl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+</style>
+
+<div class="shell">
+  <nav class="nav" aria-label="Analysis sections">
+    <button class="nav-btn active" onclick="show('flows')"><i class="ti ti-arrow-right-circle" aria-hidden="true"></i> Data flows</button>
+    <button class="nav-btn" onclick="show('bus')"><i class="ti ti-broadcast" aria-hidden="true"></i> Event bus map</button>
+    <button class="nav-btn" onclick="show('audit')"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Code audit</button>
+    <button class="nav-btn" onclick="show('debt')"><i class="ti ti-tool" aria-hidden="true"></i> Tech debt</button>
+    <button class="nav-btn" onclick="show('roadmap')"><i class="ti ti-map" aria-hidden="true"></i> Roadmap</button>
+    <button class="nav-btn" onclick="show('security')"><i class="ti ti-shield" aria-hidden="true"></i> Security</button>
+    <button class="nav-btn" onclick="show('testing')"><i class="ti ti-test-pipe" aria-hidden="true"></i> Testability</button>
+    <button class="nav-btn" onclick="show('summary')"><i class="ti ti-star" aria-hidden="true"></i> Summary</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- DATA FLOWS -->
+    <div id="flows" class="section visible">
+      <h3>End-to-end data flows</h3>
+
+      <h4>Flow A — add a transaction (happy path)</h4>
+      <div class="flow-col">
+        <div class="flow-step"><div class="flow-num" style="background:#E6F1FB;color:#0C447C;">1</div><div class="flow-step-body"><div class="fs-title">User opens TransactionDialog (Ctrl+N or button)</div><div class="fs-detail">ShortcutManager or toolbar button calls <code>TransactionDialog(parent)</code>. Form pre-fills today's date; category defaults to "Auto (AI)".</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#E6F1FB;color:#0C447C;">2</div><div class="flow-step-body"><div class="fs-title">Dialog accepted → TransactionManager.add_transaction()</div><div class="fs-detail">Facade validates, delegates to <code>TransactionRepo.add(model)</code>. Model.validate() checks amount > 0, date format, description non-empty before any SQL.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#EAF3DE;color:#27500A;">3</div><div class="flow-step-body"><div class="fs-title">DB write inside db_session() context manager</div><div class="fs-detail">INSERT into <code>transactions</code>; UPDATE <code>accounts.balance ± amount</code> in the same atomic context. Rolls back both on any exception.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#EAF3DE;color:#27500A;">4</div><div class="flow-step-body"><div class="fs-title">Budget alert check</div><div class="fs-detail"><code>_check_budget_alert()</code> queries real spent vs limit for this category+month. If ratio ≥ alert_threshold → <code>bus.notify_warning.emit()</code>.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#EEEDFE;color:#3C3489;">5</div><div class="flow-step-body"><div class="fs-title">bus.transaction_added.emit() + bus.balance_changed.emit()</div><div class="fs-detail">All subscribed frames (Dashboard, TransactionFrame, BudgetFrame) receive signals and call their own <code>refresh()</code>. Sidebar also refreshes balance label.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#EEEDFE;color:#3C3489;">6</div><div class="flow-step-body"><div class="fs-title">Auto-classify worker (background QThread)</div><div class="fs-detail">If <code>auto_classification=True</code> in settings, <code>ClassifyWorker</code> runs <code>TransactionClassifier.predict_category_id(description)</code> and updates the row. On finish, emits another refresh.</div></div></div>
+      </div>
+
+      <h4>Flow B — AI forecast run</h4>
+      <div class="flow-col">
+        <div class="flow-step"><div class="flow-num" style="background:#FAEEDA;color:#633806;">1</div><div class="flow-step-body"><div class="fs-title">User clicks "Chạy dự báo AI" in ForecastFrame</div><div class="fs-detail">Button disabled; progress bar shown; <code>ForecastWorker(QThread)</code> spawned.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#FAEEDA;color:#633806;">2</div><div class="flow-step-body"><div class="fs-title">SpendingForecaster.forecast_all_categories()</div><div class="fs-detail">Iterates every expense category. For each: loads monthly totals as pandas DataFrame, selects Prophet vs moving-average based on data length and settings.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#FAEEDA;color:#633806;">3</div><div class="flow-step-body"><div class="fs-title">Results written back to ai_predictions table</div><div class="fs-detail">DELETE old predictions for next month, then INSERT new rows with predicted_amount + confidence. Next time Dashboard loads, it reads from this table for the "AI forecast" KPI card.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#FAEEDA;color:#633806;">4</div><div class="flow-step-body"><div class="fs-title">Worker emits finished(results) → UI updates</div><div class="fs-detail">ForecastFrame renders category bar chart, updates KPI cards, calls <code>get_forecast_chart_data()</code> for the line chart with confidence band.</div></div></div>
+      </div>
+
+      <h4>Flow C — CSV bank import</h4>
+      <div class="flow-col">
+        <div class="flow-step"><div class="flow-num" style="background:#F1EFE8;color:#444441;">1</div><div class="flow-step-body"><div class="fs-title">File picker → CsvImporter.import_file(path, bank="auto")</div><div class="fs-detail">Bank auto-detected from filename keywords first, then first 500 chars of file content.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#F1EFE8;color:#444441;">2</div><div class="flow-step-body"><div class="fs-title">Multi-encoding read → fuzzy column mapping</div><div class="fs-detail">Tries utf-8-sig → utf-8 → latin-1. Maps columns by substring match against the bank profile's candidate list. Normalises dates (up to 3 format attempts) and amounts (strips thousands separators, detects comma-vs-dot ambiguity).</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#F1EFE8;color:#444441;">3</div><div class="flow-step-body"><div class="fs-title">Atomic batch insert with rollback guard</div><div class="fs-detail">All rows inserted in a single transaction. Any failure rolls back the entire import — no partial data. Account balances updated per-row inside the same transaction.</div></div></div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step"><div class="flow-num" style="background:#F1EFE8;color:#444441;">4</div><div class="flow-step-body"><div class="fs-title">Count + warnings returned → refresh triggered</div><div class="fs-detail">UI shows a summary dialog. <code>bus.transactions_imported.emit(count)</code> signals all frames to refresh.</div></div></div>
+      </div>
+    </div>
+
+    <!-- EVENT BUS MAP -->
+    <div id="bus" class="section">
+      <h3>Event bus signal map</h3>
+      <p>The <code>_EventBus</code> singleton has 20 typed signals. Below is the full publisher → subscriber mapping across the codebase.</p>
+      <table class="signal-table">
+        <tr><th>Signal</th><th>Published by</th><th>Consumed by</th><th>Payload</th></tr>
+        <tr><td>transaction_added</td><td>TransactionManager, ShortcutManager</td><td>DashboardFrame, TransactionFrame, BudgetFrame</td><td>(none)</td></tr>
+        <tr><td>transaction_updated</td><td>TransactionManager</td><td>TransactionFrame</td><td>tx_id: int</td></tr>
+        <tr><td>transaction_deleted</td><td>TransactionManager</td><td>TransactionFrame</td><td>tx_id: int</td></tr>
+        <tr><td>transactions_imported</td><td>CsvImporter (via frame)</td><td>TransactionFrame</td><td>count: int</td></tr>
+        <tr><td>balance_changed</td><td>TransactionManager, ShortcutManager</td><td>DashboardFrame, Sidebar</td><td>(none)</td></tr>
+        <tr><td>budget_updated</td><td>BudgetFrame (on save)</td><td>DashboardFrame, BudgetFrame</td><td>month: str</td></tr>
+        <tr><td>budget_alert</td><td>TransactionManager._check_budget_alert()</td><td>Notifier (via notify_warning)</td><td>cat_name, month, pct</td></tr>
+        <tr><td>navigate_to</td><td>ShortcutManager, CommandPalette, DashboardFrame links</td><td>MainWindow._navigate()</td><td>page_name: str</td></tr>
+        <tr><td>theme_changed</td><td>ThemeEngine.set_mode() / set_accent()</td><td>Any widget subscribed (optional)</td><td>mode: str</td></tr>
+        <tr><td>settings_saved</td><td>SettingsFrame._save()</td><td>MainWindow.refresh_all()</td><td>settings: dict</td></tr>
+        <tr><td>notify_success/warning/error/info</td><td>TransactionManager, ShortcutManager, SettingsFrame</td><td>Notifier._notify() → ToastContainer</td><td>title, message: str</td></tr>
+        <tr><td>ai_forecast_done</td><td>ForecastWorker.finished</td><td>ForecastFrame</td><td>results: list</td></tr>
+        <tr><td>ai_anomaly_done</td><td>AnomalyWorker.finished</td><td>ForecastFrame</td><td>anomalies: list</td></tr>
+        <tr><td>ai_classification_done</td><td>ClassifyWorker.finished</td><td>TransactionFrame.refresh()</td><td>(none)</td></tr>
+        <tr><td>user_switched</td><td>(multi-user, partial impl)</td><td>(not yet consumed)</td><td>user: dict</td></tr>
+      </table>
+      <p style="margin-top:10px;">The <code>emit_debounced(signal_name, delay_ms)</code> helper uses a <code>dict[str, QTimer]</code> to cancel any pending timer before starting a new one — standard debounce. Useful for bulk operations like CSV import where 200 rows would otherwise trigger 200 refresh cycles.</p>
+    </div>
+
+    <!-- CODE AUDIT -->
+    <div id="audit" class="section">
+      <h3>Code quality audit</h3>
+      <p>Issues ranked by severity: <span style="background:#FCEBEB;color:#791F1F;padding:1px 7px;border-radius:3px;font-size:11px;">high</span> affects correctness or crashes, <span style="background:#FAEEDA;color:#633806;padding:1px 7px;border-radius:3px;font-size:11px;">medium</span> causes maintenance pain, <span style="background:#EAF3DE;color:#27500A;padding:1px 7px;border-radius:3px;font-size:11px;">low</span> is style/minor.</p>
+
+      <div class="audit-row">
+        <span class="sev sev-high">high</span>
+        <div class="audit-body">
+          <div class="ab-title">Two DB access patterns coexist — connection lifecycle conflict</div>
+          <div class="ab-loc">models.py (singleton conn) vs repositories.py (per-call conn)</div>
+          <div class="ab-desc"><code>DatabaseManager</code> keeps a single <code>check_same_thread=False</code> shared connection and commits in <code>__exit__</code>. Meanwhile <code>db_session()</code> opens fresh connections. Background QThreads using the singleton path can see uncommitted data from another thread or deadlock under concurrent writes. The <code>execute_write()</code> lock only serialises one path.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-high">high</span>
+        <div class="audit-body">
+          <div class="ab-title">transaction_manager.py imports from wrong module path</div>
+          <div class="ab-loc">transaction_manager.py line 3–4</div>
+          <div class="ab-desc"><code>from app.repositories import TransactionRepo</code> but the actual file is <code>repositories.py</code>; similarly <code>from app.repositories import TransactionModel</code>. This will raise <code>ModuleNotFoundError</code> at runtime unless <code>__init__.py</code> re-exports it. If the flat layout is intentional, import paths should be <code>from repositories import ...</code>.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-high">high</span>
+        <div class="audit-body">
+          <div class="ab-title">goal_tracker.py uses raw get_connection() as if it's sqlite3.Connection</div>
+          <div class="ab-loc">goal_tracker.py — GoalTracker.__init__ and methods</div>
+          <div class="ab-desc"><code>self.conn = get_connection()</code> returns a <code>DatabaseManager</code> proxy, not a real connection. Then calls <code>self.conn.execute_write()</code> which exists on DatabaseManager, but also calls <code>self.conn.execute()</code> directly without committing. The connection is stored as an instance attribute and never closed — resource leak.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">settings_frame.py calls theme_engine.mode() as a method — it's a property</div>
+          <div class="ab-loc">settings_frame.py — _initial_refresh(), refresh()</div>
+          <div class="ab-desc"><code>ThemeEngine.mode</code> is a <code>@property</code> in theme_engine.py. Calling <code>theme_engine.mode()</code> with parentheses will raise <code>TypeError: 'str' object is not callable</code>. Should be <code>theme_engine.mode</code>.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">AnomalyDetector opens/closes raw connections without context manager</div>
+          <div class="ab-loc">anomaly_detector.py — detect_and_mark(), get_anomalies(), explain_anomaly()</div>
+          <div class="ab-desc">Multiple methods call <code>conn = get_connection()</code> then <code>conn.close()</code> manually. If an exception is raised mid-method, close() is never called. Should use <code>with db_session() as db</code> or <code>with get_connection() as conn</code>.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">Hard-coded account_id=1 in several places</div>
+          <div class="ab-loc">transaction_frame.py (TransactionDialog.get_data), csv_importer.py, command_palette.py</div>
+          <div class="ab-desc">Multi-account support exists in the schema but <code>account_id</code> is silently forced to 1 in the dialog output and CSV import. Adding a second account will not reflect in any imported or command-palette-added transaction.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">forecast_frame.py stores QThread workers as instance attributes without cleanup</div>
+          <div class="ab-loc">forecast_frame.py — _run_forecast(), _run_anomaly()</div>
+          <div class="ab-desc"><code>self.fc_worker</code> and <code>self.anom_worker</code> are overwritten on each run without waiting for the previous thread. If the user clicks "Run" twice quickly, the first worker's finished signal may fire after the second is already running — results interleave.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-low">low</span>
+        <div class="audit-body">
+          <div class="ab-title">Inline stylesheet strings duplicated across every frame</div>
+          <div class="ab-loc">All *_frame.py files — static _btn_style(), _combo_style() methods</div>
+          <div class="ab-desc">Each frame defines its own <code>_btn_primary()</code>, <code>_btn_normal()</code>, <code>_combo_style()</code> static methods returning identical QSS strings. These should be moved to a shared <code>ui_styles.py</code> module or handled entirely by <code>ThemeEngine</code>.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-low">low</span>
+        <div class="audit-body">
+          <div class="ab-title">error_handler.py uses file mtime as timestamp — always wrong</div>
+          <div class="ab-loc">error_handler.py line ~14</div>
+          <div class="ab-desc"><code>f"Timestamp: {Path('data/error.log').stat().st_mtime}\n"</code> reads the file's modification time (a float) rather than the current datetime. Should be <code>datetime.now().isoformat()</code>.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-note">note</span>
+        <div class="audit-body">
+          <div class="ab-title">Family/group features are UI stubs — not connected to DB</div>
+          <div class="ab-loc">family_frame.py</div>
+          <div class="ab-desc">The DB schema has <code>family_groups</code> and <code>group_members</code> tables, but <code>FamilyFrame</code> only calls <code>QInputDialog</code> and shows a random invite code. No DB writes or reads are performed. <code>user_switched</code> bus signal has no consumers.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECH DEBT -->
+    <div id="debt" class="section">
+      <h3>Technical debt map</h3>
+      <div class="score-row">
+        <div class="score-box"><div class="sv" style="color:#1D9E75;">Strong</div><div class="sl">AI plugin design</div></div>
+        <div class="score-box"><div class="sv" style="color:#1D9E75;">Strong</div><div class="sl">Event bus decoupling</div></div>
+        <div class="score-box"><div class="sv" style="color:#BA7517;">Mixed</div><div class="sl">DB access layer</div></div>
+        <div class="score-box"><div class="sv" style="color:#E24B4A;">Weak</div><div class="sl">Test coverage</div></div>
+        <div class="score-box"><div class="sv" style="color:#BA7517;">Mixed</div><div class="sl">Multi-user impl</div></div>
+      </div>
+
+      <div class="matrix">
+        <div class="mx-card">
+          <div class="mc-label"><i class="ti ti-check" aria-hidden="true"></i> what works well</div>
+          <ul>
+            <li>AI plugin Strategy pattern is genuinely extensible — adding a new engine is ~15 lines</li>
+            <li>EventBus completely eliminates circular imports between frames</li>
+            <li>Repository pattern keeps all SQL in one place — easy to swap to another DB</li>
+            <li>ThemeEngine QSS generation is elegant: one function, all widgets update instantly</li>
+            <li>Atomic CSV import with full rollback on failure</li>
+            <li>Worker threads are correctly isolated — no UI calls from background threads</li>
+            <li>Classifier auto-retrains on user correction — closes the feedback loop</li>
+            <li>Command palette scored search is a real UX win for a desktop app</li>
+          </ul>
+        </div>
+        <div class="mx-card">
+          <div class="mc-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> structural debt</div>
+          <ul>
+            <li>Two conflicting DB access patterns (singleton vs per-call) — should consolidate on <code>db_session()</code></li>
+            <li>No test suite of any kind — no unit, integration, or UI tests</li>
+            <li>QSS duplicated across 8 frame files — should be centralised</li>
+            <li>Hard-coded account_id=1 breaks multi-account design</li>
+            <li>All source files are flat — no physical subdirectory structure matching the logical design</li>
+            <li>Family features: schema exists, UI exists, logic is missing — false sense of completeness</li>
+            <li>GoalTracker uses a stored connection — wrong lifetime management</li>
+            <li>No config.py visible in snapshot — constants like DB_PATH, DATA_DIR implied but unclear</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4>Dependency risk</h4>
+      <p>Four packages are optional-but-silently-required for core advertised features: <code>prophet</code> (forecast), <code>sklearn</code> (classifier + anomaly), <code>reportlab</code> (PDF), <code>torch + transformers</code> (embedded LLM). None of these have install-time validation — the app starts fine and only errors when the user clicks the feature. A startup dependency check with a guided install dialog would improve UX significantly.</p>
+    </div>
+
+    <!-- ROADMAP -->
+    <div id="roadmap" class="section">
+      <h3>Refactoring roadmap</h3>
+      <p>Prioritised by impact vs effort. Each item is self-contained — can be done independently.</p>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#FCEBEB;color:#791F1F;">P0 · bug fix</span>
+          <span class="rh-title">Consolidate DB access — remove DatabaseManager singleton</span>
+          <span class="rh-effort">~1 day</span>
+        </div>
+        <div class="road-body">
+          <p>Replace all raw <code>get_connection()</code> + manual <code>.close()</code> calls with <code>with db_session() as db:</code>. Delete <code>DatabaseManager</code> or demote it to a pure connection factory. Ensures every DB operation has a deterministic commit/rollback and no connection leaks. Fix <code>GoalTracker</code> first as the most egregious example.</p>
+          <p>Files: <code>anomaly_detector.py</code>, <code>forecaster.py</code>, <code>goal_tracker.py</code>, <code>transaction_manager.py</code>, all <code>*_frame.py</code> that call <code>get_connection()</code> directly.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#FCEBEB;color:#791F1F;">P0 · bug fix</span>
+          <span class="rh-title">Fix module import paths in transaction_manager.py and settings_frame.py</span>
+          <span class="rh-effort">&lt;1 hour</span>
+        </div>
+        <div class="road-body">
+          <p>Change <code>from app.repositories import</code> → <code>from repositories import</code> (or set up proper <code>__init__.py</code> re-exports). Fix <code>theme_engine.mode()</code> → <code>theme_engine.mode</code> in SettingsFrame. These are silent runtime errors that will crash on first use.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#FAEEDA;color:#633806;">P1 · quality</span>
+          <span class="rh-title">Introduce a shared ui_styles.py module</span>
+          <span class="rh-effort">~2 hours</span>
+        </div>
+        <div class="road-body">
+          <p>Extract <code>btn_primary()</code>, <code>btn_normal()</code>, <code>btn_danger()</code>, <code>combo_style()</code>, <code>input_style()</code> into one module. All frames import from it. Reduces ~300 lines of duplication and makes a single-point style change affect the whole app. Long term: move all per-widget overrides into ThemeEngine QSS so frames have zero hardcoded style strings.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#FAEEDA;color:#633806;">P1 · quality</span>
+          <span class="rh-title">Add worker guard in ForecastFrame — prevent duplicate runs</span>
+          <span class="rh-effort">&lt;1 hour</span>
+        </div>
+        <div class="road-body">
+          <p>Before spawning a new <code>ForecastWorker</code> or <code>AnomalyWorker</code>, check <code>if hasattr(self, 'fc_worker') and self.fc_worker.isRunning(): return</code>. Same pattern already used in ChatbotFrame — apply consistently. Prevents result interleaving and potential double-writes to <code>ai_predictions</code>.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#FAEEDA;color:#633806;">P1 · feature</span>
+          <span class="rh-title">Replace hard-coded account_id=1 with account selector</span>
+          <span class="rh-effort">~3 hours</span>
+        </div>
+        <div class="road-body">
+          <p>Add a <code>QComboBox</code> populated from <code>AccountRepo.get_all()</code> to <code>TransactionDialog</code>. Pass selected account_id through <code>get_data()</code>. Update <code>CsvImporter.import_file()</code> to accept an <code>account_id</code> arg surfaced in the import dialog. This unblocks the multi-account architecture already in the schema.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#EAF3DE;color:#27500A;">P2 · infra</span>
+          <span class="rh-title">Add physical package structure matching the logical design</span>
+          <span class="rh-effort">~1 day (with import fixes)</span>
+        </div>
+        <div class="road-body">
+          <p>Move files into <code>app/ui/</code>, <code>app/core/</code>, <code>app/ai/</code>, <code>app/data/</code> directories with proper <code>__init__.py</code>. Update all import statements. This is cosmetic but matters for onboarding, IDE navigation, and preventing the accidental re-flattening that already happened (e.g. <code>base_plugin.py</code> is in root but imported as <code>app.base_plugin</code> from <code>chatbot_frame.py</code>).</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#EAF3DE;color:#27500A;">P2 · quality</span>
+          <span class="rh-title">Add a minimal test suite — pytest + pytest-qt</span>
+          <span class="rh-effort">~1 week initial coverage</span>
+        </div>
+        <div class="road-body">
+          <p>Priority test targets: <code>TransactionRepo</code> CRUD (use in-memory SQLite), <code>TransactionModel.validate()</code>, <code>CsvImporter._parse_amount()</code> and <code>_parse_date()</code> (pure functions, trivial to test), <code>nlp_parser.parse_quick_add()</code>, <code>TransactionClassifier.predict_category_name()</code>. These cover the highest-risk data path with minimal setup cost.</p>
+        </div>
+      </div>
+
+      <div class="road-item">
+        <div class="road-head">
+          <span class="rh-pri" style="background:#EAF3DE;color:#27500A;">P3 · feature</span>
+          <span class="rh-title">Complete Family/Group features</span>
+          <span class="rh-effort">~1 week</span>
+        </div>
+        <div class="road-body">
+          <p>The schema is fully designed. Needed: wire <code>FamilyFrame</code> to <code>family_groups</code> and <code>group_members</code> tables, implement invite-code generation + validation, filter transaction queries by <code>owner_username</code> (column already migrated), emit and consume the existing <code>bus.user_switched</code> signal to reload data when switching group member view.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div id="security" class="section">
+      <h3>Security analysis</h3>
+
+      <div class="audit-row">
+        <span class="sev sev-low">good</span>
+        <div class="audit-body">
+          <div class="ab-title">Passwords stored with SHA-256 + random salt</div>
+          <div class="ab-loc">auth_manager.py</div>
+          <div class="ab-desc"><code>secrets.token_hex(16)</code> generates a cryptographically random 32-char salt per user. Hash is <code>sha256(salt + password)</code>. Plaintext is never written to disk. Salt is unique per user so rainbow tables don't apply.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-low">good</span>
+        <div class="audit-body">
+          <div class="ab-title">API keys never hardcoded — read from env / .env file</div>
+          <div class="ab-loc">gemini_worker.py, settings_manager.py</div>
+          <div class="ab-desc"><code>os.getenv("GEMINI_API_KEY")</code> with explicit empty-string check. Keys stored in a local <code>.env</code> file written by SettingsFrame, loaded at read-time. Not committed to source.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">SHA-256 is not a password-hashing function</div>
+          <div class="ab-loc">auth_manager.py — _hash_password()</div>
+          <div class="ab-desc">SHA-256 is a fast general-purpose hash — a GPU can compute billions per second. For passwords, use <code>bcrypt</code>, <code>argon2-cffi</code>, or Python's built-in <code>hashlib.scrypt()</code>. For a local desktop app the risk is low (attacker needs filesystem access), but worth fixing if the DB is ever synced to the cloud.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-med">medium</span>
+        <div class="audit-body">
+          <div class="ab-title">Session file is plain JSON — trivially spoofable</div>
+          <div class="ab-loc">session.json, auth_manager.py</div>
+          <div class="ab-desc"><code>{"username": "admin"}</code> is written and read without any integrity check or expiry. An attacker with filesystem access can edit it to impersonate any user. For a local app this is acceptable, but the session should be treated as untrusted input and the username re-validated against the DB on use.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-low">low</span>
+        <div class="audit-body">
+          <div class="ab-title">SQL injection risk is low — parameterised queries used throughout</div>
+          <div class="ab-loc">repositories.py, all DB access</div>
+          <div class="ab-desc">All SQL uses <code>?</code> placeholders with tuple params. No string-interpolated SQL found. <code>PRAGMA foreign_keys = ON</code> is set on every connection.</div>
+        </div>
+      </div>
+      <div class="audit-row">
+        <span class="sev sev-low">low</span>
+        <div class="audit-body">
+          <div class="ab-title">Cloud sync sends raw SQLite binary — contains all user data</div>
+          <div class="ab-loc">sync_manager.py</div>
+          <div class="ab-desc">The entire <code>finance.db</code> is uploaded to Supabase Storage unencrypted. If the Supabase bucket is misconfigured as public, all financial data is exposed. At minimum, the bucket policy should be private + RLS. Encrypting the DB file before upload (e.g. with <code>cryptography</code>) would add defence in depth.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTABILITY -->
+    <div id="testing" class="section">
+      <h3>Testability assessment</h3>
+      <p>There is currently no test suite. This section maps each module to its testability and the recommended approach.</p>
+
+      <table class="signal-table">
+        <tr><th>Module</th><th>Testability</th><th>Approach</th></tr>
+        <tr><td>nlp_parser.py</td><td style="color:#1D9E75;">Excellent — pure functions</td><td>pytest parametrize over amount strings</td></tr>
+        <tr><td>TransactionModel.validate()</td><td style="color:#1D9E75;">Excellent — pure</td><td>Test each validation rule independently</td></tr>
+        <tr><td>CsvImporter._parse_amount / _parse_date</td><td style="color:#1D9E75;">Excellent — static methods</td><td>Table-driven tests with edge cases (comma, dot, VND units)</td></tr>
+        <tr><td>CommandPalette Command.score()</td><td style="color:#1D9E75;">Excellent — pure</td><td>Assert score ranking for prefix vs substring matches</td></tr>
+        <tr><td>TransactionRepo / BudgetRepo</td><td style="color:#639922;">Good — swap DB_PATH to :memory:</td><td>pytest fixture creates in-memory SQLite; test CRUD + balance delta</td></tr>
+        <tr><td>TransactionClassifier</td><td style="color:#639922;">Good</td><td>Mock DB; seed with known labels; assert predict_category_name() returns expected class</td></tr>
+        <tr><td>SpendingForecaster</td><td style="color:#BA7517;">Moderate — needs pandas + optional prophet</td><td>Inject a DataFrame directly to _moving_average_forecast(); mock DB in _load_monthly_data()</td></tr>
+        <tr><td>AnomalyDetector</td><td style="color:#BA7517;">Moderate — sklearn dependency</td><td>Build synthetic DataFrame in _engineer_features(); test _run_isolation_forest() returns correct shape</td></tr>
+        <tr><td>AuthManager</td><td style="color:#639922;">Good</td><td>In-memory DB fixture; test login/register/reset cycle; verify hash ≠ plaintext</td></tr>
+        <tr><td>UI Frames (QWidget)</td><td style="color:#E24B4A;">Hard — requires Qt event loop</td><td>pytest-qt QApplication fixture; test refresh() doesn't crash; mock TransactionManager</td></tr>
+        <tr><td>AI Workers (QThread)</td><td style="color:#E24B4A;">Hard — network / model deps</td><td>Mock HTTP calls with responses library; test signal emission sequence</td></tr>
+      </table>
+
+      <h4>Recommended first test file</h4>
+      <p>Start with <code>tests/test_pure.py</code> covering all "Excellent" rows above — no fixtures needed, no Qt, no DB. These 20–30 test cases will catch regressions in the most frequently used parsing and validation logic and take under an hour to write.</p>
+    </div>
+
+    <!-- SUMMARY -->
+    <div id="summary" class="section">
+      <h3>Overall assessment</h3>
+
+      <h4>What this codebase does really well</h4>
+      <ul>
+        <li>The <strong>AI plugin architecture</strong> is the standout design decision — a Strategy + Registry pattern that makes adding a 4th LLM backend a self-contained 30-line change with zero modifications to the chat UI.</li>
+        <li>The <strong>EventBus</strong> is properly used for decoupling. Frames don't know about each other and there are zero circular imports at the logical level.</li>
+        <li>The <strong>Repository pattern</strong> is clean — all SQL lives in one file, all domain objects have validation methods, and the DBContext gives atomic guarantees.</li>
+        <li>The <strong>ML pipeline</strong> is surprisingly complete for a student project: IsoForest anomaly detection with 5 engineered features, Prophet time-series forecasting with confidence intervals, and a full fine-tuning pipeline for DistilGPT2.</li>
+        <li>The <strong>UX polish</strong> is above average — toast notifications, command palette, live theming, keyboard shortcuts — features rarely seen in PyQt6 apps of this scope.</li>
+      </ul>
+
+      <h4>Three highest-leverage improvements</h4>
+      <div class="flow-col" style="margin-top:8px;">
+        <div class="flow-step"><div class="flow-num" style="background:#FCEBEB;color:#791F1F;">1</div><div class="flow-step-body"><div class="fs-title">Fix the DB access split (1 day)</div><div class="fs-detail">Consolidate on <code>db_session()</code>, remove the singleton's shared connection. This eliminates the highest-risk crash vector and the thread-safety ambiguity in one move.</div></div></div>
+        <div class="flow-step"><div class="flow-num" style="background:#FAEEDA;color:#633806;">2</div><div class="flow-step-body"><div class="fs-title">Add a test suite (1 week)</div><div class="fs-detail">Start with pure-function tests (parser, validator, CSV amount/date parsing). The codebase's design already makes these trivially testable — the investment is almost entirely in writing the tests, not refactoring to enable them.</div></div></div>
+        <div class="flow-step"><div class="flow-num" style="background:#EAF3DE;color:#27500A;">3</div><div class="flow-step-body"><div class="fs-title">Physical package structure (1 day)</div><div class="fs-detail">Move files into the <code>app/ui/</code>, <code>app/core/</code>, <code>app/ai/</code>, <code>app/data/</code> directories. Fixes the import path mismatch that causes runtime crashes and makes IDE navigation match the mental model.</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.currentTarget.classList.add('active');
+}
+</script>
