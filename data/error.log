@@ -829,3 +829,26 @@ Traceback (most recent call last):
   File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 20, in <module>
     from app.ai.base_plugin import registry
 ModuleNotFoundError: No module named 'app.ai.base_plugin'
+
+============================================================
+Timestamp : 2026-05-30 16:08:08
+User: nhu_quynh (user)
+Exception : NameError: name 'registry' is not defined
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 321, in <lambda>
+    btn.clicked.connect(lambda _, p=prompt: self._send(p))
+                                            ^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 441, in _send
+    plugin = registry.get(self._engine)
+             ^^^^^^^^
+NameError: name 'registry' is not defined
+2026-05-30 16:08:08 [finance_ai] ERROR: Unhandled exception: NameError: name 'registry' is not defined
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 321, in <lambda>
+    btn.clicked.connect(lambda _, p=prompt: self._send(p))
+                                            ^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 441, in _send
+    plugin = registry.get(self._engine)
+             ^^^^^^^^
+NameError: name 'registry' is not defined
