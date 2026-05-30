@@ -802,3 +802,30 @@ ModuleNotFoundError: No module named 'app.theme_engine'
 2026-05-29 21:12:21 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:12:21
 2026-05-29 21:13:53 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:13:53
 2026-05-29 21:28:33 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 21:28:33
+2026-05-30 10:29:59 [finance_ai] INFO: Finance AI khoi dong - 2026-05-30 10:29:59
+2026-05-30 16:05:14 [finance_ai] INFO: Finance AI khoi dong - 2026-05-30 16:05:14
+
+============================================================
+Timestamp : 2026-05-30 16:06:16
+User: nhu_quynh (user)
+Exception : ModuleNotFoundError: No module named 'app.ai.base_plugin'
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 602, in _create_page
+    from app.ui.chatbot_frame import ChatbotFrame
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 20, in <module>
+    from app.ai.base_plugin import registry
+ModuleNotFoundError: No module named 'app.ai.base_plugin'
+2026-05-30 16:06:16 [finance_ai] ERROR: Unhandled exception: ModuleNotFoundError: No module named 'app.ai.base_plugin'
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 602, in _create_page
+    from app.ui.chatbot_frame import ChatbotFrame
+  File "D:\dacs1\finance_ai_app\app\ui\chatbot_frame.py", line 20, in <module>
+    from app.ai.base_plugin import registry
+ModuleNotFoundError: No module named 'app.ai.base_plugin'

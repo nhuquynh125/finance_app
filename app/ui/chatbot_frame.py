@@ -2,18 +2,22 @@
 """
 Thay đổi: _check_engine_status() cho engine "embedded"
 dùng user_session để tìm model của user hiện tại.
+
+Fix: MessageBubble now uses QSizePolicy.Minimum so each bubble
+     shrinks to fit its text instead of stretching full-row width.
 """
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
     QPushButton, QLabel, QScrollArea, QFrame,
-    QComboBox, QDialog, QProgressBar, QMessageBox
+    QComboBox, QDialog, QProgressBar, QMessageBox,
+    QSizePolicy
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont
 from app.core.settings_manager import get_setting
 from app.data.models import get_connection
 from datetime import datetime, timedelta
-from app.ai.base_plugin import registry
+#from app.ai.base_plugin import registry
 from app.ai.nlp_parser import parse_quick_add
 
 
@@ -34,21 +38,45 @@ def _get_user_ai_dir():
 
 
 class MessageBubble(QFrame):
-    def __init__(self, text, is_user, parent=None):
+    # Fallback absolute cap when no viewport width is known yet.
+    _FALLBACK_MAX_PX = 560
+
+    def __init__(self, text, is_user, max_width: int = _FALLBACK_MAX_PX,
+                 parent=None):
         super().__init__(parent)
+        self._is_user = is_user
+
+        # The outer frame spans the full row width so addStretch() can align
+        # the bubble, but is visually transparent — colour lives on the label.
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Minimum,
+        )
+        self.setStyleSheet("QFrame { background: transparent; border: none; }")
+
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 4, 12, 4)
+        layout.setSpacing(0)
+
         self.label = QLabel(text)
         self.label.setWordWrap(True)
         self.label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse)
         self.label.setFont(QFont("Segoe UI", 12))
-        self.label.setMaximumWidth(560)
+
+        # Minimum policy: label shrinks to text width rather than expanding.
+        # max_width is set dynamically by ChatbotFrame (≈72 % of viewport).
+        self.label.setMaximumWidth(max_width)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Minimum,
+            QSizePolicy.Policy.Minimum,
+        )
+
         if is_user:
             self.label.setStyleSheet(
                 "QLabel { background:#E6F1FB; color:#0C447C; "
                 "border-radius:12px; padding:10px 14px; }")
-            layout.addStretch()
+            layout.addStretch()           # pushes bubble to the RIGHT
             layout.addWidget(self.label)
         else:
             self.label.setStyleSheet(
@@ -56,7 +84,11 @@ class MessageBubble(QFrame):
                 "border-radius:12px; padding:10px 14px; "
                 "border:1px solid #e8e8e8; }")
             layout.addWidget(self.label)
-            layout.addStretch()
+            layout.addStretch()           # pushes bubble to the LEFT
+
+    def set_max_bubble_width(self, max_width: int) -> None:
+        """Called by ChatbotFrame.resizeEvent to keep the cap up-to-date."""
+        self.label.setMaximumWidth(max_width)
 
     def append_text(self, text):
         cur = self.label.text()
@@ -193,6 +225,7 @@ class ChatbotFrame(QWidget):
         self._history        = []
         self._current_bubble = None
         self._engine         = get_setting("chat_engine", "gemini")
+        self._bubbles: list[MessageBubble] = []   # kept so resizeEvent can update caps
         self._build()
 
     def _build(self):
@@ -321,7 +354,7 @@ class ChatbotFrame(QWidget):
         il.addWidget(self.btn_send)
         layout.addWidget(input_w)
 
-        # Chào mừng
+        # Welcome message
         self._add_assistant_message(
             "Xin chào! Tôi là chatbot AI tài chính.\n"
             "Chọn engine ở góc trên phải:\n"
@@ -331,7 +364,7 @@ class ChatbotFrame(QWidget):
             "Sau đó hỏi tôi bất cứ điều gì về chi tiêu!")
         QTimer.singleShot(500, self._check_engine_status)
 
-    # ── Engine handling ───────────────────────────────────────
+    # ── Engine handling ───────────────────────────────────────────────────
 
     def _on_engine_changed(self, _):
         label = self.engine_combo.currentText()
@@ -359,7 +392,6 @@ class ChatbotFrame(QWidget):
                 self._set_badge("Ollama chưa chạy — mở app Ollama trước", "err")
 
         elif self._engine == "embedded":
-            # Dùng thư mục AI của user hiện tại
             ai_dir = _get_user_ai_dir()
             finetuned_dir = ai_dir / "fine_tuned_model"
             if finetuned_dir.exists():
@@ -380,7 +412,7 @@ class ChatbotFrame(QWidget):
             f"QLabel {{ {c} border:none; "
             f"border-radius:10px; padding:3px 10px; font-size:11px; }}")
 
-    # ── Send / receive ────────────────────────────────────────
+    # ── Send / receive ────────────────────────────────────────────────────
 
     def _send(self, text: str):
         text = text.strip()
@@ -460,6 +492,7 @@ class ChatbotFrame(QWidget):
 
     def _clear_chat(self):
         self._history.clear()
+        self._bubbles.clear()
         while self.chat_layout.count() > 1:
             item = self.chat_layout.takeAt(1)
             if item.widget():
@@ -469,16 +502,37 @@ class ChatbotFrame(QWidget):
     def refresh(self):
         QTimer.singleShot(100, self._check_engine_status)
 
-    # ── UI helpers ────────────────────────────────────────────
+    # ── UI helpers ────────────────────────────────────────────────────────
+
+    def _bubble_max_width(self) -> int:
+        """72 % of the scroll-area viewport width, clamped to [260, 900] px."""
+        vp_w = self.scroll_area.viewport().width()
+        if vp_w < 10:          # not yet laid out — use a safe default
+            vp_w = 780
+        return max(260, min(900, int(vp_w * 0.72)))
+
+    def resizeEvent(self, event) -> None:
+        """Keep every existing bubble's cap in sync when the window is resized."""
+        super().resizeEvent(event)
+        new_max = self._bubble_max_width()
+        # Prune dead references (deleted widgets) while we iterate
+        self._bubbles = [b for b in self._bubbles if not b.isHidden() or True]
+        for bubble in self._bubbles:
+            try:
+                bubble.set_max_bubble_width(new_max)
+            except RuntimeError:
+                pass   # widget already deleted by Qt
 
     def _add_user_message(self, text: str) -> MessageBubble:
-        bubble = MessageBubble(text, is_user=True)
+        bubble = MessageBubble(text, is_user=True, max_width=self._bubble_max_width())
+        self._bubbles.append(bubble)
         self.chat_layout.addWidget(bubble)
         QTimer.singleShot(50, self._scroll_to_bottom)
         return bubble
 
     def _add_assistant_message(self, text: str) -> MessageBubble:
-        bubble = MessageBubble(text, is_user=False)
+        bubble = MessageBubble(text, is_user=False, max_width=self._bubble_max_width())
+        self._bubbles.append(bubble)
         self.chat_layout.addWidget(bubble)
         QTimer.singleShot(50, self._scroll_to_bottom)
         return bubble
@@ -487,7 +541,7 @@ class ChatbotFrame(QWidget):
         self.scroll_area.verticalScrollBar().setValue(
             self.scroll_area.verticalScrollBar().maximum())
 
-    # ── System prompt với dữ liệu thực của user ──────────────
+    # ── System prompt ─────────────────────────────────────────────────────
 
     def _build_system_prompt(self) -> str:
         now = datetime.now()
@@ -538,7 +592,6 @@ class ChatbotFrame(QWidget):
             diff_msg = (f"So với tháng trước: "
                         f"{'tăng' if diff > 0 else 'giảm'} {abs(pct):.1f}%.")
 
-        # Lấy tên user
         try:
             from user_session import session
             user_name = session.full_name or "bạn"
