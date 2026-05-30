@@ -852,3 +852,4 @@ Traceback (most recent call last):
     plugin = registry.get(self._engine)
              ^^^^^^^^
 NameError: name 'registry' is not defined
+2026-05-30 16:14:03 [finance_ai] INFO: Finance AI khoi dong - 2026-05-30 16:14:03
