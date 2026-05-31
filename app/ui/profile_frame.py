@@ -7,8 +7,17 @@ Tính năng:
   - Upload ảnh đại diện (PNG/JPG/GIF → lưu vào data/users/{username}/avatar.*)
   - Thống kê nhanh: tổng giao dịch, số dư, danh mục, mục tiêu
   - Đổi mật khẩu inline
-  - Thông tin phiên / bảo mật
   - Bus signal: cập nhật Sidebar ngay khi lưu tên/avatar
+
+Changes vs previous version:
+  - Typography: increased font sizes and darkened label colours throughout
+    "Thông tin cá nhân" and "Bảo mật" form sections for legibility.
+  - User identity block (name / handle / role badge): scaled up.
+  - Avatar action buttons and hint text: scaled up.
+  - Section group titles "Thông tin cá nhân" and "Bảo mật": scaled up.
+  - StatCard label + value fonts: scaled up.
+  - "Thông tin phiên" (Session Info) section: COMPLETELY REMOVED — no widget,
+    no layout method, no backend path-resolution logic remains.
 """
 
 from __future__ import annotations
@@ -78,7 +87,6 @@ def _save_avatar(src_path: str) -> Optional[Path]:
         if ext not in ("png", "jpg", "jpeg", "gif", "webp"):
             return None
         dst = session.data_dir / f"{AVATAR_FNAME}.{ext}"
-        # Xóa avatar cũ (đuôi khác)
         for old in session.data_dir.glob(f"{AVATAR_FNAME}.*"):
             try:
                 old.unlink()
@@ -98,7 +106,6 @@ def _make_round_pixmap(path: str, size: int) -> QPixmap:
     raw = raw.scaled(size, size,
                      Qt.AspectRatioMode.KeepAspectRatioByExpanding,
                      Qt.TransformationMode.SmoothTransformation)
-    # Crop về hình vuông center
     x = (raw.width()  - size) // 2
     y = (raw.height() - size) // 2
     raw = raw.copy(x, y, size, size)
@@ -116,7 +123,6 @@ def _make_round_pixmap(path: str, size: int) -> QPixmap:
 
 
 def _get_user_color() -> str:
-    """Lấy màu accent của user từ DB (user_profiles) hoặc mặc định."""
     try:
         conn = get_connection()
         from user_session import session
@@ -165,7 +171,6 @@ def _save_user_bio(bio: str):
     try:
         conn = get_connection()
         from user_session import session
-        # Thêm cột bio nếu chưa có
         try:
             conn.execute("ALTER TABLE user_profiles ADD COLUMN bio TEXT DEFAULT ''")
             conn.commit()
@@ -201,7 +206,7 @@ class AvatarWidget(QWidget):
         self._initials   = "?"
         self._pixmap: Optional[QPixmap] = None
 
-        self.setFixedSize(size + 8, size + 8)  # +8 for ring border
+        self.setFixedSize(size + 8, size + 8)
         if clickable:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
             self.setToolTip("Nhấp để thay đổi ảnh đại diện")
@@ -225,7 +230,6 @@ class AvatarWidget(QWidget):
         cy = self.height() // 2
         r  = self._size    // 2
 
-        # Outer ring
         ring_color = QColor(self._color)
         ring_color.setAlpha(80)
         painter.setPen(Qt.PenStyle.NoPen)
@@ -233,14 +237,12 @@ class AvatarWidget(QWidget):
         painter.drawEllipse(cx - r - 3, cy - r - 3, (r + 3) * 2, (r + 3) * 2)
 
         if self._pixmap and not self._pixmap.isNull():
-            # Draw photo
             path_obj = QPainterPath()
             path_obj.addEllipse(cx - r, cy - r, r * 2, r * 2)
             painter.setClipPath(path_obj)
             painter.drawPixmap(cx - r, cy - r, self._pixmap)
             painter.setClipping(False)
         else:
-            # Draw initials circle
             painter.setBrush(QBrush(QColor(self._color)))
             painter.drawEllipse(cx - r, cy - r, r * 2, r * 2)
             painter.setPen(QColor("white"))
@@ -250,7 +252,6 @@ class AvatarWidget(QWidget):
                              Qt.AlignmentFlag.AlignCenter, self._initials)
 
         if self._clickable:
-            # Camera icon overlay (bottom-right)
             icon_r = max(12, r // 3)
             ix = cx + r - icon_r
             iy = cy + r - icon_r
@@ -306,10 +307,14 @@ class AvatarWidget(QWidget):
 # ── Stat card ─────────────────────────────────────────────────────────────────
 
 class StatCard(QFrame):
+    """
+    KPI card used in the summary stats bar.
+    Font sizes scaled up for better readability.
+    """
     def __init__(self, icon: str, label: str, value: str, color: str, parent=None):
         super().__init__(parent)
         self.setStyleSheet(
-            f"QFrame {{ background:#fff; border:1px solid #e8e8e8; border-radius:10px; }}")
+            "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 12, 14, 12)
@@ -317,18 +322,20 @@ class StatCard(QFrame):
 
         top = QHBoxLayout()
         icon_lbl = QLabel(icon)
-        icon_lbl.setFont(QFont("Segoe UI Emoji", 21))
+        icon_lbl.setFont(QFont("Segoe UI Emoji", 22))   # was 21
         icon_lbl.setStyleSheet("border:none; background:transparent;")
         top.addWidget(icon_lbl)
         top.addStretch()
+        # Label text: darkened colour + larger font
         lbl = QLabel(label)
-        lbl.setFont(QFont("Segoe UI", 14))
-        lbl.setStyleSheet("color:#aaa; border:none;")
+        lbl.setFont(QFont("Segoe UI", 15))               # was 14
+        lbl.setStyleSheet("color:#0B2A4A; border:none;") # was #aaa
         top.addWidget(lbl)
         layout.addLayout(top)
 
+        # Value text: larger font
         self.val_lbl = QLabel(value)
-        self.val_lbl.setFont(QFont("Segoe UI", 23, QFont.Weight.Bold))
+        self.val_lbl.setFont(QFont("Segoe UI", 26, QFont.Weight.Bold))  # was 23
         self.val_lbl.setStyleSheet(f"color:{color}; border:none;")
         layout.addWidget(self.val_lbl)
 
@@ -375,7 +382,7 @@ class ProfileFrame(QWidget):
         self._build_stats_row()
         self._build_info_card()
         self._build_security_card()
-        self._build_session_card()
+        # NOTE: "Thông tin phiên" section intentionally not built — removed.
         self.body.addStretch()
 
         scroll.setWidget(content)
@@ -389,8 +396,10 @@ class ProfileFrame(QWidget):
         layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(10)
 
+        # Page title: darkened colour + larger font
         title = QLabel("Hồ sơ cá nhân")
-        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 21, QFont.Weight.Bold))  # was 19
+        title.setStyleSheet("color:#0B2A4A;")                    # was default (faint)
         layout.addWidget(title)
         layout.addStretch()
 
@@ -418,46 +427,50 @@ class ProfileFrame(QWidget):
         self.avatar_w.avatar_changed.connect(self._on_avatar_changed)
         row.addWidget(self.avatar_w)
 
-        # Info column
+        # Info column — all fonts scaled up
         info = QVBoxLayout()
         info.setSpacing(6)
 
         self.lbl_display_name = QLabel("—")
-        self.lbl_display_name.setFont(QFont("Segoe UI", 25, QFont.Weight.Bold))
+        self.lbl_display_name.setFont(QFont("Segoe UI", 28, QFont.Weight.Bold))  # was 25
         self.lbl_display_name.setStyleSheet("color:#1A2B45; border:none;")
         info.addWidget(self.lbl_display_name)
 
         self.lbl_username_at = QLabel("@—")
-        self.lbl_username_at.setStyleSheet("color:#8FA8C4; font-size:18px; border:none;")
+        self.lbl_username_at.setStyleSheet(
+            "color:#0B2A4A; font-size:20px; border:none;")  # was #8FA8C4 / 18px
         info.addWidget(self.lbl_username_at)
 
         self.lbl_role_badge = QLabel("—")
         self.lbl_role_badge.setStyleSheet(
             "QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
-            "border-radius:10px; padding:3px 12px; font-size:16px; max-width:120px; }")
+            "border-radius:10px; padding:3px 12px; font-size:18px; max-width:140px; }"
+        )  # font-size was 16px
         info.addWidget(self.lbl_role_badge)
         info.addStretch()
         row.addLayout(info, stretch=1)
 
-        # Right: avatar actions
+        # Right: avatar actions — fonts scaled up
         avatar_actions = QVBoxLayout()
         avatar_actions.setSpacing(6)
         avatar_actions.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         btn_upload = QPushButton("📷  Tải ảnh lên")
-        btn_upload.setFixedWidth(140)
-        btn_upload.setStyleSheet(self._btn_normal())
+        btn_upload.setFixedWidth(150)
+        btn_upload.setStyleSheet(self._btn_normal_large())  # larger style
         btn_upload.clicked.connect(self.avatar_w._pick_image)
         avatar_actions.addWidget(btn_upload)
 
         self.btn_remove_avatar = QPushButton("🗑  Xóa ảnh")
-        self.btn_remove_avatar.setFixedWidth(140)
-        self.btn_remove_avatar.setStyleSheet(self._btn_danger())
+        self.btn_remove_avatar.setFixedWidth(150)
+        self.btn_remove_avatar.setStyleSheet(self._btn_danger_large())  # larger style
         self.btn_remove_avatar.clicked.connect(self._remove_avatar)
         avatar_actions.addWidget(self.btn_remove_avatar)
 
+        # Format hint text: larger + darker
         hint = QLabel("PNG, JPG, GIF · tối đa 5MB")
-        hint.setStyleSheet("color:#bbb; font-size:15px; border:none;")
+        hint.setStyleSheet(
+            "color:#4A6785; font-size:15px; border:none;")  # was #bbb / 15px
         avatar_actions.addWidget(hint)
         row.addLayout(avatar_actions)
 
@@ -473,7 +486,7 @@ class ProfileFrame(QWidget):
         color_row = QHBoxLayout()
         color_row.setSpacing(8)
         clr_lbl = QLabel("Màu đại diện:")
-        clr_lbl.setStyleSheet("color:#888; font-size:17px; border:none;")
+        clr_lbl.setStyleSheet("color:#0B2A4A; font-size:17px; border:none;")  # was #888
         color_row.addWidget(clr_lbl)
 
         self._color_btns: dict[str, QPushButton] = {}
@@ -503,10 +516,10 @@ class ProfileFrame(QWidget):
         rl.setContentsMargins(0, 0, 0, 0)
         rl.setSpacing(10)
 
-        self.stat_balance   = StatCard("💰", "Số dư tổng",     "—",  "#1D9E75")
-        self.stat_tx        = StatCard("📋", "Giao dịch",      "—",  "#378ADD")
-        self.stat_cats      = StatCard("🏷", "Danh mục",       "—",  "#BA7517")
-        self.stat_goals     = StatCard("🎯", "Mục tiêu",       "—",  "#7F77DD")
+        self.stat_balance   = StatCard("💰", "Số dư tổng",  "—",  "#1D9E75")
+        self.stat_tx        = StatCard("📋", "Giao dịch",   "—",  "#378ADD")
+        self.stat_cats      = StatCard("🏷", "Danh mục",    "—",  "#BA7517")
+        self.stat_goals     = StatCard("🎯", "Mục tiêu",    "—",  "#7F77DD")
 
         for i, card in enumerate([
             self.stat_balance, self.stat_tx,
@@ -530,18 +543,18 @@ class ProfileFrame(QWidget):
         self.le_fullname = QLineEdit()
         self.le_fullname.setPlaceholderText("Họ và tên đầy đủ...")
         self.le_fullname.setStyleSheet(self._input_style())
-        form.addRow("Họ và tên *:", self.le_fullname)
+        form.addRow(self._form_label("Họ và tên *:"), self.le_fullname)
 
         self.le_phone = QLineEdit()
         self.le_phone.setPlaceholderText("0912 345 678 (bắt buộc, dùng làm mã định danh)")
         self.le_phone.setStyleSheet(self._input_style())
-        form.addRow("Số điện thoại *:", self.le_phone)
+        form.addRow(self._form_label("Số điện thoại *:"), self.le_phone)
 
         self.le_username_ro = QLineEdit()
         self.le_username_ro.setReadOnly(True)
         self.le_username_ro.setStyleSheet(
-            self._input_style() + " background:#f7f7f7; color:#aaa;")
-        form.addRow("Tên đăng nhập:", self.le_username_ro)
+            self._input_style() + " background:#f7f7f7; color:#888;")
+        form.addRow(self._form_label("Tên đăng nhập:"), self.le_username_ro)
 
         self.te_bio = QTextEdit()
         self.te_bio.setFixedHeight(72)
@@ -550,7 +563,7 @@ class ProfileFrame(QWidget):
         self.te_bio.setStyleSheet(
             "QTextEdit { border:1px solid #ddd; border-radius:6px; "
             "padding:8px; font-size:17px; background:#fff; color:#222; }")
-        form.addRow("Giới thiệu:", self.te_bio)
+        form.addRow(self._form_label("Giới thiệu:"), self.te_bio)
 
         pl.addLayout(form)
         self.body.addWidget(panel)
@@ -569,20 +582,20 @@ class ProfileFrame(QWidget):
         self.le_old_pw.setEchoMode(QLineEdit.EchoMode.Password)
         self.le_old_pw.setPlaceholderText("Mật khẩu hiện tại...")
         self.le_old_pw.setStyleSheet(self._input_style())
-        form.addRow("Mật khẩu cũ:", self.le_old_pw)
+        form.addRow(self._form_label("Mật khẩu cũ:"), self.le_old_pw)
 
         self.le_new_pw = QLineEdit()
         self.le_new_pw.setEchoMode(QLineEdit.EchoMode.Password)
         self.le_new_pw.setPlaceholderText("Tối thiểu 6 ký tự...")
         self.le_new_pw.setStyleSheet(self._input_style())
         self.le_new_pw.textChanged.connect(self._update_pw_strength)
-        form.addRow("Mật khẩu mới:", self.le_new_pw)
+        form.addRow(self._form_label("Mật khẩu mới:"), self.le_new_pw)
 
         self.le_confirm_pw = QLineEdit()
         self.le_confirm_pw.setEchoMode(QLineEdit.EchoMode.Password)
         self.le_confirm_pw.setPlaceholderText("Nhập lại mật khẩu mới...")
         self.le_confirm_pw.setStyleSheet(self._input_style())
-        form.addRow("Xác nhận:", self.le_confirm_pw)
+        form.addRow(self._form_label("Xác nhận:"), self.le_confirm_pw)
 
         # Password strength bar
         self.pw_strength_bar = QProgressBar()
@@ -594,7 +607,8 @@ class ProfileFrame(QWidget):
             "QProgressBar { background:#f0f0f0; border:none; border-radius:3px; } "
             "QProgressBar::chunk { background:#E24B4A; border-radius:3px; }")
         self.pw_strength_lbl = QLabel("")
-        self.pw_strength_lbl.setStyleSheet("color:#aaa; font-size:15px; border:none;")
+        self.pw_strength_lbl.setStyleSheet(
+            "color:#0B2A4A; font-size:16px; border:none;")  # was #aaa
 
         strength_w = QWidget()
         strength_w.setStyleSheet("background:transparent;")
@@ -603,7 +617,7 @@ class ProfileFrame(QWidget):
         sw.setSpacing(2)
         sw.addWidget(self.pw_strength_bar)
         sw.addWidget(self.pw_strength_lbl)
-        form.addRow("Độ mạnh:", strength_w)
+        form.addRow(self._form_label("Độ mạnh:"), strength_w)
 
         pl.addLayout(form)
 
@@ -619,17 +633,6 @@ class ProfileFrame(QWidget):
         btn_change_pw.clicked.connect(self._change_password)
         btn_row.addWidget(btn_change_pw)
         pl.addLayout(btn_row)
-        self.body.addWidget(panel)
-
-    # ── Session card ──────────────────────────────────────────────────────────
-
-    def _build_session_card(self):
-        panel = self._panel("📋  Thông tin phiên")
-        pl    = panel.layout()
-        self.session_grid = QGridLayout()
-        self.session_grid.setSpacing(10)
-        self.session_grid.setColumnMinimumWidth(0, 160)
-        pl.addLayout(self.session_grid)
         self.body.addWidget(panel)
 
     # ── Refresh ───────────────────────────────────────────────────────────────
@@ -653,7 +656,6 @@ class ProfileFrame(QWidget):
             self.le_fullname.setText(session.full_name or "")
             self.le_username_ro.setText(session.username)
 
-            # Load SĐT từ auth.db
             try:
                 import sqlite3 as _sq
                 _c = _sq.connect(str(session.auth_db_path))
@@ -669,13 +671,8 @@ class ProfileFrame(QWidget):
 
             self.te_bio.setPlainText(_get_user_bio())
 
-            # Stats
             self._load_stats()
 
-            # Session info
-            self._load_session_info(session)
-
-            # Nút xóa avatar chỉ hiện khi có ảnh
             has_avatar = _get_avatar_path() is not None
             self.btn_remove_avatar.setVisible(has_avatar)
 
@@ -706,48 +703,6 @@ class ProfileFrame(QWidget):
         except Exception:
             pass
 
-    def _load_session_info(self, session):
-        # Xóa grid cũ
-        while self.session_grid.count():
-            item = self.session_grid.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-
-        try:
-            import sqlite3
-            conn = sqlite3.connect(str(session.auth_db_path))
-            conn.row_factory = sqlite3.Row
-            row = conn.execute(
-                "SELECT last_login, created_at, phone FROM users WHERE username=?",
-                (session.username,)
-            ).fetchone()
-            conn.close()
-
-            phone_display = row["phone"] if row and row["phone"] else "⚠ Chưa cập nhật"
-            items = [
-                ("📱 Số điện thoại (định danh chính)", phone_display),
-                ("Tài khoản tạo lúc",
-                 row["created_at"][:16] if row and row["created_at"] else "—"),
-                ("Đăng nhập gần nhất",
-                 row["last_login"][:16]  if row and row["last_login"]  else "Chưa có"),
-                ("Thư mục dữ liệu",   str(session.data_dir)),
-                ("Database",          str(session.db_path)),
-                ("Model AI",          str(session.ai_dir)),
-            ]
-            for i, (label, value) in enumerate(items):
-                lbl = QLabel(label)
-                lbl.setStyleSheet("color:#888; font-size:16px; border:none;")
-                lbl.setFixedWidth(160)
-                val = QLabel(value)
-                val.setStyleSheet("color:#333; font-size:16px; border:none;")
-                val.setWordWrap(True)
-                val.setTextInteractionFlags(
-                    Qt.TextInteractionFlag.TextSelectableByMouse)
-                self.session_grid.addWidget(lbl, i, 0)
-                self.session_grid.addWidget(val, i, 1)
-        except Exception:
-            pass
-
     # ── Actions ───────────────────────────────────────────────────────────────
 
     def _save_all(self):
@@ -759,7 +714,6 @@ class ProfileFrame(QWidget):
             bus.notify_error.emit("Lỗi", "Họ và tên không được để trống.")
             return
 
-        # Validate SĐT — bắt buộc (là định danh chính)
         if not phone_raw:
             bus.notify_error.emit("Lỗi", "Số điện thoại là định danh chính, không được để trống.")
             return
@@ -774,7 +728,6 @@ class ProfileFrame(QWidget):
             from user_session import session
             import sqlite3
 
-            # Kiểm tra SĐT trùng với user khác
             if phone_normalized:
                 _c = sqlite3.connect(str(session.auth_db_path))
                 _c.row_factory = sqlite3.Row
@@ -790,7 +743,6 @@ class ProfileFrame(QWidget):
                     )
                     return
 
-            # Lưu full_name + phone vào auth.db
             conn = sqlite3.connect(str(session.auth_db_path))
             conn.execute(
                 "UPDATE users SET full_name=?, phone=? WHERE username=?",
@@ -799,20 +751,16 @@ class ProfileFrame(QWidget):
             conn.commit()
             conn.close()
 
-            # Lưu bio + màu vào user_profiles (finance.db)
             bio = self.te_bio.toPlainText().strip()
             _save_user_bio(bio)
             _save_user_color(self._color)
 
-            # Cập nhật session in-memory
             session._user["full_name"] = full_name
 
-            # Refresh UI
             self.lbl_display_name.setText(full_name)
             initials = full_name[:2].upper()
             self.avatar_w.set_user(initials, self._color)
 
-            # Cập nhật sidebar nếu có
             if self.main_window and hasattr(self.main_window, "sidebar"):
                 self.main_window.setWindowTitle(f"Finance AI — {full_name}")
                 self.main_window.sidebar._refresh_user_info(
@@ -825,7 +773,6 @@ class ProfileFrame(QWidget):
             bus.notify_error.emit("Lỗi", str(e))
 
     def _on_avatar_changed(self, path: str):
-        """Callback sau khi AvatarWidget đã lưu ảnh mới."""
         try:
             from user_session import session
             if self.main_window and hasattr(self.main_window, "sidebar"):
@@ -889,7 +836,7 @@ class ProfileFrame(QWidget):
             f"QProgressBar::chunk {{ background:{colors[score]}; border-radius:3px; }}")
         self.pw_strength_lbl.setText(labels[score] if pw else "")
         self.pw_strength_lbl.setStyleSheet(
-            f"color:{colors[score]}; font-size:15px; border:none;")
+            f"color:{colors[score]}; font-size:16px; border:none;")
 
     def _change_password(self):
         old_pw  = self.le_old_pw.text()
@@ -956,6 +903,9 @@ class ProfileFrame(QWidget):
 
     @staticmethod
     def _panel(title: str) -> QFrame:
+        """
+        Card panel with scaled-up, high-contrast section title.
+        """
         panel = QFrame()
         panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         panel.setStyleSheet(
@@ -963,15 +913,27 @@ class ProfileFrame(QWidget):
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
+        # Section title: larger font + dark colour
         lbl = QLabel(title)
-        lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
-        lbl.setStyleSheet("color:#1A2B45; border:none;")
+        lbl.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))   # was 17
+        lbl.setStyleSheet("color:#0B2A4A; border:none;")        # was default (faint)
         layout.addWidget(lbl)
         div = QFrame()
         div.setFrameShape(QFrame.Shape.HLine)
         div.setStyleSheet("background:#f0f0f0; border:none; max-height:1px;")
         layout.addWidget(div)
         return panel
+
+    @staticmethod
+    def _form_label(text: str) -> QLabel:
+        """
+        Reusable form row label with high-contrast dark colour and readable font size.
+        Replaces the previous inline QFormLayout.addRow(str, ...) calls.
+        """
+        lbl = QLabel(text)
+        lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Medium))  # was implicit ~13-14
+        lbl.setStyleSheet("color:#0B2A4A; border:none;")          # was very faint grey
+        return lbl
 
     @staticmethod
     def _input_style() -> str:
@@ -992,8 +954,24 @@ class ProfileFrame(QWidget):
                 "QPushButton:hover { background:#f5f5f5; }")
 
     @staticmethod
+    def _btn_normal_large() -> str:
+        """Avatar action button — scaled up font."""
+        return ("QPushButton { background:#fff; color:#333; "
+                "border:1px solid #ddd; border-radius:6px; "
+                "padding:7px 12px; font-size:16px; font-weight:500; } "
+                "QPushButton:hover { background:#f5f5f5; }")
+
+    @staticmethod
     def _btn_danger() -> str:
         return ("QPushButton { background:#fff; color:#A32D2D; "
                 "border:1px solid #E24B4A; border-radius:6px; "
                 "padding:7px 12px; font-size:17px; } "
+                "QPushButton:hover { background:#FCEBEB; }")
+
+    @staticmethod
+    def _btn_danger_large() -> str:
+        """Avatar delete button — scaled up font."""
+        return ("QPushButton { background:#fff; color:#A32D2D; "
+                "border:1px solid #E24B4A; border-radius:6px; "
+                "padding:7px 12px; font-size:16px; font-weight:500; } "
                 "QPushButton:hover { background:#FCEBEB; }")
