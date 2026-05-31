@@ -682,3 +682,177 @@ Traceback (most recent call last):
 SyntaxError: invalid decimal literal
 2026-05-31 10:11:20 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 10:11:20
 2026-05-31 10:22:34 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 10:22:34
+2026-05-31 11:48:10 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 11:48:10
+
+============================================================
+Timestamp : 2026-05-31 11:49:34
+User: nhu_quynh (user)
+Exception : IndexError: No item with that key
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 11:49:34 [finance_ai] ERROR: Unhandled exception: IndexError: No item with that key
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+
+============================================================
+Timestamp : 2026-05-31 11:50:01
+User: nhu_quynh (user)
+Exception : IndexError: No item with that key
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 11:50:01 [finance_ai] ERROR: Unhandled exception: IndexError: No item with that key
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 11:56:45 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 11:56:45
+2026-05-31 11:59:04 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 11:59:04
+
+============================================================
+Timestamp : 2026-05-31 11:59:21
+User: nhu_quynh (user)
+Exception : ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+2026-05-31 11:59:21 [finance_ai] ERROR: Unhandled exception: ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+
+============================================================
+Timestamp : 2026-05-31 12:00:05
+User: nhu_quynh (user)
+Exception : ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+2026-05-31 12:00:05 [finance_ai] ERROR: Unhandled exception: ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+2026-05-31 12:00:19 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 12:00:19
+
+============================================================
+Timestamp : 2026-05-31 12:00:46
+User: nhu_quynh (user)
+Exception : IndexError: No item with that key
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 12:00:46 [finance_ai] ERROR: Unhandled exception: IndexError: No item with that key
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 718, in <lambda>
+    self._btn_parent.clicked.connect(lambda: self._switch_cat_view("parent"))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1171, in _switch_cat_view
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+
+============================================================
+Timestamp : 2026-05-31 12:01:04
+User: nhu_quynh (user)
+Exception : IndexError: No item with that key
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 639, in on_click
+    self._switch_data_mode(mode)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1144, in _switch_data_mode
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 12:01:04 [finance_ai] ERROR: Unhandled exception: IndexError: No item with that key
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 639, in on_click
+    self._switch_data_mode(mode)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 1144, in _switch_data_mode
+    self._load_chart(self._current_month)
+  File "D:\dacs1\finance_ai_app\app\ui\spending_frame.py", line 882, in _load_chart
+    color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                          ~^^^^^^^^^
+IndexError: No item with that key
+2026-05-31 12:01:55 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 12:01:55
+
+============================================================
+Timestamp : 2026-05-31 12:02:03
+User: nhu_quynh (user)
+Exception : ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+2026-05-31 12:02:03 [finance_ai] ERROR: Unhandled exception: ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
+    from app.ui.spending_frame import SpendingFrame
+ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)

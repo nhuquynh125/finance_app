@@ -9,6 +9,10 @@ Fix blank-screen / flicker khi mở:
     cửa sổ đã được show() bởi caller (main.py), thông qua singleShot(0).
   - Tách _configure_size() (gọi trong __init__) khỏi việc show window.
   - Giữ nguyên toàn bộ logic nghiệp vụ, UI, và animation.
+
+Fix input field styles:
+  - StyledInput dùng objectName + selector cụ thể để không bị theme_engine override.
+  - LoginWindow setStyleSheet riêng để isolate khỏi global QSS.
 """
 
 from PyQt6.QtWidgets import (
@@ -51,8 +55,96 @@ def _load_logo(size: int = 80) -> QPixmap | None:
 
 # ── Reusable styled input ─────────────────────────────────────────────────────
 
+# QSS riêng cho LoginWindow — KHÔNG bị theme_engine override
+# vì LoginWindow set stylesheet này SAU khi theme_engine chạy,
+# và dùng objectName selector cụ thể để tăng specificity.
+LOGIN_WINDOW_QSS = """
+/* ── LoginWindow isolation ── */
+QWidget#loginWindow {
+    background: #F0F6FF;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Right panel */
+QWidget#loginRight {
+    background: #F0F6FF;
+}
+
+/* Card */
+QFrame#loginCard {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #D0E4F7;
+}
+
+/* Input fields — specificity cao để override global QSS */
+QWidget#loginWindow QLineEdit,
+QFrame#loginCard QLineEdit {
+    border: 1.5px solid #D0E4F7 !important;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 13px;
+    background: #F5F9FF;
+    color: #0B2A4A;
+    font-family: 'Segoe UI', sans-serif;
+    selection-background-color: #B5D4F4;
+    selection-color: #0B2A4A;
+}
+QWidget#loginWindow QLineEdit:focus,
+QFrame#loginCard QLineEdit:focus {
+    border: 1.5px solid #1A6BAF !important;
+    background: #ffffff;
+}
+QWidget#loginWindow QLineEdit:hover,
+QFrame#loginCard QLineEdit:hover {
+    border: 1.5px solid #8BAEC8 !important;
+    background: #ffffff;
+}
+
+/* Labels */
+QWidget#loginWindow QLabel,
+QFrame#loginCard QLabel {
+    color: #0B2A4A;
+    background: transparent;
+    border: none;
+}
+
+/* Buttons */
+QWidget#loginWindow QPushButton,
+QFrame#loginCard QPushButton {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* CheckBox */
+QWidget#loginWindow QCheckBox,
+QFrame#loginCard QCheckBox {
+    color: #3A6B9A;
+    font-size: 12px;
+    border: none;
+    background: transparent;
+}
+QWidget#loginWindow QCheckBox::indicator,
+QFrame#loginCard QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid #D0E4F7;
+    background: #F5F9FF;
+}
+QWidget#loginWindow QCheckBox::indicator:checked,
+QFrame#loginCard QCheckBox::indicator:checked {
+    background: #1A6BAF;
+    border-color: #1A6BAF;
+}
+"""
+
+
 class StyledInput(QWidget):
-    """Input field có nút toggle password visibility."""
+    """Input field có nút toggle password visibility.
+
+    Fix: dùng objectName + setProperty để tăng CSS specificity,
+    tránh bị global theme_engine QSS override.
+    """
 
     def __init__(self, placeholder: str, is_password: bool = False, parent=None):
         super().__init__(parent)
@@ -68,26 +160,31 @@ class StyledInput(QWidget):
         self._edit = QLineEdit(self)
         self._edit.setPlaceholderText(placeholder)
         self._edit.setFixedHeight(46)
+        self._edit.setObjectName("loginInput")
         if is_password:
             self._edit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        # Style inline để đảm bảo luôn hiển thị đúng bất kể global QSS
         right_padding = "42px" if is_password else "16px"
         self._edit.setStyleSheet(f"""
-            QLineEdit {{
+            QLineEdit#loginInput {{
                 border: 1.5px solid #D0E4F7;
                 border-radius: 10px;
                 padding: 0 {right_padding} 0 16px;
                 font-size: 13px;
-                background: #F5F9FF;
+                background-color: #F5F9FF;
                 color: #0B2A4A;
                 font-family: 'Segoe UI', sans-serif;
+                selection-background-color: #B5D4F4;
+                selection-color: #0B2A4A;
             }}
-            QLineEdit:focus {{
-                border-color: #1A6BAF;
-                background: #ffffff;
+            QLineEdit#loginInput:focus {{
+                border: 1.5px solid #1A6BAF;
+                background-color: #ffffff;
             }}
-            QLineEdit:hover {{
-                border-color: #8BAEC8;
-                background: #ffffff;
+            QLineEdit#loginInput:hover {{
+                border: 1.5px solid #8BAEC8;
+                background-color: #ffffff;
             }}
         """)
         layout.addWidget(self._edit)
@@ -96,13 +193,20 @@ class StyledInput(QWidget):
             self._eye_btn = QPushButton("👁", self)
             self._eye_btn.setFixedSize(32, 32)
             self._eye_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self._eye_btn.setObjectName("eyeBtn")
             self._eye_btn.setStyleSheet("""
-                QPushButton {
-                    background: transparent; border: none;
-                    border-radius: 6px; font-size: 16px;
-                    color: #8BAEC8; padding: 0;
+                QPushButton#eyeBtn {
+                    background: transparent;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 16px;
+                    color: #8BAEC8;
+                    padding: 0;
                 }
-                QPushButton:hover { background: rgba(26,107,175,0.1); color: #1A6BAF; }
+                QPushButton#eyeBtn:hover {
+                    background: rgba(26,107,175,0.1);
+                    color: #1A6BAF;
+                }
             """)
             self._eye_btn.clicked.connect(self._toggle_visibility)
             self._position_eye_btn()
@@ -127,28 +231,37 @@ class StyledInput(QWidget):
             self._eye_btn.setText("👁")
 
     # Proxy thường dùng
-    def text(self) -> str:                   return self._edit.text()
-    def setText(self, text: str):            self._edit.setText(text)
-    def setPlaceholderText(self, text: str): self._edit.setPlaceholderText(text)
-    def clear(self):                         self._edit.clear()
+    def text(self) -> str:
+        return self._edit.text()
+
+    def setText(self, text: str):
+        self._edit.setText(text)
+
+    def setPlaceholderText(self, text: str):
+        self._edit.setPlaceholderText(text)
+
+    def clear(self):
+        self._edit.clear()
 
     def setEnabled(self, enabled: bool):
         super().setEnabled(enabled)
         self._edit.setEnabled(enabled)
 
     @property
-    def returnPressed(self): return self._edit.returnPressed
+    def returnPressed(self):
+        return self._edit.returnPressed
 
     @property
-    def textChanged(self): return self._edit.textChanged
+    def textChanged(self):
+        return self._edit.textChanged
 
 
 # ── Login Panel ───────────────────────────────────────────────────────────────
 
 class LoginPanel(QWidget):
     login_success = pyqtSignal(dict)
-    go_register   = pyqtSignal()
-    go_forgot     = pyqtSignal()
+    go_register = pyqtSignal()
+    go_forgot = pyqtSignal()
 
     def __init__(self, auth: AuthManager, parent=None):
         super().__init__(parent)
@@ -162,18 +275,20 @@ class LoginPanel(QWidget):
 
         welcome = QLabel("Chào mừng trở lại!")
         welcome.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        welcome.setStyleSheet("color:#0B2A4A; border:none;")
+        welcome.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(welcome)
         layout.addSpacing(4)
 
         hint = QLabel("Đăng nhập để quản lý tài chính thông minh")
-        hint.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
+        hint.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
         layout.addWidget(hint)
         layout.addSpacing(24)
 
         def _field_label(text):
             lbl = QLabel(text)
-            lbl.setStyleSheet("color:#3A6B9A; font-size:12px; font-weight:600; border:none;")
+            lbl.setStyleSheet(
+                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "border:none; background:transparent;")
             return lbl
 
         layout.addWidget(_field_label("Tên đăng nhập"))
@@ -204,10 +319,10 @@ class LoginPanel(QWidget):
 
         self.remember_check = QCheckBox("Ghi nhớ đăng nhập")
         self.remember_check.setStyleSheet("""
-            QCheckBox { color:#3A6B9A; font-size:12px; border:none; }
+            QCheckBox { color:#3A6B9A; font-size:12px; border:none; background:transparent; }
             QCheckBox::indicator {
                 width:16px; height:16px; border-radius:4px;
-                border:1.5px solid #D0E4F7;
+                border:1.5px solid #D0E4F7; background:#F5F9FF;
             }
             QCheckBox::indicator:checked { background:#1A6BAF; border-color:#1A6BAF; }
         """)
@@ -215,10 +330,16 @@ class LoginPanel(QWidget):
         layout.addSpacing(20)
 
         self.error_lbl = QLabel("")
+        self.error_lbl.setObjectName("errorLabel")
         self.error_lbl.setStyleSheet("""
-            QLabel { background:#FEF0EB; color:#C0392B;
-                border:1px solid #F5C6CB; border-radius:8px;
-                padding:8px 12px; font-size:12px; }
+            QLabel#errorLabel {
+                background-color: #FEF0EB;
+                color: #C0392B;
+                border: 1px solid #F5C6CB;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         """)
         self.error_lbl.setWordWrap(True)
         self.error_lbl.hide()
@@ -227,19 +348,22 @@ class LoginPanel(QWidget):
         self.login_btn = QPushButton("Đăng nhập")
         self.login_btn.setFixedHeight(48)
         self.login_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        self.login_btn.setObjectName("loginBtn")
         self.login_btn.setStyleSheet("""
-            QPushButton {
+            QPushButton#loginBtn {
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 #1A6BAF, stop:1 #0B2A4A);
-                color: #ffffff; border: none; border-radius: 12px;
+                color: #ffffff;
+                border: none;
+                border-radius: 12px;
                 letter-spacing: 0.5px;
             }
-            QPushButton:hover {
+            QPushButton#loginBtn:hover {
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 #0B2A4A, stop:1 #0A4F6E);
             }
-            QPushButton:pressed { background: #0A4F6E; }
-            QPushButton:disabled { background: #8BAEC8; color: #fff; }
+            QPushButton#loginBtn:pressed { background: #0A4F6E; }
+            QPushButton#loginBtn:disabled { background: #8BAEC8; color: #fff; }
         """)
         self.login_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.login_btn.clicked.connect(self._do_login)
@@ -250,7 +374,7 @@ class LoginPanel(QWidget):
         reg_row = QHBoxLayout()
         reg_row.addStretch()
         no_acc = QLabel("Chưa có tài khoản?")
-        no_acc.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
+        no_acc.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
         reg_row.addWidget(no_acc)
         reg_btn = QPushButton("Đăng ký ngay")
         reg_btn.setStyleSheet("""
@@ -295,7 +419,7 @@ class LoginPanel(QWidget):
 
 class RegisterPanel(QWidget):
     register_success = pyqtSignal()
-    go_login         = pyqtSignal()
+    go_login = pyqtSignal()
 
     def __init__(self, auth: AuthManager, parent=None):
         super().__init__(parent)
@@ -320,18 +444,20 @@ class RegisterPanel(QWidget):
 
         title = QLabel("Tạo tài khoản mới")
         title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        title.setStyleSheet("color:#0B2A4A; border:none;")
+        title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(title)
         layout.addSpacing(4)
 
         sub = QLabel("Điền thông tin để bắt đầu quản lý tài chính")
-        sub.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
+        sub.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
         layout.addWidget(sub)
         layout.addSpacing(20)
 
         def _lbl(text):
             l = QLabel(text)
-            l.setStyleSheet("color:#3A6B9A; font-size:12px; font-weight:600; border:none;")
+            l.setStyleSheet(
+                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "border:none; background:transparent;")
             return l
 
         layout.addWidget(_lbl("Họ và tên"))
@@ -373,17 +499,18 @@ class RegisterPanel(QWidget):
         self.reg_btn = QPushButton("Tạo tài khoản")
         self.reg_btn.setFixedHeight(48)
         self.reg_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        self.reg_btn.setObjectName("regBtn")
         self.reg_btn.setStyleSheet("""
-            QPushButton {
+            QPushButton#regBtn {
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 #1D9E75, stop:1 #0A4F6E);
                 color: #ffffff; border: none; border-radius: 12px;
             }
-            QPushButton:hover {
+            QPushButton#regBtn:hover {
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 #158060, stop:1 #0B2A4A);
             }
-            QPushButton:disabled { background:#8BAEC8; color:#fff; }
+            QPushButton#regBtn:disabled { background:#8BAEC8; color:#fff; }
         """)
         self.reg_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.reg_btn.clicked.connect(self._do_register)
@@ -391,10 +518,10 @@ class RegisterPanel(QWidget):
 
     def _do_register(self):
         fullname = self.fullname_input.text().strip()
-        phone    = self.phone_input.text().strip()
+        phone = self.phone_input.text().strip()
         username = self.username_input.text().strip()
         password = self.password_input.text()
-        confirm  = self.confirm_input.text()
+        confirm = self.confirm_input.text()
 
         if not fullname or not phone or not username or not password:
             self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
@@ -422,13 +549,13 @@ class RegisterPanel(QWidget):
     def _show_msg(self, msg: str, kind: str):
         if kind == "error":
             self.msg_lbl.setStyleSheet("""
-                QLabel { background:#FEF0EB; color:#C0392B;
+                QLabel { background-color:#FEF0EB; color:#C0392B;
                     border:1px solid #F5C6CB; border-radius:8px;
                     padding:8px 12px; font-size:12px; }
             """)
         else:
             self.msg_lbl.setStyleSheet("""
-                QLabel { background:#EAF7F2; color:#0A4F3E;
+                QLabel { background-color:#EAF7F2; color:#0A4F3E;
                     border:1px solid #B8DFAA; border-radius:8px;
                     padding:8px 12px; font-size:12px; }
             """)
@@ -462,21 +589,23 @@ class ForgotPanel(QWidget):
 
         icon = QLabel("🔑")
         icon.setFont(QFont("Segoe UI Emoji", 32))
-        icon.setStyleSheet("border:none;")
+        icon.setStyleSheet("border:none; background:transparent;")
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon)
         layout.addSpacing(10)
 
         title = QLabel("Đặt lại mật khẩu")
         title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        title.setStyleSheet("color:#0B2A4A; border:none;")
+        title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
         layout.addSpacing(20)
 
         def _lbl(text):
             l = QLabel(text)
-            l.setStyleSheet("color:#3A6B9A; font-size:12px; font-weight:600; border:none;")
+            l.setStyleSheet(
+                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "border:none; background:transparent;")
             return l
 
         layout.addWidget(_lbl("Tên đăng nhập"))
@@ -506,13 +635,14 @@ class ForgotPanel(QWidget):
         reset_btn = QPushButton("Đặt lại mật khẩu")
         reset_btn.setFixedHeight(48)
         reset_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        reset_btn.setObjectName("resetBtn")
         reset_btn.setStyleSheet("""
-            QPushButton {
+            QPushButton#resetBtn {
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 #E8921A, stop:1 #C47312);
                 color:#ffffff; border:none; border-radius:12px;
             }
-            QPushButton:hover { background: #C47312; }
+            QPushButton#resetBtn:hover { background: #C47312; }
         """)
         reset_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         reset_btn.clicked.connect(self._do_reset)
@@ -521,7 +651,7 @@ class ForgotPanel(QWidget):
     def _do_reset(self):
         username = self.username_input.text().strip()
         new_pass = self.new_pass_input.text()
-        confirm  = self.confirm_input.text()
+        confirm = self.confirm_input.text()
 
         if not username or not new_pass:
             self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
@@ -542,9 +672,9 @@ class ForgotPanel(QWidget):
 
     def _show_msg(self, msg: str, kind: str):
         c = (
-            "background:#FEF0EB; color:#C0392B; border:1px solid #F5C6CB;"
+            "background-color:#FEF0EB; color:#C0392B; border:1px solid #F5C6CB;"
             if kind == "error"
-            else "background:#EAF7F2; color:#0A4F3E; border:1px solid #B8DFAA;"
+            else "background-color:#EAF7F2; color:#0A4F3E; border:1px solid #B8DFAA;"
         )
         self.msg_lbl.setStyleSheet(
             f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:12px; }}"
@@ -673,20 +803,19 @@ class LoginWindow(QWidget):
         super().__init__(parent)
         self.auth = AuthManager()
         self.setWindowTitle("Finance AI — Đăng nhập")
-        self.setStyleSheet(
-            "QLabel, QPushButton, QLineEdit, QCheckBox, QFrame "
-            "{ font-family: 'Segoe UI', sans-serif; }"
-        )
+        self.setObjectName("loginWindow")
 
         # Đặt kích thước TRƯỚC khi build UI.
-        # Không gọi showNormal()/showFullScreen() ở đây —
-        # việc show() là trách nhiệm của caller (main.py).
         self._configure_size()
         self._build()
+
+        # Áp dụng QSS riêng cho login window SAU khi theme_engine đã set global QSS.
+        # Dùng setStyleSheet trực tiếp trên widget này để override với specificity cao hơn.
+        self.setStyleSheet(LOGIN_WINDOW_QSS)
+
         self._check_remembered()
 
-        # fullscreen cần gọi sau khi window đã visible,
-        # nên dùng singleShot(0) sau show()
+        # fullscreen cần gọi sau khi window đã visible
         settings = load_settings()
         if settings.get("window_mode") == "fullscreen":
             QTimer.singleShot(0, self.showFullScreen)
@@ -718,14 +847,16 @@ class LoginWindow(QWidget):
         # Right: form area
         right = QWidget()
         right.setObjectName("loginRight")
-        right.setStyleSheet("QWidget#loginRight { background: #F0F6FF; }")
         right_l = QVBoxLayout(right)
         right_l.setContentsMargins(0, 0, 0, 0)
         right_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Top strip with logo
         top_strip = QWidget()
-        top_strip.setStyleSheet("background: #FFFFFF; border-bottom: 1px solid #D0E4F7;")
+        top_strip.setObjectName("loginTopStrip")
+        top_strip.setStyleSheet(
+            "QWidget#loginTopStrip { background: #FFFFFF; "
+            "border-bottom: 1px solid #D0E4F7; border-radius:0; }")
         top_strip.setFixedHeight(56)
         ts_l = QHBoxLayout(top_strip)
         ts_l.setContentsMargins(24, 0, 24, 0)
@@ -738,7 +869,8 @@ class LoginWindow(QWidget):
             ts_l.addSpacing(8)
         app_name = QLabel("Finance AI")
         app_name.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
-        app_name.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
+        app_name.setStyleSheet(
+            "color:#0B2A4A; border:none; background:transparent;")
         ts_l.addWidget(app_name)
         ts_l.addStretch()
 
@@ -767,11 +899,12 @@ class LoginWindow(QWidget):
         card_l.setSpacing(0)
 
         self.stack = QStackedWidget()
-        self.stack.setStyleSheet("QStackedWidget { background:transparent; border:none; }")
+        self.stack.setStyleSheet(
+            "QStackedWidget { background:transparent; border:none; }")
 
-        self.login_panel    = LoginPanel(self.auth)
+        self.login_panel = LoginPanel(self.auth)
         self.register_panel = RegisterPanel(self.auth)
-        self.forgot_panel   = ForgotPanel(self.auth)
+        self.forgot_panel = ForgotPanel(self.auth)
 
         self.stack.addWidget(self.login_panel)
         self.stack.addWidget(self.register_panel)
