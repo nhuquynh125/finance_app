@@ -1,11 +1,12 @@
-# app/ui/spending_frame.py  (cập nhật: đổi sang theme Navy/Blue của app, biểu đồ riêng cho Chi tiêu/Thu nhập và Danh mục cha/con)
+# app/ui/spending_frame.py  (cập nhật: logic đúng danh mục cha/con chi tiêu, thu nhập flat)
 """
 Trang Quản lý Chi tiêu — Finance AI
 Thay đổi:
-  - Đổi toàn bộ màu từ pink sang Navy/Blue/Mint phù hợp theme app
-  - Chi tiêu và Thu nhập: 2 nút toggle → 2 biểu đồ donut riêng biệt
-  - Danh mục con và Danh mục cha: mỗi tab tạo biểu đồ donut riêng
-  - Cảnh báo tăng chi tiêu style phù hợp app
+  - Chi tiêu: 2 tab "Danh mục con" và "Danh mục cha"
+      + Danh mục cha: có thể expand/collapse ra các danh mục con (như ảnh tham chiếu)
+      + Danh mục con: list phẳng từng danh mục leaf
+  - Thu nhập: KHÔNG có tab cha/con, chỉ list phẳng (vì thu nhập không có phân cấp)
+  - Mỗi chế độ (expense/income) tạo biểu đồ donut riêng
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from typing import Optional
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QScrollArea, QFrame, QGridLayout, QSizePolicy, QStackedWidget,
+    QDialog, QLineEdit, QComboBox, QCheckBox, QTabWidget,
+    QMessageBox, QColorDialog, QDialogButtonBox,
 )
 from PyQt6.QtCore import Qt, QTimer, QRectF, QPointF, pyqtSignal
 from PyQt6.QtGui import (
@@ -43,34 +46,21 @@ RED_SOFT    = "#E85020"
 BG_PAGE     = "#F0F6FF"
 BORDER_BLUE = "#D0E4F7"
 CARD_WHITE  = "#FFFFFF"
-TEXT_MUTED  = "#8BAEC8"
+TEXT_MUTED  = "#4A6785"  # Đậm hơn để dễ đọc trên nền trắng
 TEXT_DARK   = "#0B2A4A"
 ACCENT_BLUE = "#E6F1FB"
 
-# Màu cho biểu đồ danh mục
 CATEGORY_PALETTE = [
-    "#378ADD",   # Xanh dương chính
-    "#1D9E75",   # Mint
-    "#E8921A",   # Cam
-    "#7F77DD",   # Tím
-    "#E85020",   # Đỏ cam
-    "#D4537E",   # Hồng đậm
-    "#1A6BAF",   # Navy mid
-    "#888780",   # Xám
-    "#639922",   # Xanh lá
+    "#378ADD", "#1D9E75", "#E8921A", "#7F77DD",
+    "#E85020", "#D4537E", "#1A6BAF", "#888780", "#639922",
 ]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── Donut Chart Widget (thuần PyQt) ───────────────────────────────────────────
+# ── Donut Chart Widget ────────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
 class DonutChartWidget(QWidget):
-    """
-    Biểu đồ donut thuần PyQt — theme Navy/Blue.
-    Có thể hiển thị cho Chi tiêu HOẶC Thu nhập tùy trạng thái.
-    """
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMinimumSize(200, 200)
@@ -97,63 +87,44 @@ class DonutChartWidget(QWidget):
     def paintEvent(self, event):
         if not self._data:
             return
-
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        w = self.width()
-        h = self.height()
+        w, h = self.width(), self.height()
         size = min(w, h) - 16
-        cx = w / 2
-        cy = h / 2
-
+        cx, cy = w / 2, h / 2
         outer_r = size / 2
         inner_r = outer_r * 0.60
-
         rect_outer = QRectF(cx - outer_r, cy - outer_r, outer_r * 2, outer_r * 2)
         rect_inner = QRectF(cx - inner_r, cy - inner_r, inner_r * 2, inner_r * 2)
-
         start_angle = 90 * 16
-
         for i, seg in enumerate(self._data):
             span = -int(seg["pct"] / 100 * 360 * 16)
             color = QColor(seg["color"])
             if i == self._hovered:
                 color = color.lighter(130)
-
             path = QPainterPath()
             path.moveTo(cx, cy)
             path.arcTo(rect_outer, start_angle / 16, span / 16)
             path.arcTo(rect_inner, (start_angle + span) / 16, -span / 16)
             path.closeSubpath()
-
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(color))
             painter.drawPath(path)
-
-            # Separator line trắng giữa các segment
             pen = QPen(QColor(BG_PAGE), 2)
             painter.setPen(pen)
             painter.setBrush(Qt.BrushStyle.NoBrush)
-
             start_angle += span
-
-        # Lỗ trống center
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor(CARD_WHITE)))
         painter.drawEllipse(rect_inner)
-
-        # Text trung tâm
         painter.setPen(QColor(TEXT_MUTED))
         painter.setFont(QFont("Segoe UI", 9))
         painter.drawText(QRectF(cx - inner_r, cy - 22, inner_r * 2, 18),
                          Qt.AlignmentFlag.AlignCenter, self._center_label)
         painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         painter.setPen(QColor(self._center_color))
-        total_str = self._fmt(self._total)
         painter.drawText(QRectF(cx - inner_r, cy - 4, inner_r * 2, 22),
-                         Qt.AlignmentFlag.AlignCenter, total_str)
-
+                         Qt.AlignmentFlag.AlignCenter, self._fmt(self._total))
         painter.end()
 
     def mouseMoveEvent(self, event):
@@ -165,13 +136,11 @@ class DonutChartWidget(QWidget):
         size = min(w, h) - 16
         outer_r = size / 2
         inner_r = outer_r * 0.60
-
         if inner_r < dist < outer_r:
             angle = math.degrees(math.atan2(-dy, dx))
             if angle < 0:
                 angle += 360
             angle = (90 - angle) % 360
-
             cumulative = 0
             hovered = -1
             for i, seg in enumerate(self._data):
@@ -218,7 +187,6 @@ class TrendBarCanvas(FigureCanvasQTAgg):
         ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(left=0.08, right=0.97, top=0.92, bottom=0.18)
         ax.set_facecolor("#FFFFFF")
-
         max_v = max(values) if values else 1
         bar_colors = []
         for i in range(len(values)):
@@ -227,11 +195,9 @@ class TrendBarCanvas(FigureCanvasQTAgg):
             else:
                 c = QColor(color)
                 bar_colors.append(f"#{c.red():02x}{c.green():02x}{c.blue():02x}55")
-
         x = list(range(len(months)))
         bars = ax.bar(x, [v / 1e6 for v in values], color=bar_colors,
                       width=0.55, zorder=3, linewidth=0, edgecolor="none")
-
         labels = []
         for m in months:
             try:
@@ -240,45 +206,43 @@ class TrendBarCanvas(FigureCanvasQTAgg):
             except Exception:
                 lbl = m
             labels.append(lbl)
-
         ax.set_xticks(x)
         ax.set_xticklabels(labels, fontsize=10, color=TEXT_DARK)
         for i, tick in enumerate(ax.get_xticklabels()):
             if i == len(months) - 1 or i == current_idx:
                 tick.set_color(color)
                 tick.set_fontweight("bold")
-
         ax.set_yticks([])
         ax.set_ylim(0, max_v / 1e6 * 1.35)
         ax.set_axisbelow(True)
         for spine in ax.spines.values():
             spine.set_visible(False)
         ax.tick_params(axis="x", bottom=False, length=0)
-
         for bar, val in zip(bars, values):
             h = bar.get_height()
             ax.text(bar.get_x() + bar.get_width() / 2, h + max_v / 1e6 * 0.03,
                     f"{val/1e6:.1f}M" if val >= 1e6 else f"{val/1e3:.0f}K",
                     ha="center", va="bottom", fontsize=8, color=TEXT_MUTED)
-
         self.draw()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── Category Row ─────────────────────────────────────────────────────────────
+# ── Category Row (leaf / sub category) ───────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
 class CategoryRow(QWidget):
     clicked = pyqtSignal(dict)
 
-    def __init__(self, cat_data: dict, parent=None):
+    def __init__(self, cat_data: dict, indent: bool = False, parent=None):
         super().__init__(parent)
         self._data = cat_data
+        self._indent = indent
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(52)
+        self.setFixedHeight(48 if not indent else 42)
+        bg = CARD_WHITE
         self.setStyleSheet(f"""
             QWidget {{
-                background: {CARD_WHITE};
+                background: {bg};
                 border-bottom: 1px solid {BORDER_BLUE};
             }}
             QWidget:hover {{
@@ -289,26 +253,28 @@ class CategoryRow(QWidget):
 
     def _build(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 8, 12, 8)
-        layout.setSpacing(12)
+        left_margin = 36 if self._indent else 16
+        layout.setContentsMargins(left_margin, 6, 12, 6)
+        layout.setSpacing(10)
 
+        color = self._data.get("color", NAVY_LIGHT)
         dot = QFrame()
-        dot.setFixedSize(36, 36)
+        dot.setFixedSize(28 if not self._indent else 22, 28 if not self._indent else 22)
         dot.setStyleSheet(f"""
             QFrame {{
-                background: {self._data.get('color', NAVY_LIGHT)};
-                border-radius: 10px;
+                background: {color};
+                border-radius: {14 if not self._indent else 11}px;
                 border: none;
             }}
         """)
         layout.addWidget(dot)
 
         name_lbl = QLabel(self._data.get("name", ""))
-        name_lbl.setFont(QFont("Segoe UI", 12))
+        font_size = 12 if not self._indent else 11
+        name_lbl.setFont(QFont("Segoe UI", font_size))
         name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         layout.addWidget(name_lbl, stretch=1)
 
-        # Badge "unclassified"
         if self._data.get("unclassified_count", 0):
             tag = QLabel(f"  {self._data['unclassified_count']}  ")
             tag.setStyleSheet(f"""
@@ -325,14 +291,16 @@ class CategoryRow(QWidget):
             layout.addWidget(tag)
 
         amt_lbl = QLabel(self._fmt(self._data.get("total", 0)))
-        amt_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Medium))
+        font_size_amt = 12 if not self._indent else 11
+        amt_lbl.setFont(QFont("Segoe UI", font_size_amt, QFont.Weight.Medium))
         amt_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         layout.addWidget(amt_lbl)
 
-        arrow = QLabel("›")
-        arrow.setFont(QFont("Segoe UI", 16))
-        arrow.setStyleSheet(f"color:{BORDER_BLUE}; border:none; background:transparent;")
-        layout.addWidget(arrow)
+        if not self._indent:
+            arrow = QLabel("›")
+            arrow.setFont(QFont("Segoe UI", 16))
+            arrow.setStyleSheet(f"color:{BORDER_BLUE}; border:none; background:transparent;")
+            layout.addWidget(arrow)
 
     def mousePressEvent(self, event):
         self.clicked.emit(self._data)
@@ -343,7 +311,107 @@ class CategoryRow(QWidget):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── Budget Mini Card (Navy theme) ────────────────────────────────────────────
+# ── Parent Category Row (expandable) ─────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+
+class ParentCategoryRow(QWidget):
+    """Hàng danh mục cha với nút expand/collapse hiển thị danh mục con."""
+
+    def __init__(self, parent_data: dict, children: list[dict], parent=None):
+        super().__init__(parent)
+        self._parent_data = parent_data
+        self._children    = children
+        self._expanded    = False
+        self._child_widgets: list[QWidget] = []
+        self._build()
+
+    def _build(self):
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+        # Header row (danh mục cha)
+        self._header = QWidget()
+        self._header.setFixedHeight(52)
+        self._header.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._header.setStyleSheet(f"""
+            QWidget {{
+                background: {CARD_WHITE};
+                border-bottom: 1px solid {BORDER_BLUE};
+            }}
+            QWidget:hover {{
+                background: {ACCENT_BLUE};
+            }}
+        """)
+        hl = QHBoxLayout(self._header)
+        hl.setContentsMargins(16, 8, 12, 8)
+        hl.setSpacing(10)
+
+        color = self._parent_data.get("color", NAVY_LIGHT)
+        dot = QFrame()
+        dot.setFixedSize(32, 32)
+        dot.setStyleSheet(f"""
+            QFrame {{
+                background: {color};
+                border-radius: 10px;
+                border: none;
+            }}
+        """)
+        hl.addWidget(dot)
+
+        name_lbl = QLabel(self._parent_data.get("name", ""))
+        name_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
+        hl.addWidget(name_lbl, stretch=1)
+
+        amt_lbl = QLabel(self._fmt(self._parent_data.get("total", 0)))
+        amt_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Medium))
+        amt_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
+        hl.addWidget(amt_lbl)
+
+        self._arrow_lbl = QLabel("∨" if self._expanded else "∨")
+        self._arrow_lbl.setFont(QFont("Segoe UI", 13))
+        self._arrow_lbl.setStyleSheet(
+            f"color:{NAVY_MID}; border:none; background:transparent; min-width:18px;")
+        hl.addWidget(self._arrow_lbl)
+
+        self._layout.addWidget(self._header)
+
+        # Container danh mục con (ẩn mặc định)
+        self._children_container = QWidget()
+        self._children_container.setStyleSheet(
+            f"background: #F8FBFF; border-bottom: 1px solid {BORDER_BLUE};")
+        self._children_layout = QVBoxLayout(self._children_container)
+        self._children_layout.setContentsMargins(0, 0, 0, 0)
+        self._children_layout.setSpacing(0)
+
+        for child in self._children:
+            child_row = CategoryRow(child, indent=True)
+            self._children_layout.addWidget(child_row)
+            self._child_widgets.append(child_row)
+
+        self._children_container.hide()
+        self._layout.addWidget(self._children_container)
+
+        # Connect click
+        self._header.mousePressEvent = self._on_header_click
+
+    def _on_header_click(self, event):
+        self._expanded = not self._expanded
+        if self._expanded:
+            self._children_container.show()
+            self._arrow_lbl.setText("∧")
+        else:
+            self._children_container.hide()
+            self._arrow_lbl.setText("∨")
+
+    @staticmethod
+    def _fmt(v: float) -> str:
+        return f"{v:,.0f}đ".replace(",", ".")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── Budget Mini Card ──────────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
 class BudgetMiniCard(QWidget):
@@ -375,17 +443,17 @@ class BudgetMiniCard(QWidget):
         over = pct >= 100
 
         if over:
-            bar_color  = RED_SOFT
-            status_text  = "Đã vượt"
-            status_style = f"color:{RED_SOFT}; font-weight:bold;"
+            bar_color   = RED_SOFT
+            status_text = "Đã vượt"
+            status_sty  = f"color:{RED_SOFT}; font-weight:bold;"
         elif pct >= 80:
-            bar_color  = ORANGE
-            status_text  = "Sắp hết"
-            status_style = f"color:{ORANGE}; font-weight:bold;"
+            bar_color   = ORANGE
+            status_text = "Sắp hết"
+            status_sty  = f"color:{ORANGE}; font-weight:bold;"
         else:
-            bar_color  = MINT
-            status_text  = "Bình thường"
-            status_style = f"color:{MINT};"
+            bar_color   = MINT
+            status_text = "Bình thường"
+            status_sty  = f"color:{MINT};"
 
         prog_track = QFrame()
         prog_track.setFixedHeight(6)
@@ -399,7 +467,7 @@ class BudgetMiniCard(QWidget):
 
         status_lbl = QLabel(status_text)
         status_lbl.setFont(QFont("Segoe UI", 9))
-        status_lbl.setStyleSheet(f"border:none; {status_style}")
+        status_lbl.setStyleSheet(f"border:none; {status_sty}")
         layout.addWidget(status_lbl)
 
         limit   = self._data.get("limit_amount", 0)
@@ -434,14 +502,610 @@ class BudgetMiniCard(QWidget):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── SpendingFrame (Main) — Navy/Blue Theme ────────────────────────────────────
+# ── Category Manager Dialog ───────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+
+class CategoryManagerDialog(QDialog):
+    """Dialog quản lý danh mục: thêm mới, nhóm, xóa."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Quản lý danh mục")
+        self.setMinimumSize(500, 580)
+        self.setModal(True)
+        self.setStyleSheet(f"""
+            QDialog {{ background: {BG_PAGE}; }}
+            QLabel {{ color: {TEXT_DARK}; border: none; background: transparent; }}
+            QLineEdit, QComboBox {{
+                background: {CARD_WHITE};
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 13px;
+                color: {TEXT_DARK};
+            }}
+            QLineEdit:focus, QComboBox:focus {{ border-color: {NAVY_MID}; }}
+            QComboBox::drop-down {{ border: none; padding-right: 8px; }}
+            QComboBox QAbstractItemView {{
+                background: {CARD_WHITE};
+                border: 1px solid {BORDER_BLUE};
+                selection-background-color: {ACCENT_BLUE};
+                color: {TEXT_DARK};
+            }}
+        """)
+        self._selected_color = CATEGORY_PALETTE[0]
+        self._checkboxes: list = []
+        self._build()
+
+    # ── Build ────────────────────────────────────────────────────────────────
+
+    def _build(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # Header banner
+        hdr = QWidget()
+        hdr.setStyleSheet(f"background:{NAVY}; border:none;")
+        hdr.setFixedHeight(56)
+        hl = QHBoxLayout(hdr)
+        hl.setContentsMargins(20, 0, 20, 0)
+        title = QLabel("⚙  Quản lý danh mục")
+        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setStyleSheet("color:white; border:none; background:transparent;")
+        hl.addWidget(title)
+        root.addWidget(hdr)
+
+        # Tabs
+        self._tabs = QTabWidget()
+        self._tabs.setStyleSheet(f"""
+            QTabWidget::pane {{ background: {BG_PAGE}; border: none; }}
+            QTabBar::tab {{
+                background: {CARD_WHITE};
+                color: {TEXT_MUTED};
+                border: none;
+                border-bottom: 3px solid transparent;
+                padding: 10px 18px;
+                font-size: 12px;
+                font-weight: 500;
+            }}
+            QTabBar::tab:selected {{
+                color: {NAVY_MID};
+                border-bottom: 3px solid {NAVY_MID};
+                font-weight: 700;
+            }}
+            QTabBar::tab:hover {{ color: {TEXT_DARK}; }}
+        """)
+        self._tabs.addTab(self._build_add_tab(),   "➕  Thêm mới")
+        self._tabs.addTab(self._build_group_tab(), "🔗  Nhóm danh mục")
+        self._tabs.addTab(self._build_list_tab(),  "📋  Tất cả")
+        root.addWidget(self._tabs)
+
+    # ── Tab 1: Thêm danh mục ─────────────────────────────────────────────────
+
+    def _build_add_tab(self) -> QWidget:
+        w = QWidget()
+        w.setStyleSheet(f"background:{BG_PAGE};")
+        ly = QVBoxLayout(w)
+        ly.setContentsMargins(24, 20, 24, 20)
+        ly.setSpacing(12)
+
+        ly.addWidget(self._lbl("Tên danh mục *"))
+        self._inp_name = QLineEdit()
+        self._inp_name.setPlaceholderText("Ví dụ: Ăn uống, Chợ, Xăng xe...")
+        self._inp_name.setFixedHeight(40)
+        ly.addWidget(self._inp_name)
+
+        ly.addWidget(self._lbl("Loại giao dịch"))
+        self._cb_type = QComboBox()
+        self._cb_type.addItems(["💸 Chi tiêu (expense)", "💰 Thu nhập (income)"])
+        self._cb_type.setFixedHeight(40)
+        self._cb_type.currentIndexChanged.connect(self._on_type_changed)
+        ly.addWidget(self._cb_type)
+
+        ly.addWidget(self._lbl("Thuộc danh mục cha  (bỏ trống = danh mục gốc)"))
+        self._cb_parent = QComboBox()
+        self._cb_parent.setFixedHeight(40)
+        self._load_parent_options("expense")
+        ly.addWidget(self._cb_parent)
+
+        ly.addWidget(self._lbl("Màu sắc"))
+        color_row = QHBoxLayout()
+        color_row.setSpacing(8)
+        self._btn_color = QPushButton("  Chọn màu")
+        self._btn_color.setFixedHeight(38)
+        self._update_color_btn()
+        self._btn_color.clicked.connect(self._pick_color)
+        color_row.addWidget(self._btn_color)
+        for c in CATEGORY_PALETTE[:6]:
+            pb = QPushButton()
+            pb.setFixedSize(32, 32)
+            pb.setStyleSheet(f"""
+                QPushButton {{ background:{c}; border-radius:16px; border:2px solid transparent; }}
+                QPushButton:hover {{ border:2px solid {NAVY}; }}
+            """)
+            pb.clicked.connect(lambda _=False, col=c: self._set_color(col))
+            color_row.addWidget(pb)
+        color_row.addStretch()
+        ly.addLayout(color_row)
+
+        ly.addStretch()
+
+        btn_save = QPushButton("✓  Lưu danh mục")
+        btn_save.setFixedHeight(44)
+        btn_save.setStyleSheet(f"""
+            QPushButton {{
+                background:{NAVY_MID}; color:white;
+                border-radius:10px; border:none;
+                font-size:14px; font-weight:700;
+            }}
+            QPushButton:hover {{ background:{NAVY}; }}
+        """)
+        btn_save.clicked.connect(self._save_new_category)
+        ly.addWidget(btn_save)
+        return w
+
+    # ── Tab 2: Nhóm danh mục ─────────────────────────────────────────────────
+
+    def _build_group_tab(self) -> QWidget:
+        w = QWidget()
+        w.setStyleSheet(f"background:{BG_PAGE};")
+        ly = QVBoxLayout(w)
+        ly.setContentsMargins(24, 20, 24, 20)
+        ly.setSpacing(12)
+
+        ly.addWidget(self._lbl("Chọn danh mục muốn nhóm:"))
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFixedHeight(200)
+        scroll.setStyleSheet(f"""
+            QScrollArea {{ border:1.5px solid {BORDER_BLUE}; border-radius:10px;
+                           background:{CARD_WHITE}; }}
+        """)
+        self._check_container = QWidget()
+        self._check_container.setStyleSheet(f"background:{CARD_WHITE};")
+        self._check_layout = QVBoxLayout(self._check_container)
+        self._check_layout.setContentsMargins(12, 8, 12, 8)
+        self._check_layout.setSpacing(2)
+        self._load_checkboxes()
+        scroll.setWidget(self._check_container)
+        ly.addWidget(scroll)
+
+        ly.addWidget(self._lbl("Nhóm vào danh mục cha đã có:"))
+        self._cb_target = QComboBox()
+        self._cb_target.setFixedHeight(40)
+        self._load_target_options()
+        ly.addWidget(self._cb_target)
+
+        or_row = QHBoxLayout()
+        or_row.setSpacing(8)
+        or_lbl = QLabel("— hoặc tạo cha mới:")
+        or_lbl.setStyleSheet(f"color:{TEXT_MUTED}; font-size:12px; border:none;")
+        or_row.addWidget(or_lbl)
+        self._inp_new_parent = QLineEdit()
+        self._inp_new_parent.setPlaceholderText("Tên danh mục cha mới...")
+        self._inp_new_parent.setFixedHeight(36)
+        or_row.addWidget(self._inp_new_parent, stretch=1)
+        ly.addLayout(or_row)
+
+        ly.addStretch()
+
+        btn_group = QPushButton("🔗  Nhóm danh mục")
+        btn_group.setFixedHeight(44)
+        btn_group.setStyleSheet(f"""
+            QPushButton {{
+                background:{MINT}; color:white;
+                border-radius:10px; border:none;
+                font-size:14px; font-weight:700;
+            }}
+            QPushButton:hover {{ background:#18876A; }}
+        """)
+        btn_group.clicked.connect(self._do_group)
+        ly.addWidget(btn_group)
+        return w
+
+    # ── Tab 3: Tất cả danh mục ───────────────────────────────────────────────
+
+    def _build_list_tab(self) -> QWidget:
+        w = QWidget()
+        w.setStyleSheet(f"background:{BG_PAGE};")
+        ly = QVBoxLayout(w)
+        ly.setContentsMargins(0, 0, 0, 0)
+        ly.setSpacing(0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border:none; background:transparent; }")
+
+        self._list_container = QWidget()
+        self._list_container.setStyleSheet(f"background:{BG_PAGE};")
+        self._list_l = QVBoxLayout(self._list_container)
+        self._list_l.setContentsMargins(0, 8, 0, 8)
+        self._list_l.setSpacing(0)
+        self._refresh_list_tab()
+
+        scroll.setWidget(self._list_container)
+        ly.addWidget(scroll)
+        return w
+
+    def _refresh_list_tab(self):
+        while self._list_l.count():
+            item = self._list_l.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        conn = get_connection()
+        parents = conn.execute("""
+            SELECT id, name, color, type FROM categories
+            WHERE parent_id IS NULL ORDER BY type, name
+        """).fetchall()
+
+        for i, p in enumerate(parents):
+            children = conn.execute("""
+                SELECT id, name, color FROM categories
+                WHERE parent_id=? ORDER BY name
+            """, (p["id"],)).fetchall()
+
+            p_color = p["color"] or CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+
+            # Hàng cha
+            pr = QWidget()
+            pr.setStyleSheet(
+                f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
+            pr.setFixedHeight(50)
+            prl = QHBoxLayout(pr)
+            prl.setContentsMargins(16, 6, 12, 6)
+            prl.setSpacing(10)
+            dot = QFrame()
+            dot.setFixedSize(28, 28)
+            dot.setStyleSheet(
+                f"background:{p_color}; border-radius:14px; border:none;")
+            prl.addWidget(dot)
+            suffix = "  📁" if children else ""
+            name_lbl = QLabel(f"{p['name']}{suffix}")
+            name_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+            name_lbl.setStyleSheet(
+                f"color:{TEXT_DARK}; border:none; background:transparent;")
+            prl.addWidget(name_lbl, stretch=1)
+            type_color = RED_SOFT if p["type"] == "expense" else MINT
+            type_lbl = QLabel("Chi tiêu" if p["type"] == "expense" else "Thu nhập")
+            type_lbl.setStyleSheet(
+                f"color:{type_color}; font-size:10px; border:none; background:transparent;")
+            prl.addWidget(type_lbl)
+            del_btn = QPushButton("🗑")
+            del_btn.setFixedSize(28, 28)
+            del_btn.setStyleSheet(f"""
+                QPushButton {{ background:transparent; border:none; font-size:14px;
+                               color:{TEXT_MUTED}; border-radius:14px; }}
+                QPushButton:hover {{ background:#FFE5E5; color:{RED_SOFT}; }}
+            """)
+            del_btn.clicked.connect(
+                lambda _=False, pid=p["id"], pn=p["name"]: self._delete_cat(pid, pn))
+            prl.addWidget(del_btn)
+            self._list_l.addWidget(pr)
+
+            # Hàng con
+            for ch in children:
+                ch_color = ch["color"] or CATEGORY_PALETTE[1]
+                cr = QWidget()
+                cr.setStyleSheet(
+                    f"background:#F8FBFF; border-bottom:1px solid {BORDER_BLUE};")
+                cr.setFixedHeight(40)
+                crl = QHBoxLayout(cr)
+                crl.setContentsMargins(52, 4, 12, 4)
+                crl.setSpacing(8)
+                cdot = QFrame()
+                cdot.setFixedSize(20, 20)
+                cdot.setStyleSheet(
+                    f"background:{ch_color}; border-radius:10px; border:none;")
+                crl.addWidget(cdot)
+                c_name = QLabel(ch["name"])
+                c_name.setFont(QFont("Segoe UI", 11))
+                c_name.setStyleSheet(
+                    f"color:{TEXT_DARK}; border:none; background:transparent;")
+                crl.addWidget(c_name, stretch=1)
+                c_del = QPushButton("🗑")
+                c_del.setFixedSize(26, 26)
+                c_del.setStyleSheet(f"""
+                    QPushButton {{ background:transparent; border:none; font-size:12px;
+                                   color:{TEXT_MUTED}; border-radius:13px; }}
+                    QPushButton:hover {{ background:#FFE5E5; color:{RED_SOFT}; }}
+                """)
+                c_del.clicked.connect(
+                    lambda _=False, cid=ch["id"], cn=ch["name"]: self._delete_cat(cid, cn))
+                crl.addWidget(c_del)
+                self._list_l.addWidget(cr)
+
+        conn.close()
+        self._list_l.addStretch()
+
+    # ── Data loaders ──────────────────────────────────────────────────────────
+
+    def _load_parent_options(self, tx_type: str):
+        self._cb_parent.clear()
+        self._cb_parent.addItem("— Không có (danh mục gốc) —", userData=None)
+        conn = get_connection()
+        parents = conn.execute("""
+            SELECT id, name FROM categories
+            WHERE type=? AND parent_id IS NULL ORDER BY name
+        """, (tx_type,)).fetchall()
+        conn.close()
+        for p in parents:
+            self._cb_parent.addItem(p["name"], userData=p["id"])
+
+    def _load_checkboxes(self):
+        while self._check_layout.count():
+            item = self._check_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self._checkboxes = []
+        conn = get_connection()
+        cats = conn.execute("""
+            SELECT c.id, c.name, c.type, p.name as parent_name
+            FROM categories c
+            LEFT JOIN categories p ON c.parent_id = p.id
+            ORDER BY c.type, p.name, c.name
+        """).fetchall()
+        conn.close()
+        for cat in cats:
+            cb = QCheckBox()
+            display = cat["name"]
+            if cat["parent_name"]:
+                display = f"  └ {cat['name']}  (thuộc: {cat['parent_name']})"
+            cb.setText(display)
+            cb.setStyleSheet(f"""
+                QCheckBox {{
+                    color:{TEXT_DARK}; font-size:12px;
+                    spacing:8px; border:none; background:transparent; padding:3px 0;
+                }}
+                QCheckBox::indicator {{
+                    width:18px; height:18px;
+                    border:2px solid {BORDER_BLUE}; border-radius:4px; background:white;
+                }}
+                QCheckBox::indicator:checked {{
+                    background:{NAVY_MID}; border-color:{NAVY_MID};
+                }}
+            """)
+            self._check_layout.addWidget(cb)
+            self._checkboxes.append((cb, cat["id"], cat["type"]))
+        self._check_layout.addStretch()
+
+    def _load_target_options(self):
+        self._cb_target.clear()
+        self._cb_target.addItem("— Chọn cha đã có —", userData=None)
+        conn = get_connection()
+        parents = conn.execute("""
+            SELECT id, name, type FROM categories
+            WHERE parent_id IS NULL ORDER BY type, name
+        """).fetchall()
+        conn.close()
+        for p in parents:
+            t = "Chi tiêu" if p["type"] == "expense" else "Thu nhập"
+            self._cb_target.addItem(f"{p['name']} ({t})", userData=p["id"])
+
+    # ── Actions ───────────────────────────────────────────────────────────────
+
+    def _on_type_changed(self, idx: int):
+        self._load_parent_options("expense" if idx == 0 else "income")
+
+    def _pick_color(self):
+        color = QColorDialog.getColor(QColor(self._selected_color), self, "Chọn màu")
+        if color.isValid():
+            self._set_color(color.name())
+
+    def _set_color(self, color: str):
+        self._selected_color = color
+        self._update_color_btn()
+
+    def _update_color_btn(self):
+        self._btn_color.setStyleSheet(f"""
+            QPushButton {{
+                background:{self._selected_color}; color:white;
+                border-radius:8px; border:none;
+                font-size:13px; font-weight:600; padding:0 16px;
+            }}
+            QPushButton:hover {{ background:{self._selected_color}; opacity:0.85; }}
+        """)
+
+    def _save_new_category(self):
+        name = self._inp_name.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Thiếu thông tin", "Vui lòng nhập tên danh mục.")
+            return
+        tx_type = "expense" if self._cb_type.currentIndex() == 0 else "income"
+        parent_id = self._cb_parent.currentData()
+        color = self._selected_color
+
+        conn = get_connection()
+
+        # ── Validation: tên không được trùng với danh mục cha/con ────────────
+        name_lower = name.strip().lower()
+
+        if parent_id:
+            # Đang tạo danh mục con → tên không được trùng tên cha
+            parent_row = conn.execute(
+                "SELECT name FROM categories WHERE id=?", (parent_id,)
+            ).fetchone()
+            if parent_row and parent_row["name"].strip().lower() == name_lower:
+                QMessageBox.warning(
+                    self, "Tên trùng lặp",
+                    f'Tên danh mục con không được trùng với danh mục cha "{parent_row["name"]}".'
+                )
+                return
+        else:
+            # Đang tạo danh mục cha → tên không được trùng tên bất kỳ danh mục con nào
+            conflict = conn.execute("""
+                SELECT name FROM categories
+                WHERE parent_id IS NOT NULL
+                  AND LOWER(TRIM(name)) = LOWER(TRIM(?))
+                  AND type = ?
+                LIMIT 1
+            """, (name, tx_type)).fetchone()
+            if conflict:
+                QMessageBox.warning(
+                    self, "Tên trùng lặp",
+                    f'Tên danh mục cha "{name}" đã tồn tại ở danh mục con. '
+                    "Vui lòng chọn tên khác."
+                )
+                return
+        # ─────────────────────────────────────────────────────────────────────
+
+        try:
+            conn.execute_write(
+                "INSERT INTO categories (name, type, color, parent_id) VALUES (?,?,?,?)",
+                (name, tx_type, color, parent_id)
+            )
+            QMessageBox.information(self, "Thành công",
+                                    f'Đã thêm danh mục "{name}".')
+            self._inp_name.clear()
+            self._refresh_all_data()
+        except Exception as e:
+            QMessageBox.critical(self, "Lỗi", f"Không thể lưu: {e}")
+
+    def _do_group(self):
+        selected_ids = [(cat_id, cat_type)
+                        for cb, cat_id, cat_type in self._checkboxes
+                        if cb.isChecked()]
+        if not selected_ids:
+            QMessageBox.warning(self, "Chưa chọn",
+                                "Vui lòng chọn ít nhất một danh mục.")
+            return
+
+        new_parent_name = self._inp_new_parent.text().strip()
+        target_id = self._cb_target.currentData()
+
+        conn = get_connection()
+        try:
+            if new_parent_name:
+                tx_type = selected_ids[0][1]  # type của danh mục đầu tiên
+
+                # ── Validation: tên cha mới không được trùng tên các danh mục con đã chọn ──
+                selected_cat_ids = [cid for cid, _ in selected_ids]
+                placeholders = ",".join("?" * len(selected_cat_ids))
+                child_rows = conn.execute(
+                    f"SELECT name FROM categories WHERE id IN ({placeholders})",
+                    selected_cat_ids
+                ).fetchall()
+                child_names_lower = [r["name"].strip().lower() for r in child_rows]
+                if new_parent_name.strip().lower() in child_names_lower:
+                    QMessageBox.warning(
+                        self, "Tên trùng lặp",
+                        f'Tên danh mục cha "{new_parent_name}" trùng với một danh mục con '
+                        "đã chọn. Vui lòng đặt tên khác."
+                    )
+                    return
+
+                # Kiểm tra tên cha mới có trùng với bất kỳ danh mục con nào không
+                conflict = conn.execute("""
+                    SELECT name FROM categories
+                    WHERE parent_id IS NOT NULL
+                      AND LOWER(TRIM(name)) = LOWER(TRIM(?))
+                    LIMIT 1
+                """, (new_parent_name,)).fetchone()
+                if conflict:
+                    QMessageBox.warning(
+                        self, "Tên trùng lặp",
+                        f'Tên "{new_parent_name}" đã tồn tại ở danh mục con. '
+                        "Vui lòng chọn tên khác."
+                    )
+                    return
+                # ────────────────────────────────────────────────────────────────
+
+                conn.execute_write(
+                    "INSERT INTO categories (name, type, color) VALUES (?,?,?)",
+                    (new_parent_name, tx_type, self._selected_color)
+                )
+                target_id = conn.execute(
+                    "SELECT last_insert_rowid() as lid").fetchone()["lid"]
+
+            if not target_id:
+                QMessageBox.warning(self, "Thiếu thông tin",
+                                    "Vui lòng chọn cha đã có hoặc nhập tên cha mới.")
+                return
+
+            # ── Validation: tên cha đã chọn không được trùng tên danh mục con đã chọn ──
+            if target_id:
+                parent_row = conn.execute(
+                    "SELECT name FROM categories WHERE id=?", (target_id,)
+                ).fetchone()
+                if parent_row:
+                    selected_cat_ids = [cid for cid, _ in selected_ids]
+                    placeholders = ",".join("?" * len(selected_cat_ids))
+                    child_rows = conn.execute(
+                        f"SELECT name FROM categories WHERE id IN ({placeholders})",
+                        selected_cat_ids
+                    ).fetchall()
+                    child_names_lower = [r["name"].strip().lower() for r in child_rows]
+                    if parent_row["name"].strip().lower() in child_names_lower:
+                        QMessageBox.warning(
+                            self, "Tên trùng lặp",
+                            f'Tên danh mục cha "{parent_row["name"]}" trùng với một '
+                            "danh mục con đã chọn. Vui lòng đổi tên."
+                        )
+                        return
+            # ────────────────────────────────────────────────────────────────────
+
+            for cat_id, _ in selected_ids:
+                conn.execute_write(
+                    "UPDATE categories SET parent_id=? WHERE id=?",
+                    (target_id, cat_id)
+                )
+            QMessageBox.information(
+                self, "Thành công",
+                f"Đã nhóm {len(selected_ids)} danh mục vào cha.")
+            self._inp_new_parent.clear()
+            self._refresh_all_data()
+        except Exception as e:
+            QMessageBox.critical(self, "Lỗi", f"Không thể nhóm: {e}")
+
+    def _delete_cat(self, cat_id: int, cat_name: str):
+        reply = QMessageBox.question(
+            self, "Xác nhận xóa",
+            f'Bạn có chắc muốn xóa danh mục "{cat_name}"?\n'
+            "Danh mục con sẽ trở thành danh mục gốc. Giao dịch liên quan không bị xóa.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            conn = get_connection()
+            try:
+                conn.execute_write(
+                    "UPDATE categories SET parent_id=NULL WHERE parent_id=?",
+                    (cat_id,))
+                conn.execute_write(
+                    "DELETE FROM categories WHERE id=?", (cat_id,))
+                self._refresh_all_data()
+            except Exception as e:
+                QMessageBox.critical(self, "Lỗi", f"Không thể xóa: {e}")
+
+    def _refresh_all_data(self):
+        tx_type = "expense" if self._cb_type.currentIndex() == 0 else "income"
+        self._load_parent_options(tx_type)
+        self._load_checkboxes()
+        self._load_target_options()
+        self._refresh_list_tab()
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _lbl(text: str) -> QLabel:
+        lbl = QLabel(text)
+        lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Medium))
+        lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
+        return lbl
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── SpendingFrame (Main) ──────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
 class SpendingFrame(QWidget):
     """
-    Trang Quản lý Chi tiêu — theme Navy/Blue.
-    - Toggle Chi tiêu / Thu nhập → 2 biểu đồ donut riêng
-    - Tab Danh mục con / Danh mục cha → 2 biểu đồ donut riêng
+    Trang Quản lý Chi tiêu — Finance AI.
+
+    Logic danh mục:
+    - CHI TIÊU: có 2 tab "Danh mục con" (list phẳng) và "Danh mục cha" (expandable)
+    - THU NHẬP: KHÔNG có tab, chỉ list phẳng (thu nhập không phân cấp cha/con)
     """
 
     def __init__(self, main_window=None):
@@ -449,7 +1113,7 @@ class SpendingFrame(QWidget):
         self.main_window = main_window
         self.tm = TransactionManager()
         self._current_month = datetime.now().strftime("%Y-%m")
-        self._view_mode   = "sub"       # "sub" | "parent"
+        self._view_mode   = "sub"       # "sub" | "parent" — chỉ dùng khi expense
         self._data_mode   = "expense"   # "expense" | "income"
         self._show_trend  = False
         self._cat_expanded = False
@@ -548,16 +1212,18 @@ class SpendingFrame(QWidget):
         nav.addWidget(self._btn_next_m)
         layout.addLayout(nav)
 
-        # Cards Chi tiêu / Thu nhập — click để switch biểu đồ
+        # Cards Chi tiêu / Thu nhập — click để switch
         cards_row = QHBoxLayout()
         cards_row.setSpacing(10)
-        self._expense_card = self._summary_card("💸 Chi tiêu",  "0đ", selected=True,  click_mode="expense")
-        self._income_card  = self._summary_card("💰 Thu nhập",  "0đ", selected=False, click_mode="income")
+        self._expense_card = self._summary_card(
+            "💸 Chi tiêu", "0đ", selected=True, click_mode="expense")
+        self._income_card  = self._summary_card(
+            "💰 Thu nhập", "0đ", selected=False, click_mode="income")
         cards_row.addWidget(self._expense_card)
         cards_row.addWidget(self._income_card)
         layout.addLayout(cards_row)
 
-        # Warning banner (Navy style)
+        # Warning banner
         self._warning_banner = QFrame()
         self._warning_banner.setStyleSheet(f"""
             QFrame {{
@@ -589,7 +1255,6 @@ class SpendingFrame(QWidget):
 
     def _summary_card(self, label: str, value: str,
                       selected: bool = False, click_mode: str = "expense") -> QFrame:
-        """Card tóm tắt có thể click để đổi biểu đồ."""
         card = QFrame()
         border = NAVY_MID if selected else BORDER_BLUE
         bg     = ACCENT_BLUE if selected else CARD_WHITE
@@ -621,8 +1286,7 @@ class SpendingFrame(QWidget):
         val.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         val.setStyleSheet(
             f"color:{RED_SOFT if click_mode == 'expense' else MINT}; "
-            f"border:none; background:transparent;"
-        )
+            f"border:none; background:transparent;")
         row.addWidget(val)
         row.addStretch()
         arrow = QLabel("↑")
@@ -634,14 +1298,13 @@ class SpendingFrame(QWidget):
         card._val_lbl   = val
         card._arrow_lbl = arrow
 
-        # Click handler
         def on_click(event, mode=click_mode):
             self._switch_data_mode(mode)
         card.mousePressEvent = on_click
 
         return card
 
-    # ── Chart section — stack: donut hoặc bar ─────────────────────────────────
+    # ── Chart section ─────────────────────────────────────────────────────────
 
     def _build_chart_section(self):
         self._chart_container = QWidget()
@@ -666,7 +1329,6 @@ class SpendingFrame(QWidget):
         self._donut.setFixedSize(220, 220)
         donut_l.addWidget(self._donut)
 
-        # Legend
         self._legend_w = QWidget()
         self._legend_w.setStyleSheet("background:transparent;")
         self._legend_l = QVBoxLayout(self._legend_w)
@@ -697,12 +1359,43 @@ class SpendingFrame(QWidget):
         cat_l.setContentsMargins(0, 0, 0, 0)
         cat_l.setSpacing(0)
 
-        # Tab bar (Danh mục con / Danh mục cha — mỗi tab có biểu đồ riêng)
-        tab_bar = QWidget()
-        tab_bar.setFixedHeight(44)
-        tab_bar.setStyleSheet(
+        # ── Section header: tiêu đề + nút Quản lý ──
+        sec_hdr = QWidget()
+        sec_hdr.setFixedHeight(44)
+        sec_hdr.setStyleSheet(
             f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
-        tb_l = QHBoxLayout(tab_bar)
+        sec_hl = QHBoxLayout(sec_hdr)
+        sec_hl.setContentsMargins(16, 0, 8, 0)
+        sec_hl.setSpacing(8)
+        sec_title = QLabel("Danh mục")
+        sec_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        sec_title.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
+        sec_hl.addWidget(sec_title)
+        sec_hl.addStretch()
+        btn_manage = QPushButton("⚙  Quản lý")
+        btn_manage.setFixedHeight(30)
+        btn_manage.setStyleSheet(f"""
+            QPushButton {{
+                background:{ACCENT_BLUE};
+                color:{NAVY_MID};
+                border:1px solid {BORDER_BLUE};
+                border-radius:8px;
+                font-size:11px;
+                font-weight:600;
+                padding:0 12px;
+            }}
+            QPushButton:hover {{ background:{BORDER_BLUE}; color:{NAVY}; }}
+        """)
+        btn_manage.clicked.connect(self._open_category_manager)
+        sec_hl.addWidget(btn_manage)
+        cat_l.addWidget(sec_hdr)
+
+        # ── Tab bar — chỉ hiện khi expense ──
+        self._tab_bar = QWidget()
+        self._tab_bar.setFixedHeight(44)
+        self._tab_bar.setStyleSheet(
+            f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
+        tb_l = QHBoxLayout(self._tab_bar)
         tb_l.setContentsMargins(0, 0, 0, 0)
         tb_l.setSpacing(0)
 
@@ -721,9 +1414,9 @@ class SpendingFrame(QWidget):
 
         tb_l.addWidget(self._btn_sub)
         tb_l.addWidget(self._btn_parent)
-        cat_l.addWidget(tab_bar)
+        cat_l.addWidget(self._tab_bar)
 
-        # Category list
+        # ── Category list ──
         self._cat_list_w = QWidget()
         self._cat_list_w.setStyleSheet("background:transparent;")
         self._cat_list_l = QVBoxLayout(self._cat_list_w)
@@ -838,7 +1531,7 @@ class SpendingFrame(QWidget):
                 f"color:{color_i}; border:none; background:transparent;")
 
     def _load_chart(self, month: str):
-        """Load biểu đồ donut theo mode hiện tại (expense/income) + view_mode (sub/parent)."""
+        """Load biểu đồ donut theo data_mode hiện tại."""
         if self._show_trend:
             self._load_trend_chart()
             return
@@ -846,28 +1539,36 @@ class SpendingFrame(QWidget):
         conn = get_connection()
         tx_type = "expense" if self._data_mode == "expense" else "income"
 
-        if self._view_mode == "sub":
-            # Danh mục con
-            rows = conn.execute("""
-                SELECT c.name, c.color, SUM(t.amount) as total
-                FROM transactions t
-                JOIN categories c ON t.category_id = c.id
-                WHERE t.type=? AND strftime('%Y-%m', t.date)=?
-                GROUP BY c.id ORDER BY total DESC
-            """, (tx_type, month)).fetchall()
-        else:
-            # Danh mục cha (gộp theo parent) — trả về cùng schema như view 'sub' (name, color, total)
+        if self._data_mode == "expense" and self._view_mode == "parent":
+            # Biểu đồ theo danh mục cha:
+            # Tổng tiền cha = tổng tất cả con (c.parent_id = cp.id)
+            # Danh mục standalone (không có cha, không có con) → tính riêng
             rows = conn.execute("""
                 SELECT
-                    COALESCE(cp.name, c.name) as name,
-                    COALESCE(cp.color, c.color) as color,
-                    SUM(t.amount) as total
+                    COALESCE(cp.id, c.id)      as grp_id,
+                    COALESCE(cp.name, c.name)   as name,
+                    COALESCE(cp.color, c.color)  as color,
+                    SUM(t.amount)               as total
                 FROM transactions t
                 JOIN categories c ON t.category_id = c.id
                 LEFT JOIN categories cp ON c.parent_id = cp.id
                 WHERE t.type=? AND strftime('%Y-%m', t.date)=?
                 GROUP BY COALESCE(cp.id, c.id)
                 ORDER BY total DESC
+            """, (tx_type, month)).fetchall()
+        else:
+            # Biểu đồ theo danh mục LEAF:
+            # Chỉ lấy danh mục con thực (có parent_id) hoặc standalone (không có cha, không có con)
+            rows = conn.execute("""
+                SELECT c.name, c.color, SUM(t.amount) as total
+                FROM transactions t
+                JOIN categories c ON t.category_id = c.id
+                WHERE t.type=? AND strftime('%Y-%m', t.date)=?
+                  AND (
+                    c.parent_id IS NOT NULL
+                    OR NOT EXISTS (SELECT 1 FROM categories cc WHERE cc.parent_id = c.id)
+                  )
+                GROUP BY c.id ORDER BY total DESC
             """, (tx_type, month)).fetchall()
         conn.close()
 
@@ -880,8 +1581,7 @@ class SpendingFrame(QWidget):
         data = []
         for i, r in enumerate(rows[:9]):
             color = r["color"] if r["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
-            name  = r[0]  # parent_name hoặc name
-            data.append({"name": name, "value": float(r["total"]), "color": color})
+            data.append({"name": r["name"] or "", "value": float(r["total"]), "color": color})
 
         if self._data_mode == "expense":
             center_label = "Chi tiêu"
@@ -901,22 +1601,19 @@ class SpendingFrame(QWidget):
             rl = QHBoxLayout(row_w)
             rl.setContentsMargins(0, 2, 0, 2)
             rl.setSpacing(6)
-
             dot = QFrame()
             dot.setFixedSize(10, 10)
             dot.setStyleSheet(
                 f"background:{seg['color']}; border-radius:5px; border:none;")
             rl.addWidget(dot)
-
             pct_lbl = QLabel(f"{pct:.0f}%")
             pct_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
             pct_lbl.setStyleSheet(f"color:{seg['color']}; border:none;")
             pct_lbl.setFixedWidth(34)
             rl.addWidget(pct_lbl)
-
             name_lbl = QLabel(seg["name"][:12])
             name_lbl.setFont(QFont("Segoe UI", 9))
-            name_lbl.setStyleSheet(f"color:{TEXT_MUTED}; border:none;")
+            name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
             rl.addWidget(name_lbl)
             rl.addStretch()
             self._legend_l.addWidget(row_w)
@@ -931,7 +1628,6 @@ class SpendingFrame(QWidget):
             while m <= 0:
                 m += 12; y -= 1
             months.append(f"{y}-{m:02d}")
-
         values = []
         for m in months:
             s = self.tm.get_monthly_summary(m)
@@ -939,13 +1635,20 @@ class SpendingFrame(QWidget):
                 values.append(s.get("total_expense", 0) or 0)
             else:
                 values.append(s.get("total_income", 0) or 0)
-
         color = RED_SOFT if self._data_mode == "expense" else MINT
         label = "Chi tiêu" if self._data_mode == "expense" else "Thu nhập"
         current_idx = months.index(self._current_month) if self._current_month in months else -1
         self._trend_canvas.plot(months, values, current_idx, color, label)
 
     def _load_categories(self, month: str):
+        """
+        Load danh sách danh mục:
+        - expense + sub:    list phẳng CHỈ danh mục leaf (có parent_id, hoặc không có con)
+        - expense + parent: danh mục cha với expand/collapse ra con
+                            Tổng tiền cha = tổng tất cả con thuộc cha đó
+        - income:           list phẳng (KHÔNG có tab cha/con)
+        """
+        # Xóa widgets cũ
         while self._cat_list_l.count():
             item = self._cat_list_l.takeAt(0)
             if item.widget():
@@ -954,64 +1657,133 @@ class SpendingFrame(QWidget):
         tx_type = "expense" if self._data_mode == "expense" else "income"
         conn = get_connection()
 
-        if self._view_mode == "sub":
+        if self._data_mode == "expense" and self._view_mode == "parent":
+            # ----- CHẾ ĐỘ DANH MỤC CHA (expense) -----
+            # Lấy tất cả danh mục cha thực (có ít nhất 1 con) trong DB, không phụ thuộc giao dịch
+            all_parents = conn.execute("""
+                SELECT DISTINCT cp.id, cp.name, cp.color
+                FROM categories cp
+                WHERE EXISTS (SELECT 1 FROM categories cc WHERE cc.parent_id = cp.id)
+            """).fetchall()
+
+            # Tính tổng tiền cho từng cha (= tổng tiền tất cả con)
+            parent_totals = {}
+            for p in all_parents:
+                row = conn.execute("""
+                    SELECT COALESCE(SUM(t.amount), 0) as total
+                    FROM transactions t
+                    JOIN categories c ON t.category_id = c.id
+                    WHERE t.type=? AND strftime('%Y-%m', t.date)=?
+                      AND c.parent_id = ?
+                """, (tx_type, month, p["id"])).fetchone()
+                parent_totals[p["id"]] = {
+                    "id":    p["id"],
+                    "name":  p["name"],
+                    "color": p["color"],
+                    "total": row["total"] or 0,
+                    "is_parent": True,
+                }
+
+            conn.close()
+
+            # Chỉ hiển thị danh mục cha thực sự (có ít nhất 1 con) có tổng tiền > 0
+            combined = []
+            for pid, pdata in parent_totals.items():
+                if pdata["total"] > 0:
+                    combined.append(pdata)
+            combined.sort(key=lambda x: x["total"], reverse=True)
+
+            limit = len(combined) if self._cat_expanded else min(5, len(combined))
+
+            for i, par in enumerate(combined[:limit]):
+                parent_color = par["color"] if par["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                par_data = {
+                    "name":  par["name"] or "",
+                    "color": parent_color,
+                    "total": par["total"] or 0,
+                }
+
+                # Lấy danh mục con thuộc cha này có giao dịch trong tháng
+                conn2 = get_connection()
+                child_rows = conn2.execute("""
+                    SELECT c.id, c.name, c.color, SUM(t.amount) as total
+                    FROM transactions t
+                    JOIN categories c ON t.category_id = c.id
+                    WHERE t.type=? AND strftime('%Y-%m', t.date)=?
+                      AND c.parent_id = ?
+                    GROUP BY c.id ORDER BY total DESC
+                """, (tx_type, month, par["id"])).fetchall()
+                conn2.close()
+
+                children = []
+                for ch in child_rows:
+                    ch_color = ch["color"] if ch["color"] else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                    children.append({"name": ch["name"], "color": ch_color, "total": ch["total"] or 0})
+
+                if children:
+                    parent_row = ParentCategoryRow(par_data, children)
+                    self._cat_list_l.addWidget(parent_row)
+                else:
+                    row = CategoryRow(par_data)
+                    self._cat_list_l.addWidget(row)
+
+            has_more = len(combined) > 5
+            self._btn_toggle_cat.setVisible(has_more)
+            self._btn_toggle_cat.setText("Thu gọn ∧" if self._cat_expanded else "Xem thêm ∨")
+
+        else:
+            # ----- CHẾ ĐỘ DANH MỤC CON (expense) hoặc THU NHẬP (flat) -----
+            # Chỉ lấy danh mục LEAF:
+            # 1. Danh mục có parent_id (con thực sự)
+            # 2. Danh mục không có parent_id VÀ không có con (standalone)
             rows = conn.execute("""
                 SELECT c.id, c.name, c.color, SUM(t.amount) as total
                 FROM transactions t
                 JOIN categories c ON t.category_id = c.id
                 WHERE t.type=? AND strftime('%Y-%m', t.date)=?
+                  AND (
+                    c.parent_id IS NOT NULL
+                    OR NOT EXISTS (SELECT 1 FROM categories cc WHERE cc.parent_id = c.id)
+                  )
                 GROUP BY c.id ORDER BY total DESC
             """, (tx_type, month)).fetchall()
-        else:
-            rows = conn.execute("""
-                SELECT
-                    COALESCE(cp.id, c.id) as grp_id,
-                    COALESCE(cp.name, c.name) as name,
-                    COALESCE(cp.color, c.color) as color,
-                    SUM(t.amount) as total
-                FROM transactions t
-                JOIN categories c ON t.category_id = c.id
-                LEFT JOIN categories cp ON c.parent_id = cp.id
-                WHERE t.type=? AND strftime('%Y-%m', t.date)=?
-                GROUP BY grp_id ORDER BY total DESC
-            """, (tx_type, month)).fetchall()
 
-        unclassified_count = conn.execute("""
-            SELECT COUNT(*) as n FROM transactions
-            WHERE type=? AND category_id IS NULL
-            AND strftime('%Y-%m', date)=?
-        """, (tx_type, month)).fetchone()["n"]
-        unclassified_amt = conn.execute("""
-            SELECT COALESCE(SUM(amount),0) as s FROM transactions
-            WHERE type=? AND category_id IS NULL
-            AND strftime('%Y-%m', date)=?
-        """, (tx_type, month)).fetchone()["s"]
-        conn.close()
+            unclassified_count = conn.execute("""
+                SELECT COUNT(*) as n FROM transactions
+                WHERE type=? AND category_id IS NULL
+                AND strftime('%Y-%m', date)=?
+            """, (tx_type, month)).fetchone()["n"]
+            unclassified_amt = conn.execute("""
+                SELECT COALESCE(SUM(amount),0) as s FROM transactions
+                WHERE type=? AND category_id IS NULL
+                AND strftime('%Y-%m', date)=?
+            """, (tx_type, month)).fetchone()["s"]
+            conn.close()
 
-        all_cats = [dict(r) for r in rows]
-        limit = len(all_cats) if self._cat_expanded else min(5, len(all_cats))
+            all_cats = [dict(r) for r in rows]
+            limit = len(all_cats) if self._cat_expanded else min(5, len(all_cats))
 
-        for i, cat in enumerate(all_cats[:limit]):
-            color = cat["color"] if cat.get("color") else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
-            row = CategoryRow({
-                "name":  cat["name"],
-                "color": color,
-                "total": cat["total"] or 0,
-            })
-            self._cat_list_l.addWidget(row)
+            for i, cat in enumerate(all_cats[:limit]):
+                color = cat["color"] if cat.get("color") else CATEGORY_PALETTE[i % len(CATEGORY_PALETTE)]
+                row = CategoryRow({
+                    "name":  cat["name"],
+                    "color": color,
+                    "total": cat["total"] or 0,
+                })
+                self._cat_list_l.addWidget(row)
 
-        if unclassified_count > 0:
-            row = CategoryRow({
-                "name":  "Chưa phân loại",
-                "color": "#888780",
-                "total": unclassified_amt or 0,
-                "unclassified_count": unclassified_count,
-            })
-            self._cat_list_l.addWidget(row)
+            if unclassified_count > 0:
+                row = CategoryRow({
+                    "name":  "Chưa phân loại",
+                    "color": "#888780",
+                    "total": unclassified_amt or 0,
+                    "unclassified_count": unclassified_count,
+                })
+                self._cat_list_l.addWidget(row)
 
-        has_more = len(all_cats) > 5
-        self._btn_toggle_cat.setVisible(has_more)
-        self._btn_toggle_cat.setText("Thu gọn ∧" if self._cat_expanded else "Xem thêm ∨")
+            has_more = len(all_cats) > 5
+            self._btn_toggle_cat.setVisible(has_more)
+            self._btn_toggle_cat.setText("Thu gọn ∧" if self._cat_expanded else "Xem thêm ∨")
 
     def _load_budgets(self, month: str):
         while self._budget_scroll_l.count():
@@ -1073,15 +1845,15 @@ class SpendingFrame(QWidget):
         self._budget_scroll_l.addStretch()
 
     def _check_warning(self, month: str):
-        summary = self.tm.get_monthly_summary(month)
-        expense = summary.get("total_expense", 0) or 0
-        prev = self._prev_month_str(month)
-        prev_s = self.tm.get_monthly_summary(prev)
+        summary  = self.tm.get_monthly_summary(month)
+        expense  = summary.get("total_expense", 0) or 0
+        prev     = self._prev_month_str(month)
+        prev_s   = self.tm.get_monthly_summary(prev)
         prev_exp = prev_s.get("total_expense", 0) or 0
 
         if prev_exp > 0:
             delta = expense - prev_exp
-            pct = delta / prev_exp * 100
+            pct   = delta / prev_exp * 100
             if pct > 10:
                 msg = (f"Tăng bất thường {self._fmt(delta)} "
                        f"({pct:+.0f}%) so với cùng kỳ tháng trước")
@@ -1091,6 +1863,12 @@ class SpendingFrame(QWidget):
                 self._warning_banner.hide()
         else:
             self._warning_banner.hide()
+
+    def _open_category_manager(self):
+        """Mở dialog quản lý danh mục, sau khi đóng thì refresh."""
+        dlg = CategoryManagerDialog(self)
+        dlg.exec()
+        self.refresh()
 
     # ── Actions ───────────────────────────────────────────────────────────────
 
@@ -1120,10 +1898,12 @@ class SpendingFrame(QWidget):
             pass
 
     def _switch_data_mode(self, mode: str):
-        """Chuyển giữa Chi tiêu / Thu nhập → cập nhật card highlight + biểu đồ."""
-        self._data_mode = mode
+        """Chuyển giữa Chi tiêu / Thu nhập."""
+        self._data_mode    = mode
+        self._cat_expanded = False
+        self._view_mode    = "sub"  # reset về sub khi chuyển mode
 
-        # Highlight card được chọn
+        # Highlight card
         for card, m in [(self._expense_card, "expense"), (self._income_card, "income")]:
             active = (m == mode)
             border = NAVY_MID if active else BORDER_BLUE
@@ -1140,7 +1920,15 @@ class SpendingFrame(QWidget):
                 }}
             """)
 
-        # Reload chart và categories
+        # Hiện/ẩn tab bar (chỉ hiện khi expense)
+        self._tab_bar.setVisible(mode == "expense")
+
+        # Reset tab buttons về "sub"
+        self._btn_sub.setChecked(True)
+        self._btn_parent.setChecked(False)
+        self._btn_sub.setStyleSheet(self._cat_tab_style(True))
+        self._btn_parent.setStyleSheet(self._cat_tab_style(False))
+
         self._load_chart(self._current_month)
         self._load_categories(self._current_month)
 
@@ -1161,13 +1949,14 @@ class SpendingFrame(QWidget):
         self._load_chart(self._current_month)
 
     def _switch_cat_view(self, mode: str):
-        """Chuyển Danh mục con / Danh mục cha → cập nhật biểu đồ riêng."""
-        self._view_mode = mode
+        """Chuyển Danh mục con / Danh mục cha (chỉ cho expense)."""
+        self._view_mode    = mode
+        self._cat_expanded = False
         self._btn_sub.setChecked(mode == "sub")
         self._btn_parent.setChecked(mode == "parent")
         self._btn_sub.setStyleSheet(self._cat_tab_style(mode == "sub"))
         self._btn_parent.setStyleSheet(self._cat_tab_style(mode == "parent"))
-        # Reload cả biểu đồ (vì donut thay đổi theo sub/parent) lẫn danh sách
+        # Reload biểu đồ theo chế độ mới
         self._load_chart(self._current_month)
         self._load_categories(self._current_month)
 
@@ -1250,7 +2039,7 @@ class SpendingFrame(QWidget):
         return f"""
             QPushButton {{
                 background:transparent;
-                color:{TEXT_MUTED};
+                color:{NAVY_LIGHT};
                 border:none;
                 border-bottom:3px solid transparent;
                 font-size:13px;

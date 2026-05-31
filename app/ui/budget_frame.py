@@ -30,9 +30,9 @@ class BudgetFrame(QWidget):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border:none; background:#f5f5f5; }")
+        scroll.setStyleSheet("QScrollArea { border:none; background:#F0F6FF; }")
         content = QWidget()
-        content.setStyleSheet("background:#f5f5f5;")
+        content.setStyleSheet("background:#F0F6FF;")
         self.cl = QVBoxLayout(content)
         self.cl.setContentsMargins(16, 14, 16, 16)
         self.cl.setSpacing(12)
@@ -175,7 +175,7 @@ class BudgetFrame(QWidget):
             cl.setContentsMargins(16, 12, 16, 12)
             lbl = QLabel(label)
             lbl.setFont(QFont("Segoe UI", 10))
-            lbl.setStyleSheet("color:#aaa; border:none;")
+            lbl.setStyleSheet("color:#4A6785; border:none;")
             cl.addWidget(lbl)
             if isinstance(value, int) and label.startswith("Danh mục"):
                 val_text = str(value)
@@ -198,7 +198,7 @@ class BudgetFrame(QWidget):
             empty = QLabel("Chưa có ngân sách nào. Nhấn '+ Đặt ngân sách' để bắt đầu.")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
             empty.setStyleSheet(
-                "color:#bbb; font-size:14px; padding:40px; border:none;")
+                "color:#4A6785; font-size:14px; padding:40px; border:none;")
             self.cards_layout.addWidget(empty, 0, 0, 1, 2)
             return
 
@@ -259,7 +259,7 @@ class BudgetFrame(QWidget):
         btn_edit = QPushButton("Sửa")
         btn_edit.setFixedSize(40, 24)
         btn_edit.setStyleSheet(
-            "QPushButton { background:transparent; color:#888; border:1px solid #ddd; border-radius:4px; font-size:10px; } QPushButton:hover { background:#f5f5f5; }")
+            "QPushButton { background:transparent; color:#4A6785; border:1px solid #ddd; border-radius:4px; font-size:10px; } QPushButton:hover { background:#f5f5f5; }")
         btn_edit.clicked.connect(lambda _, bid=b["id"]: self._open_edit_dialog(bid))
         header.addWidget(btn_edit)
 
@@ -283,7 +283,7 @@ class BudgetFrame(QWidget):
         limit_lbl = QLabel(
             f'Ngân sách: <b>{self._fmt(b["limit_amount"])}</b>')
         limit_lbl.setFont(QFont("Segoe UI", 11))
-        limit_lbl.setStyleSheet("color:#555; border:none;")
+        limit_lbl.setStyleSheet("color:#2C4A6A; border:none;")
         amounts.addWidget(limit_lbl)
         layout.addLayout(amounts)
 
@@ -520,14 +520,14 @@ class BudgetDialog(QDialog):
         layout.addLayout(form)
 
         note = QLabel("* Cảnh báo hiện khi chi tiêu vượt % ngân sách đặt ra")
-        note.setStyleSheet("color:#aaa; font-size:10px;")
+        note.setStyleSheet("color:#4A6785; font-size:10px;")
         layout.addWidget(note)
 
         layout.addStretch()
         btn_l = QHBoxLayout()
         btn_cancel = QPushButton("Hủy")
         btn_cancel.setStyleSheet(
-            "QPushButton { background:#fff; color:#888; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-size:12px; }")
+            "QPushButton { background:#fff; color:#4A6785; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-size:12px; }")
         btn_cancel.clicked.connect(self.reject)
         btn_save = QPushButton("Lưu" if is_edit else "Đặt ngân sách")
         btn_save.setStyleSheet(

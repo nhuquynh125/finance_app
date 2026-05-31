@@ -70,7 +70,7 @@ class MetricCard(QFrame):
             top.addWidget(ic)
         lbl = QLabel(label)
         lbl.setFont(QFont("Segoe UI", 10))
-        lbl.setStyleSheet("color:#8BAEC8; border:none; background:transparent;")
+        lbl.setStyleSheet("color:#4A6785; border:none; background:transparent;")
         top.addWidget(lbl)
         top.addStretch()
         layout.addLayout(top)
@@ -82,7 +82,7 @@ class MetricCard(QFrame):
 
         self.trend_lbl = QLabel("")
         self.trend_lbl.setFont(QFont("Segoe UI", 9))
-        self.trend_lbl.setStyleSheet("color:#8BAEC8; border:none; background:transparent;")
+        self.trend_lbl.setStyleSheet("color:#4A6785; border:none; background:transparent;")
         layout.addWidget(self.trend_lbl)
 
     def paintEvent(self, event):
@@ -180,7 +180,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         # Su dung text thuan khong emoji de tranh UnicodeEncodeError tren Windows
         today_lbl = QLabel(datetime.now().strftime("[%d/%m/%Y]"))
-        today_lbl.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
+        today_lbl.setStyleSheet("color:#4A6785; font-size:12px; border:none;")
         layout.addWidget(today_lbl)
 
         layout.addStretch()
@@ -271,7 +271,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             dot = QLabel("*")
             dot.setStyleSheet(f"color:{color}; font-size:14px; border:none;")
             lbl = QLabel(text)
-            lbl.setStyleSheet("color:#8BAEC8; font-size:11px; border:none;")
+            lbl.setStyleSheet("color:#4A6785; font-size:11px; border:none;")
             bar_header.addWidget(dot)
             bar_header.addWidget(lbl)
             bar_header.addSpacing(8)
@@ -414,7 +414,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         if not card:
             return
         if previous is None or previous == 0:
-            card.set_trend("", "#8BAEC8")
+            card.set_trend("", "#4A6785")
             return
         delta = current - previous
         pct   = (delta / previous) * 100
@@ -454,9 +454,9 @@ class DashboardFrame(QWidget, BusConnectMixin):
                color=ORANGE, alpha=0.90, zorder=3, linewidth=0)
 
         ax.set_xticks(list(x))
-        ax.set_xticklabels(labels, fontsize=9, color="#8BAEC8")
-        ax.tick_params(labelsize=9, colors="#8BAEC8", length=0)
-        ax.set_ylabel("Trieu d", fontsize=9, color="#8BAEC8")
+        ax.set_xticklabels(labels, fontsize=9, color="#4A6785")
+        ax.tick_params(labelsize=9, colors="#4A6785", length=0)
+        ax.set_ylabel("Trieu d", fontsize=9, color="#4A6785")
         ax.yaxis.grid(True, color=BORDER_BLUE, linewidth=0.8, zorder=0)
         ax.set_axisbelow(True)
         ax.set_ylim(bottom=0)
@@ -515,7 +515,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             rl.addWidget(lbl)
             rl.addStretch()
             pct_lbl = QLabel(f"{pct:.0f}%")
-            pct_lbl.setStyleSheet("color:#8BAEC8; font-size:10px; border:none;")
+            pct_lbl.setStyleSheet("color:#4A6785; font-size:10px; border:none;")
             rl.addWidget(pct_lbl)
             self.pie_layout.addWidget(row_w)
             self._pie_legend_widgets.append(row_w)
@@ -531,7 +531,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         if not txs:
             lbl = QLabel("Chua co giao dich trong thang nay")
             lbl.setStyleSheet(
-                "color:#8BAEC8; font-size:12px; padding:16px; border:none;"
+                "color:#4A6785; font-size:12px; padding:16px; border:none;"
             )
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.tx_layout.addWidget(lbl)
@@ -584,7 +584,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
             meta = QLabel(f"{tx['date']}{cat_label} . {tx.get('account_name', '')}")
             meta.setFont(QFont("Segoe UI", 10))
-            meta.setStyleSheet("color:#8BAEC8; border:none; background:transparent;")
+            meta.setStyleSheet("color:#4A6785; border:none; background:transparent;")
             dl.addWidget(meta)
             rl.addWidget(desc_w)
             rl.addStretch()

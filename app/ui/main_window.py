@@ -466,7 +466,7 @@ class _LoadingPlaceholder(QWidget):
         msg = QLabel(f"Đang tải {page_name}...")
         msg.setFont(QFont("Segoe UI", 13))
         msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        msg.setStyleSheet("color: #8BAEC8; border:none; background:transparent;")
+        msg.setStyleSheet("color: #4A6785; border:none; background:transparent;")
 
         layout.addWidget(spinner)
         layout.addSpacing(10)
@@ -615,7 +615,7 @@ class MainWindow(QMainWindow):
         placeholder = QWidget()
         lbl = QLabel(f"Trang '{page}' — đang phát triển")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet("color:#999; font-size:14px;")
+        lbl.setStyleSheet("color:#4A6785; font-size:14px;")
         from PyQt6.QtWidgets import QVBoxLayout as VBL
         VBL(placeholder).addWidget(lbl)
         return placeholder

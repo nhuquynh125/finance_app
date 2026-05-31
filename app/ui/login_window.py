@@ -1,4 +1,4 @@
-# app/ui/login_window.py
+#app/ui/login_window.py
 """
 Màn hình đăng nhập Finance AI — Navy / Mint / Cam theme từ logo.
 
@@ -280,7 +280,7 @@ class LoginPanel(QWidget):
         layout.addSpacing(4)
 
         hint = QLabel("Đăng nhập để quản lý tài chính thông minh")
-        hint.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
+        hint.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
         layout.addWidget(hint)
         layout.addSpacing(24)
 
@@ -374,7 +374,7 @@ class LoginPanel(QWidget):
         reg_row = QHBoxLayout()
         reg_row.addStretch()
         no_acc = QLabel("Chưa có tài khoản?")
-        no_acc.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
+        no_acc.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
         reg_row.addWidget(no_acc)
         reg_btn = QPushButton("Đăng ký ngay")
         reg_btn.setStyleSheet("""
@@ -449,7 +449,7 @@ class RegisterPanel(QWidget):
         layout.addSpacing(4)
 
         sub = QLabel("Điền thông tin để bắt đầu quản lý tài chính")
-        sub.setStyleSheet("color:#8BAEC8; font-size:12px; border:none; background:transparent;")
+        sub.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
         layout.addWidget(sub)
         layout.addSpacing(20)
 

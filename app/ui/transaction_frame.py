@@ -5,6 +5,7 @@ Thay đổi so với phiên bản cũ:
     → Xóa đoạn check alert.get("type") gây lỗi
   - TransactionDialog: thêm dropdown chọn tài khoản thay vì hardcode account_id=1
   - Thêm phân trang (pagination) cho bảng giao dịch (100 dòng/trang)
+  - FIX: alternating row color không còn bị override bởi dark theme (text vô hình)
 """
 
 from PyQt6.QtWidgets import (
@@ -149,20 +150,47 @@ class TransactionFrame(QWidget, BusConnectMixin):
         self.table = QTableWidget()
         self.table.setColumnCount(len(self.COLUMNS))
         self.table.setHorizontalHeaderLabels(self.COLUMNS)
+
+        # ── FIX: Explicitly set alternate-background-color to a light tint so
+        #    it is never overridden by the dark navy from the global theme QSS.
+        #    Without this, setAlternatingRowColors(True) picks up bg_secondary
+        #    (#122336 in dark mode) which makes text completely invisible.
         self.table.setStyleSheet("""
             QTableWidget {
-                background:#fff; border:none;
-                gridline-color:#f0f0f0; font-size:12px;
+                background: #ffffff;
+                border: none;
+                gridline-color: #f0f0f0;
+                font-size: 12px;
+                alternate-background-color: #F4F8FF;
             }
-            QTableWidget::item { padding:6px 12px; color:#333; }
-            QTableWidget::item:selected { background:#E6F1FB; color:#0C447C; }
+            QTableWidget::item {
+                padding: 6px 12px;
+                color: #333333;
+                background: transparent;
+            }
+            QTableWidget::item:alternate {
+                background: #F4F8FF;
+                color: #333333;
+            }
+            QTableWidget::item:selected {
+                background: #E6F1FB;
+                color: #0C447C;
+            }
+            QTableWidget::item:selected:alternate {
+                background: #C8DFF7;
+                color: #0C447C;
+            }
             QHeaderView::section {
-                background:#f7f7f7; color:#888;
-                font-size:10px; font-weight:bold;
-                border:none; border-bottom:1px solid #e8e8e8;
-                padding:6px 12px;
+                background: #f7f7f7;
+                color: #888888;
+                font-size: 10px;
+                font-weight: bold;
+                border: none;
+                border-bottom: 1px solid #e8e8e8;
+                padding: 6px 12px;
             }
         """)
+
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -344,8 +372,6 @@ class TransactionFrame(QWidget, BusConnectMixin):
         dialog = TransactionDialog(parent=self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
-            # Sửa: add_transaction() trả về int (tx_id), không phải dict
-            # Budget alert đã tự phát qua bus.notify_warning trong TransactionManager
             self.tm.add_transaction(**data)
 
             if self.main_window:
@@ -367,7 +393,6 @@ class TransactionFrame(QWidget, BusConnectMixin):
             data = dialog.get_data()
             self.tm.update_transaction(tx_id, **data)
 
-            # Retrain AI nếu danh mục thay đổi
             if tx.get("category_id") != data.get("category_id"):
                 try:
                     from app.ai.classifier import TransactionClassifier
@@ -593,7 +618,7 @@ class TransactionDialog(QDialog):
             self.cb_cat.addItem(c["name"], userData=c["id"])
         form.addRow("Danh mục:", self.cb_cat)
 
-        # ── Tài khoản — dropdown thay vì hardcode ────────────────────────────
+        # Tài khoản — dropdown thay vì hardcode
         self.cb_account = QComboBox()
         with get_connection() as conn:
             accounts = conn.execute(
@@ -604,7 +629,6 @@ class TransactionDialog(QDialog):
                 bal = f"{acc['balance']:,.0f}đ".replace(",", ".")
                 self.cb_account.addItem(f"{acc['name']} ({bal})", userData=acc["id"])
         else:
-            # Fallback nếu chưa có tài khoản nào
             self.cb_account.addItem("Tiền mặt", userData=1)
         form.addRow("Tài khoản:", self.cb_account)
 
