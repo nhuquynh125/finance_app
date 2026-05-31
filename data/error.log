@@ -856,3 +856,4 @@ Traceback (most recent call last):
   File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 588, in _create_page
     from app.ui.spending_frame import SpendingFrame
 ImportError: cannot import name 'SpendingFrame' from 'app.ui.spending_frame' (D:\dacs1\finance_ai_app\app\ui\spending_frame.py)
+2026-05-31 12:10:30 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 12:10:30

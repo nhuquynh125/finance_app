@@ -856,11 +856,11 @@ class SpendingFrame(QWidget):
                 GROUP BY c.id ORDER BY total DESC
             """, (tx_type, month)).fetchall()
         else:
-            # Danh mục cha (parent_id IS NULL) — gom nhóm
+            # Danh mục cha (gộp theo parent) — trả về cùng schema như view 'sub' (name, color, total)
             rows = conn.execute("""
                 SELECT
-                    COALESCE(cp.name, c.name) as parent_name,
-                    COALESCE(cp.color, c.color) as parent_color,
+                    COALESCE(cp.name, c.name) as name,
+                    COALESCE(cp.color, c.color) as color,
                     SUM(t.amount) as total
                 FROM transactions t
                 JOIN categories c ON t.category_id = c.id
