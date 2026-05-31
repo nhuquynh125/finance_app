@@ -652,3 +652,31 @@ Traceback (most recent call last):
                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 UnicodeEncodeError: 'locale' codec can't encode character '\U0001f4c5' in position 0: encoding error
 2026-05-29 15:40:22 [finance_ai] INFO: Finance AI khoi dong - 2026-05-29 15:40:22
+2026-05-31 09:35:52 [finance_ai] INFO: Finance AI khoi dong - 2026-05-31 09:35:52
+
+============================================================
+Timestamp : 2026-05-31 09:36:03
+User: nhu_quynh (user)
+Exception : SyntaxError: invalid decimal literal (dashboard_frame.py, line 185)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 585, in _create_page
+    from app.ui.dashboard_frame import DashboardFrame
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 185
+    >>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
+            ^
+SyntaxError: invalid decimal literal
+2026-05-31 09:36:03 [finance_ai] ERROR: Unhandled exception: SyntaxError: invalid decimal literal (dashboard_frame.py, line 185)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 585, in _create_page
+    from app.ui.dashboard_frame import DashboardFrame
+  File "D:\dacs1\finance_ai_app\app\ui\dashboard_frame.py", line 185
+    >>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
+            ^
+SyntaxError: invalid decimal literal

@@ -1,13 +1,13 @@
 # app/ui/dashboard_frame.py
 """
-Dashboard — tổng quan tài chính tháng.
+Dashboard -- tong quan tai chinh thang.
 
 Fix blank-screen:
-  - __init__ KHÔNG còn gọi QTimer.singleShot(100, self.refresh) trực tiếp.
-    Việc refresh() được gọi bởi MainWindow._navigate() sau khi frame visible.
-  - Debounce timer giữ nguyên (150ms) — chống flood event-bus.
-  - Matplotlib backend được set một lần ở module level (đã đúng).
-  - Không thay đổi bất kỳ logic nghiệp vụ nào.
+  - __init__ KHONG con goi QTimer.singleShot(100, self.refresh) truc tiep.
+    Viec refresh() duoc goi boi MainWindow._navigate() sau khi frame visible.
+  - Debounce timer giu nguyen (150ms) -- chong flood event-bus.
+  - Matplotlib backend duoc set mot lan o module level.
+  - Khong thay doi bat ky logic nghiep vu nao.
 """
 
 from PyQt6.QtWidgets import (
@@ -29,7 +29,7 @@ from app.core.event_bus import bus, BusConnectMixin
 from datetime import datetime
 
 
-# ── Color palette (từ logo) ───────────────────────────────────────────────────
+# -- Color palette (tu logo) --
 NAVY        = "#0B2A4A"
 NAVY_MID    = "#1A6BAF"
 MINT        = "#1D9E75"
@@ -40,10 +40,10 @@ BORDER_BLUE = "#D0E4F7"
 CARD_WHITE  = "#FFFFFF"
 
 
-# ── MetricCard ────────────────────────────────────────────────────────────────
+# -- MetricCard --
 
 class MetricCard(QFrame):
-    """Card KPI với accent bar mỏng ở trên cùng."""
+    """Card KPI voi accent bar mong o tren cung."""
 
     def __init__(self, label: str, value: str = "--",
                  color: str = NAVY_MID, icon: str = "", parent=None):
@@ -102,7 +102,7 @@ class MetricCard(QFrame):
         self.trend_lbl.setStyleSheet(f"color:{color}; border:none; background:transparent;")
 
 
-# ── DashboardFrame ────────────────────────────────────────────────────────────
+# -- DashboardFrame --
 
 class DashboardFrame(QWidget, BusConnectMixin):
     def __init__(self, main_window=None):
@@ -111,7 +111,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.tm = TransactionManager()
         self.current_month = datetime.now().strftime("%Y-%m")
 
-        # Debounce timer — chống refresh flood khi nhiều signal đến cùng lúc
+        # Debounce timer -- chong refresh flood khi nhieu signal den cung luc
         self._refresh_timer = QTimer(self)
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.setInterval(150)
@@ -123,8 +123,8 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self._build()
         self._connect_bus()
 
-        # Không gọi refresh() ở đây.
-        # MainWindow._navigate() sẽ gọi refresh() sau khi frame visible.
+        # Khong goi refresh() o day.
+        # MainWindow._navigate() se goi refresh() sau khi frame visible.
 
     def _connect_bus(self):
         bus.transaction_added.connect(self.refresh)
@@ -134,11 +134,11 @@ class DashboardFrame(QWidget, BusConnectMixin):
         )
 
     def refresh(self):
-        """Public entry — debounced để tránh nhiều lần refresh liên tiếp."""
+        """Public entry -- debounced de tranh nhieu lan refresh lien tiep."""
         if not self._refresh_timer.isActive():
             self._refresh_timer.start()
 
-    # ── Build layout ──────────────────────────────────────────────────────────
+    # -- Build layout --
 
     def _build(self):
         layout = QVBoxLayout(self)
@@ -178,11 +178,8 @@ class DashboardFrame(QWidget, BusConnectMixin):
         title.setStyleSheet(f"color:{NAVY}; border:none;")
         layout.addWidget(title)
 
-<<<<<<< HEAD
-        today_lbl = QLabel("\U0001f4c5  " + datetime.now().strftime("%d/%m/%Y"))
-=======
-        today_lbl = QLabel(datetime.now().strftime("📅  %d/%m/%Y"))
->>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
+        # Su dung text thuan khong emoji de tranh UnicodeEncodeError tren Windows
+        today_lbl = QLabel(datetime.now().strftime("[%d/%m/%Y]"))
         today_lbl.setStyleSheet("color:#8BAEC8; font-size:12px; border:none;")
         layout.addWidget(today_lbl)
 
@@ -205,7 +202,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.cb_month.currentIndexChanged.connect(self.refresh)
         layout.addWidget(self.cb_month)
 
-        btn_add = QPushButton("＋  Thêm giao dịch")
+        btn_add = QPushButton("+ Them giao dich")
         btn_add.setFixedHeight(36)
         btn_add.setStyleSheet(f"""
             QPushButton {{
@@ -232,10 +229,10 @@ class DashboardFrame(QWidget, BusConnectMixin):
         g.setSpacing(12)
 
         defs = [
-            ("Thu nhập",        MINT,     "💰"),
-            ("Chi tiêu",        RED_SOFT, "💳"),
-            ("Tiết kiệm",       NAVY_MID, "🏦"),
-            ("AI dự báo T.sau", ORANGE,   "📈"),
+            ("Thu nhap",        MINT,     ""),
+            ("Chi tieu",        RED_SOFT, ""),
+            ("Tiet kiem",       NAVY_MID, ""),
+            ("AI du bao T.sau", ORANGE,   ""),
         ]
         for i, (label, color, icon) in enumerate(defs):
             card = MetricCard(label, "--", color, icon)
@@ -265,13 +262,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
         bar_l.setSpacing(8)
 
         bar_header = QHBoxLayout()
-        t1 = QLabel("Thu chi 6 tháng gần đây")
+        t1 = QLabel("Thu chi 6 thang gan day")
         t1.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
         t1.setStyleSheet(f"color:{NAVY}; border:none;")
         bar_header.addWidget(t1)
         bar_header.addStretch()
-        for color, text in [(MINT, "Thu nhập"), (ORANGE, "Chi tiêu")]:
-            dot = QLabel("●")
+        for color, text in [(MINT, "Thu nhap"), (ORANGE, "Chi tieu")]:
+            dot = QLabel("*")
             dot.setStyleSheet(f"color:{color}; font-size:14px; border:none;")
             lbl = QLabel(text)
             lbl.setStyleSheet("color:#8BAEC8; font-size:11px; border:none;")
@@ -299,7 +296,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.pie_layout.setContentsMargins(18, 14, 18, 14)
         self.pie_layout.setSpacing(6)
 
-        t2 = QLabel("Danh mục chi tiêu")
+        t2 = QLabel("Danh muc chi tieu")
         t2.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
         t2.setStyleSheet(f"color:{NAVY}; border:none;")
         self.pie_layout.addWidget(t2)
@@ -326,13 +323,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.tx_layout.setSpacing(8)
 
         header = QHBoxLayout()
-        t = QLabel("Giao dịch gần đây")
+        t = QLabel("Giao dich gan day")
         t.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
         t.setStyleSheet(f"color:{NAVY}; border:none;")
         header.addWidget(t)
         header.addStretch()
         if self.main_window:
-            btn = QPushButton("Xem tất cả →")
+            btn = QPushButton("Xem tat ca ->")
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background:transparent; color:{NAVY_MID};
@@ -340,7 +337,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 }}
                 QPushButton:hover {{ color:{NAVY}; }}
             """)
-            btn.clicked.connect(lambda: self.main_window._navigate("Giao dịch"))
+            btn.clicked.connect(lambda: self.main_window._navigate("Giao dich"))
             header.addWidget(btn)
         self.tx_layout.addLayout(header)
 
@@ -351,7 +348,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         self.cl.addWidget(self.tx_panel)
 
-    # ── Refresh logic ─────────────────────────────────────────────────────────
+    # -- Refresh logic --
 
     def _do_refresh(self):
         month = self.cb_month.currentData()
@@ -369,7 +366,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 y -= 1
             bar_months.append(f"{y}-{m:02d}")
 
-        # Tính prev_month để hiện trend
+        # Tinh prev_month de hien trend
         all_months = list(dict.fromkeys(bar_months + [month]))
         try:
             prev_dt = datetime.strptime(month, "%Y-%m")
@@ -398,15 +395,15 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         fc = self._get_forecast(month)
 
-        # Cập nhật metric cards
-        self._metric_cards["Thu nhập"].set_value(self._fmt(income))
-        self._metric_cards["Chi tiêu"].set_value(self._fmt(expense))
-        self._metric_cards["Tiết kiệm"].set_value(self._fmt(saving))
-        self._metric_cards["AI dự báo T.sau"].set_value(self._fmt(fc))
+        # Cap nhat metric cards -- dung ten khong dau khop voi _build_cards
+        self._metric_cards["Thu nhap"].set_value(self._fmt(income))
+        self._metric_cards["Chi tieu"].set_value(self._fmt(expense))
+        self._metric_cards["Tiet kiem"].set_value(self._fmt(saving))
+        self._metric_cards["AI du bao T.sau"].set_value(self._fmt(fc))
 
-        self._update_trend("Thu nhập",  income,  prev_income)
-        self._update_trend("Chi tiêu",  expense, prev_expense)
-        self._update_trend("Tiết kiệm", saving,  prev_saving)
+        self._update_trend("Thu nhap",        income,  prev_income)
+        self._update_trend("Chi tieu",         expense, prev_expense)
+        self._update_trend("Tiet kiem",        saving,  prev_saving)
 
         self._draw_bar(bar_months, summaries)
         self._draw_pie(month)
@@ -421,10 +418,10 @@ class DashboardFrame(QWidget, BusConnectMixin):
             return
         delta = current - previous
         pct   = (delta / previous) * 100
-        arrow = "↑" if delta > 0 else "↓"
-        is_good = (delta > 0) if label != "Chi tiêu" else (delta < 0)
+        arrow = "^" if delta > 0 else "v"
+        is_good = (delta > 0) if label != "Chi tieu" else (delta < 0)
         color = MINT if is_good else RED_SOFT
-        card.set_trend(f"{arrow} {abs(pct):.1f}% so với tháng trước", color)
+        card.set_trend(f"{arrow} {abs(pct):.1f}% so voi thang truoc", color)
 
     def _draw_bar(self, bar_months: list, summaries: dict):
         months_data = []
@@ -459,7 +456,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         ax.set_xticks(list(x))
         ax.set_xticklabels(labels, fontsize=9, color="#8BAEC8")
         ax.tick_params(labelsize=9, colors="#8BAEC8", length=0)
-        ax.set_ylabel("Triệu đ", fontsize=9, color="#8BAEC8")
+        ax.set_ylabel("Trieu d", fontsize=9, color="#8BAEC8")
         ax.yaxis.grid(True, color=BORDER_BLUE, linewidth=0.8, zorder=0)
         ax.set_axisbelow(True)
         ax.set_ylim(bottom=0)
@@ -524,7 +521,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             self._pie_legend_widgets.append(row_w)
 
     def _draw_recent(self, month: str):
-        # Xóa row cũ (giữ header=index-0 và divider=index-1)
+        # Xoa row cu (giu header=index-0 va divider=index-1)
         while self.tx_layout.count() > 2:
             item = self.tx_layout.takeAt(2)
             if item.widget():
@@ -532,7 +529,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         txs = self.tm.get_transactions(month=month, limit=7)
         if not txs:
-            lbl = QLabel("Chưa có giao dịch trong tháng này")
+            lbl = QLabel("Chua co giao dich trong thang nay")
             lbl.setStyleSheet(
                 "color:#8BAEC8; font-size:12px; padding:16px; border:none;"
             )
@@ -575,24 +572,24 @@ class DashboardFrame(QWidget, BusConnectMixin):
             dl.setContentsMargins(0, 0, 0, 0)
             dl.setSpacing(2)
 
-            desc_str  = tx.get("description") or "Không có mô tả"
+            desc_str  = tx.get("description") or "Khong co mo ta"
             cat_label = f"  [{tx['category_name']}]" if tx.get("category_name") else ""
             if tx.get("is_anomaly"):
-                desc_str += "  ⚠"
+                desc_str += "  [!]"
 
             name_lbl = QLabel(desc_str)
             name_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
             name_lbl.setStyleSheet(f"color:{NAVY}; border:none; background:transparent;")
             dl.addWidget(name_lbl)
 
-            meta = QLabel(f"{tx['date']}{cat_label} · {tx.get('account_name', '')}")
+            meta = QLabel(f"{tx['date']}{cat_label} . {tx.get('account_name', '')}")
             meta.setFont(QFont("Segoe UI", 10))
             meta.setStyleSheet("color:#8BAEC8; border:none; background:transparent;")
             dl.addWidget(meta)
             rl.addWidget(desc_w)
             rl.addStretch()
 
-            amt = QLabel(f"{dot_text}{tx['amount']:,.0f} đ".replace(",", "."))
+            amt = QLabel(f"{dot_text}{tx['amount']:,.0f} d".replace(",", "."))
             amt.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
             amt.setStyleSheet(
                 f"color:{dot_color}; border:none; background:transparent;"
@@ -600,7 +597,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             rl.addWidget(amt)
             self.tx_layout.addWidget(row)
 
-    # ── Helpers ───────────────────────────────────────────────────────────────
+    # -- Helpers --
 
     def _get_forecast(self, month: str) -> float:
         conn = get_connection()
@@ -619,7 +616,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             while m <= 0:
                 m += 12
                 y -= 1
-            self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
+            self.cb_month.addItem(f"Thang {m}/{y}", userData=f"{y}-{m:02d}")
         self.cb_month.setCurrentIndex(self.cb_month.count() - 1)
 
     def _open_add_dialog(self):
@@ -635,4 +632,4 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
     @staticmethod
     def _fmt(v: float) -> str:
-        return f"{v:,.0f} đ".replace(",", ".")
+        return f"{v:,.0f} d".replace(",", ".")

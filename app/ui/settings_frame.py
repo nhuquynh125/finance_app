@@ -1,12 +1,14 @@
-# app/ui/settings_frame.py  (cập nhật: thêm tab Thông tin người dùng)
+# app/ui/settings_frame.py  (cap nhat: them tab Thong tin nguoi dung)
 """
-Thay đổi:
-  - Thêm QTabWidget để phân chia thành 2 tab:
-      Tab 1: "Ứng dụng"  — toàn bộ cài đặt cũ
-      Tab 2: "Tài khoản" — thêm / sửa / xóa thông tin cá nhân, đổi mật khẩu
-  - UserProfileTab: hiển thị avatar, sửa họ tên, vai trò (admin only: quản lý user list)
-  - Đổi mật khẩu không cần đăng xuất
-  - Admin: xem danh sách user, khoá / xoá tài khoản
+Thay doi:
+  - Them QTabWidget de phan chia thanh 2 tab:
+      Tab 1: "Ung dung"  -- toan bo cai dat cu
+      Tab 2: "Tai khoan" -- them / sua / xoa thong tin ca nhan, doi mat khau
+  - UserProfileTab: hien thi avatar, sua ho ten, vai tro (admin only: quan ly user list)
+  - Doi mat khau khong can dang xuat
+  - Admin: xem danh sach user, khoa / xoa tai khoan
+
+FIX: Sua merge conflict trong import theme_engine (dung app.core.theme_engine)
 """
 
 import os
@@ -29,11 +31,8 @@ from app.core.settings_manager import (
     get_exports_dir, _get_settings_path, _get_db_path
 )
 from app.core.sync_manager import SyncManager
-<<<<<<< HEAD
+# FIX: Su dung import chinh xac, loai bo merge conflict
 from app.core.theme_engine import theme_engine
-=======
-from app.theme_engine import theme_engine
->>>>>>> 0f9883f6111b8d064c73b5d2f2039834c7327128
 
 try:
     from config import APP_NAME, APP_VERSION, DATA_DIR, DB_PATH
@@ -54,12 +53,12 @@ def _get_user_data_dir() -> Path:
     return Path(DATA_DIR)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Tab 1 — Thông tin tài khoản & quản lý người dùng
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
+# Tab 1 -- Thong tin tai khoan & quan ly nguoi dung
+# ==============================================================================
 
 class UserProfileTab(QWidget):
-    """Tab quản lý thông tin cá nhân và (nếu admin) danh sách user."""
+    """Tab quan ly thong tin ca nhan va (neu admin) danh sach user."""
 
     def __init__(self, main_window=None, parent=None):
         super().__init__(parent)
@@ -67,7 +66,7 @@ class UserProfileTab(QWidget):
         self._build()
         QTimer.singleShot(100, self.refresh)
 
-    # ── Build ─────────────────────────────────────────────────────────────────
+    # -- Build --
 
     def _build(self):
         layout = QVBoxLayout(self)
@@ -86,20 +85,19 @@ class UserProfileTab(QWidget):
 
         self._build_profile_card()
         self._build_change_password_card()
-        self._build_admin_card()       # chỉ hiện cho admin
+        self._build_admin_card()
         self._build_danger_zone()
         self.body.addStretch()
 
         scroll.setWidget(content)
         layout.addWidget(scroll)
 
-    # ── Profile card ──────────────────────────────────────────────────────────
+    # -- Profile card --
 
     def _build_profile_card(self):
-        panel = self._panel_frame("Thông tin cá nhân")
+        panel = self._panel_frame("Thong tin ca nhan")
         pl = panel.layout()
 
-        # Avatar + tên hiển thị
         top_row = QHBoxLayout()
         self.avatar_lbl = QLabel("?")
         self.avatar_lbl.setFixedSize(64, 64)
@@ -111,10 +109,10 @@ class UserProfileTab(QWidget):
 
         info_col = QVBoxLayout()
         info_col.setSpacing(2)
-        self.username_badge = QLabel("@—")
+        self.username_badge = QLabel("@--")
         self.username_badge.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
         self.username_badge.setStyleSheet("color:#1A2B45; border:none;")
-        self.role_badge = QLabel("—")
+        self.role_badge = QLabel("--")
         self.role_badge.setStyleSheet(
             "QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
             "border-radius:10px; padding:2px 10px; font-size:11px; }")
@@ -128,36 +126,33 @@ class UserProfileTab(QWidget):
         top_row.addStretch()
         pl.addLayout(top_row)
 
-        # Divider
         pl.addWidget(self._divider())
 
-        # Form sửa thông tin
         form = QFormLayout()
         form.setSpacing(10)
         form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.le_fullname = QLineEdit()
-        self.le_fullname.setPlaceholderText("Họ và tên đầy đủ...")
+        self.le_fullname.setPlaceholderText("Ho va ten day du...")
         self.le_fullname.setStyleSheet(self._input_style())
-        form.addRow("Họ và tên:", self.le_fullname)
+        form.addRow("Ho va ten:", self.le_fullname)
 
         self.le_phone = QLineEdit()
-        self.le_phone.setPlaceholderText("0912 345 678 (định danh chính của tài khoản)")
+        self.le_phone.setPlaceholderText("0912 345 678 (dinh danh chinh cua tai khoan)")
         self.le_phone.setStyleSheet(self._input_style())
-        form.addRow("Số điện thoại *:", self.le_phone)
+        form.addRow("So dien thoai *:", self.le_phone)
 
-        # Username chỉ đọc
         self.le_username = QLineEdit()
         self.le_username.setReadOnly(True)
         self.le_username.setStyleSheet(
             self._input_style() + " background:#f7f7f7; color:#999;")
-        form.addRow("Tên đăng nhập:", self.le_username)
+        form.addRow("Ten dang nhap:", self.le_username)
 
         pl.addLayout(form)
 
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        btn_save = QPushButton("💾  Lưu thông tin")
+        btn_save = QPushButton("Luu thong tin")
         btn_save.setStyleSheet(self._btn_primary())
         btn_save.clicked.connect(self._save_profile)
         btn_row.addWidget(btn_save)
@@ -165,10 +160,10 @@ class UserProfileTab(QWidget):
 
         self.body.addWidget(panel)
 
-    # ── Đổi mật khẩu ─────────────────────────────────────────────────────────
+    # -- Doi mat khau --
 
     def _build_change_password_card(self):
-        panel = self._panel_frame("Đổi mật khẩu")
+        panel = self._panel_frame("Doi mat khau")
         pl = panel.layout()
 
         form = QFormLayout()
@@ -177,21 +172,21 @@ class UserProfileTab(QWidget):
 
         self.le_old_pw = QLineEdit()
         self.le_old_pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_old_pw.setPlaceholderText("Mật khẩu hiện tại...")
+        self.le_old_pw.setPlaceholderText("Mat khau hien tai...")
         self.le_old_pw.setStyleSheet(self._input_style())
-        form.addRow("Mật khẩu cũ:", self.le_old_pw)
+        form.addRow("Mat khau cu:", self.le_old_pw)
 
         self.le_new_pw = QLineEdit()
         self.le_new_pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_new_pw.setPlaceholderText("Tối thiểu 6 ký tự...")
+        self.le_new_pw.setPlaceholderText("Toi thieu 6 ky tu...")
         self.le_new_pw.setStyleSheet(self._input_style())
-        form.addRow("Mật khẩu mới:", self.le_new_pw)
+        form.addRow("Mat khau moi:", self.le_new_pw)
 
         self.le_confirm_pw = QLineEdit()
         self.le_confirm_pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_confirm_pw.setPlaceholderText("Nhập lại mật khẩu mới...")
+        self.le_confirm_pw.setPlaceholderText("Nhap lai mat khau moi...")
         self.le_confirm_pw.setStyleSheet(self._input_style())
-        form.addRow("Xác nhận:", self.le_confirm_pw)
+        form.addRow("Xac nhan:", self.le_confirm_pw)
 
         pl.addLayout(form)
 
@@ -202,7 +197,7 @@ class UserProfileTab(QWidget):
 
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        btn_pw = QPushButton("🔑  Đổi mật khẩu")
+        btn_pw = QPushButton("Doi mat khau")
         btn_pw.setStyleSheet(self._btn_normal())
         btn_pw.clicked.connect(self._change_password)
         btn_row.addWidget(btn_pw)
@@ -210,36 +205,34 @@ class UserProfileTab(QWidget):
 
         self.body.addWidget(panel)
 
-    # ── Admin panel ───────────────────────────────────────────────────────────
+    # -- Admin panel --
 
     def _build_admin_card(self):
-        """Panel chỉ hiện với admin — quản lý danh sách user."""
-        self.admin_panel = self._panel_frame("Quản lý người dùng (Admin)")
+        """Panel chi hien voi admin -- quan ly danh sach user."""
+        self.admin_panel = self._panel_frame("Quan ly nguoi dung (Admin)")
 
         pl = self.admin_panel.layout()
 
-        # Header row
         header_row = QHBoxLayout()
-        desc = QLabel("Xem và quản lý toàn bộ tài khoản trong hệ thống.")
+        desc = QLabel("Xem va quan ly toan bo tai khoan trong he thong.")
         desc.setStyleSheet("color:#888; font-size:12px; border:none;")
         header_row.addWidget(desc)
         header_row.addStretch()
-        btn_add_user = QPushButton("➕  Thêm user")
+        btn_add_user = QPushButton("Them user")
         btn_add_user.setStyleSheet(self._btn_primary())
         btn_add_user.clicked.connect(self._open_add_user_dialog)
         header_row.addWidget(btn_add_user)
-        btn_refresh = QPushButton("🔄")
-        btn_refresh.setFixedWidth(32)
+        btn_refresh = QPushButton("Refresh")
+        btn_refresh.setFixedWidth(64)
         btn_refresh.setStyleSheet(self._btn_normal())
         btn_refresh.clicked.connect(self._load_user_table)
         header_row.addWidget(btn_refresh)
         pl.addLayout(header_row)
 
-        # Table
         self.user_table = QTableWidget()
         self.user_table.setColumnCount(7)
         self.user_table.setHorizontalHeaderLabels(
-            ["Username", "Họ tên", "SĐT", "Vai trò", "Trạng thái", "Đăng nhập cuối", ""])
+            ["Username", "Ho ten", "SDT", "Vai tro", "Trang thai", "Dang nhap cuoi", ""])
         self.user_table.setStyleSheet("""
             QTableWidget {
                 background:#fff; border:1px solid #e8e8e8;
@@ -265,24 +258,24 @@ class UserProfileTab(QWidget):
         pl.addWidget(self.user_table)
 
         self.body.addWidget(self.admin_panel)
-        self.admin_panel.hide()   # ẩn cho đến khi biết role
+        self.admin_panel.hide()
 
-    # ── Danger zone ───────────────────────────────────────────────────────────
+    # -- Danger zone --
 
     def _build_danger_zone(self):
-        panel = self._panel_frame("Vùng nguy hiểm")
+        panel = self._panel_frame("Vung nguy hiem")
         panel.setStyleSheet(
             "QFrame { background:#fff8f8; border:1px solid #fcc; border-radius:10px; }")
         pl = panel.layout()
 
         row = QHBoxLayout()
         col = QVBoxLayout()
-        title = QLabel("Xóa tài khoản")
+        title = QLabel("Xoa tai khoan")
         title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
         title.setStyleSheet("color:#A32D2D; border:none;")
         desc = QLabel(
-            "Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu tài chính.\n"
-            "Hành động này KHÔNG THỂ hoàn tác.")
+            "Xoa vinh vien tai khoan va toan bo du lieu tai chinh.\n"
+            "Hanh dong nay KHONG THE hoan tac.")
         desc.setStyleSheet("color:#888; font-size:11px; border:none;")
         desc.setWordWrap(True)
         col.addWidget(title)
@@ -290,7 +283,7 @@ class UserProfileTab(QWidget):
         row.addLayout(col)
         row.addStretch()
 
-        btn_delete = QPushButton("🗑  Xóa tài khoản")
+        btn_delete = QPushButton("Xoa tai khoan")
         btn_delete.setStyleSheet(self._btn_danger())
         btn_delete.clicked.connect(self._delete_own_account)
         row.addWidget(btn_delete)
@@ -298,7 +291,7 @@ class UserProfileTab(QWidget):
 
         self.body.addWidget(panel)
 
-    # ── Refresh ───────────────────────────────────────────────────────────────
+    # -- Refresh --
 
     def refresh(self):
         try:
@@ -306,14 +299,12 @@ class UserProfileTab(QWidget):
             if not session.is_logged_in:
                 return
 
-            # Avatar
             initial = (session.full_name or session.username)[0].upper()
             self.avatar_lbl.setText(initial)
             self.username_badge.setText(f"@{session.username}")
             self.le_username.setText(session.username)
             self.le_fullname.setText(session.full_name or "")
 
-            # Load SĐT từ auth.db
             try:
                 conn_tmp = self._auth_conn()
                 row_tmp = conn_tmp.execute(
@@ -326,11 +317,10 @@ class UserProfileTab(QWidget):
             except Exception:
                 self.le_phone.setText("")
 
-            role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
+            role_map = {"admin": "Quan tri vien", "user": "Nguoi dung"}
             role_text = role_map.get(session.role, session.role)
             self.role_badge.setText(role_text)
 
-            # Last login from auth.db
             conn = self._auth_conn()
             row = conn.execute(
                 "SELECT last_login FROM users WHERE username=?",
@@ -338,11 +328,10 @@ class UserProfileTab(QWidget):
             ).fetchone()
             conn.close()
             if row and row["last_login"]:
-                self.last_login_lbl.setText(f"Đăng nhập lần cuối: {row['last_login'][:16]}")
+                self.last_login_lbl.setText(f"Dang nhap lan cuoi: {row['last_login'][:16]}")
             else:
                 self.last_login_lbl.setText("")
 
-            # Admin panel
             if session.role == "admin":
                 self.admin_panel.show()
                 self._load_user_table()
@@ -371,27 +360,26 @@ class UserProfileTab(QWidget):
 
                 self._tbl_item(r, 0, row["username"])
                 self._tbl_item(r, 1, row["full_name"] or "")
-                self._tbl_item(r, 2, row["phone"] or "—", "#888")
-                role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
+                self._tbl_item(r, 2, row["phone"] or "--", "#888")
+                role_map = {"admin": "Quan tri vien", "user": "Nguoi dung"}
                 self._tbl_item(r, 3, role_map.get(row["role"], row["role"]))
 
                 status_item = QTableWidgetItem(
-                    "✅ Hoạt động" if row["is_active"] else "🔒 Khoá")
+                    "Hoat dong" if row["is_active"] else "Khoa")
                 status_item.setForeground(
                     QColor("#1D9E75") if row["is_active"] else QColor("#E24B4A"))
                 self.user_table.setItem(r, 4, status_item)
 
-                ll = (row["last_login"] or "Chưa đăng nhập")[:16]
+                ll = (row["last_login"] or "Chua dang nhap")[:16]
                 self._tbl_item(r, 5, ll, "#888")
 
-                # Nút hành động — không cho xóa chính mình
                 if row["username"] != current_username:
                     btn_w = QWidget()
                     btn_l = QHBoxLayout(btn_w)
                     btn_l.setContentsMargins(4, 2, 4, 2)
                     btn_l.setSpacing(4)
 
-                    btn_edit = QPushButton("Sửa")
+                    btn_edit = QPushButton("Sua")
                     btn_edit.setFixedSize(40, 22)
                     btn_edit.setStyleSheet(
                         "QPushButton { background:#E6F1FB; color:#0C447C; "
@@ -401,7 +389,7 @@ class UserProfileTab(QWidget):
                         lambda _, u=dict(row): self._open_edit_user_dialog(u))
 
                     btn_toggle = QPushButton(
-                        "Khoá" if row["is_active"] else "Mở")
+                        "Khoa" if row["is_active"] else "Mo")
                     btn_toggle.setFixedSize(40, 22)
                     btn_toggle.setStyleSheet(
                         "QPushButton { background:#FAEEDA; color:#633806; "
@@ -411,7 +399,7 @@ class UserProfileTab(QWidget):
                         lambda _, uid=row["id"], cur=bool(row["is_active"]):
                             self._toggle_user_active(uid, cur))
 
-                    btn_del = QPushButton("Xóa")
+                    btn_del = QPushButton("Xoa")
                     btn_del.setFixedSize(40, 22)
                     btn_del.setStyleSheet(
                         "QPushButton { background:#FCEBEB; color:#A32D2D; "
@@ -426,7 +414,7 @@ class UserProfileTab(QWidget):
                     btn_l.addWidget(btn_del)
                     self.user_table.setCellWidget(r, 6, btn_w)
                 else:
-                    me = QLabel("(bạn)")
+                    me = QLabel("(ban)")
                     me.setStyleSheet("color:#aaa; font-size:11px; padding:0 6px;")
                     self.user_table.setCellWidget(r, 6, me)
 
@@ -434,31 +422,29 @@ class UserProfileTab(QWidget):
         except Exception as e:
             print(f"[UserProfileTab] _load_user_table error: {e}")
 
-    # ── Actions ───────────────────────────────────────────────────────────────
+    # -- Actions --
 
     def _save_profile(self):
         full_name = self.le_fullname.text().strip()
         phone_raw = self.le_phone.text().strip()
 
         if not full_name:
-            self._msg_box("Lỗi", "Họ tên không được để trống.", "warning")
+            self._msg_box("Loi", "Ho ten khong duoc de trong.", "warning")
             return
 
-        # Validate SĐT — bắt buộc (định danh chính)
         if not phone_raw:
-            self._msg_box("Lỗi", "Số điện thoại là định danh chính, không được để trống.", "warning")
+            self._msg_box("Loi", "So dien thoai la dinh danh chinh, khong duoc de trong.", "warning")
             return
         from app.data.auth_manager import _validate_phone
         ok, result = _validate_phone(phone_raw)
         if not ok:
-            self._msg_box("Lỗi SĐT", result, "warning")
+            self._msg_box("Loi SDT", result, "warning")
             return
         phone_normalized = result
 
         try:
             from user_session import session
 
-            # Kiểm tra SĐT trùng với user khác
             if phone_normalized:
                 _c = self._auth_conn()
                 dup = _c.execute(
@@ -468,8 +454,8 @@ class UserProfileTab(QWidget):
                 _c.close()
                 if dup:
                     self._msg_box(
-                        "Lỗi SĐT",
-                        "Số điện thoại này đã được dùng bởi tài khoản khác.",
+                        "Loi SDT",
+                        "So dien thoai nay da duoc dung boi tai khoan khac.",
                         "warning"
                     )
                     return
@@ -482,17 +468,15 @@ class UserProfileTab(QWidget):
             conn.commit()
             conn.close()
 
-            # Cập nhật session in-memory
             session._user["full_name"] = full_name
 
-            # Cập nhật title cửa sổ
             if self.main_window:
-                self.main_window.setWindowTitle(f"Finance AI — {full_name}")
+                self.main_window.setWindowTitle(f"Finance AI -- {full_name}")
 
-            self._msg_box("Thành công", "Đã cập nhật thông tin cá nhân!", "info")
+            self._msg_box("Thanh cong", "Da cap nhat thong tin ca nhan!", "info")
             self.refresh()
         except Exception as e:
-            self._msg_box("Lỗi", str(e), "critical")
+            self._msg_box("Loi", str(e), "critical")
 
     def _change_password(self):
         old_pw  = self.le_old_pw.text()
@@ -500,13 +484,13 @@ class UserProfileTab(QWidget):
         confirm = self.le_confirm_pw.text()
 
         if not old_pw or not new_pw:
-            self._show_pw_msg("Vui lòng điền đầy đủ thông tin.", "error")
+            self._show_pw_msg("Vui long dien day du thong tin.", "error")
             return
         if len(new_pw) < 6:
-            self._show_pw_msg("Mật khẩu mới phải có ít nhất 6 ký tự.", "error")
+            self._show_pw_msg("Mat khau moi phai co it nhat 6 ky tu.", "error")
             return
         if new_pw != confirm:
-            self._show_pw_msg("Mật khẩu xác nhận không khớp.", "error")
+            self._show_pw_msg("Mat khau xac nhan khong khop.", "error")
             return
 
         try:
@@ -520,19 +504,17 @@ class UserProfileTab(QWidget):
             ).fetchone()
 
             if not row:
-                self._show_pw_msg("Không tìm thấy tài khoản.", "error")
+                self._show_pw_msg("Khong tim thay tai khoan.", "error")
                 conn.close()
                 return
 
-            # Kiểm tra mật khẩu cũ
             expected = hashlib.sha256(
                 (row["salt"] + old_pw).encode()).hexdigest()
             if expected != row["password_hash"]:
-                self._show_pw_msg("Mật khẩu cũ không đúng.", "error")
+                self._show_pw_msg("Mat khau cu khong dung.", "error")
                 conn.close()
                 return
 
-            # Đặt mật khẩu mới
             new_salt    = _sec.token_hex(16)
             new_hash    = hashlib.sha256((new_salt + new_pw).encode()).hexdigest()
             conn.execute(
@@ -545,7 +527,7 @@ class UserProfileTab(QWidget):
             self.le_old_pw.clear()
             self.le_new_pw.clear()
             self.le_confirm_pw.clear()
-            self._show_pw_msg("Đổi mật khẩu thành công!", "success")
+            self._show_pw_msg("Doi mat khau thanh cong!", "success")
         except Exception as e:
             self._show_pw_msg(str(e), "error")
 
@@ -553,36 +535,32 @@ class UserProfileTab(QWidget):
         from user_session import session
 
         reply = QMessageBox.warning(
-            self, "⚠ Xóa tài khoản",
-            f"Bạn sắp xóa tài khoản '@{session.username}' và toàn bộ dữ liệu tài chính.\n\n"
-            "Hành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?",
+            self, "Xoa tai khoan",
+            f"Ban sap xoa tai khoan '@{session.username}' va toan bo du lieu tai chinh.\n\n"
+            "Hanh dong nay KHONG THE hoan tac!\n\nBan co chac chan?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        # Nhập mật khẩu xác nhận
         pw_dialog = _ConfirmPasswordDialog(session.username, self)
         if pw_dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         try:
             import shutil
-            # Xóa user trong auth.db
             conn = self._auth_conn()
             conn.execute("DELETE FROM users WHERE username=?", (session.username,))
             conn.commit()
             conn.close()
 
-            # Xóa thư mục data của user
             user_dir = session.data_dir
             if user_dir.exists():
                 shutil.rmtree(str(user_dir), ignore_errors=True)
 
-            QMessageBox.information(self, "Đã xóa", "Tài khoản đã được xóa. App sẽ đóng.")
+            QMessageBox.information(self, "Da xoa", "Tai khoan da duoc xoa. App se dong.")
 
-            # Đăng xuất
             from app.data.auth_manager import AuthManager
             AuthManager().logout()
 
@@ -593,9 +571,9 @@ class UserProfileTab(QWidget):
                 self.main_window.close()
 
         except Exception as e:
-            self._msg_box("Lỗi", str(e), "critical")
+            self._msg_box("Loi", str(e), "critical")
 
-    # ── Admin actions ─────────────────────────────────────────────────────────
+    # -- Admin actions --
 
     def _open_add_user_dialog(self):
         dialog = _AddUserDialog(self)
@@ -608,10 +586,10 @@ class UserProfileTab(QWidget):
             self._load_user_table()
 
     def _toggle_user_active(self, user_id: int, current_active: bool):
-        action = "khoá" if current_active else "mở khoá"
+        action = "khoa" if current_active else "mo khoa"
         reply = QMessageBox.question(
-            self, "Xác nhận",
-            f"Bạn muốn {action} tài khoản này?",
+            self, "Xac nhan",
+            f"Ban muon {action} tai khoan nay?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
@@ -626,14 +604,13 @@ class UserProfileTab(QWidget):
             conn.close()
             self._load_user_table()
         except Exception as e:
-            self._msg_box("Lỗi", str(e), "critical")
+            self._msg_box("Loi", str(e), "critical")
 
     def _delete_user(self, username: str):
         reply = QMessageBox.warning(
-            self, "Xóa tài khoản",
-            f"Xóa tài khoản '@{username}'?\n\n"
-            "Dữ liệu tài chính trong thư mục của user vẫn còn trên ổ đĩa.\n"
-            "Bạn có thể xóa thủ công tại data/users/{username}/",
+            self, "Xoa tai khoan",
+            f"Xoa tai khoan '@{username}'?\n\n"
+            "Du lieu tai chinh trong thu muc cua user van con tren o dia.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
@@ -646,9 +623,9 @@ class UserProfileTab(QWidget):
             conn.close()
             self._load_user_table()
         except Exception as e:
-            self._msg_box("Lỗi", str(e), "critical")
+            self._msg_box("Loi", str(e), "critical")
 
-    # ── Helpers ───────────────────────────────────────────────────────────────
+    # -- Helpers --
 
     @staticmethod
     def _auth_conn():
@@ -738,17 +715,17 @@ class UserProfileTab(QWidget):
         box.exec()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Dialogs phụ
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
+# Dialogs phu
+# ==============================================================================
 
 class _ConfirmPasswordDialog(QDialog):
-    """Yêu cầu nhập mật khẩu xác nhận trước khi xóa tài khoản."""
+    """Yeu cau nhap mat khau xac nhan truoc khi xoa tai khoan."""
 
     def __init__(self, username: str, parent=None):
         super().__init__(parent)
         self.username = username
-        self.setWindowTitle("Xác nhận danh tính")
+        self.setWindowTitle("Xac nhan danh tinh")
         self.setFixedSize(360, 200)
         self.setStyleSheet("QDialog { background:#fff; }")
         self._build()
@@ -758,14 +735,14 @@ class _ConfirmPasswordDialog(QDialog):
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(12)
 
-        lbl = QLabel(f"Nhập mật khẩu của @{self.username} để xác nhận xóa:")
+        lbl = QLabel(f"Nhap mat khau cua @{self.username} de xac nhan xoa:")
         lbl.setWordWrap(True)
         lbl.setStyleSheet("font-size:12px; color:#444; border:none;")
         layout.addWidget(lbl)
 
         self.pw_input = QLineEdit()
         self.pw_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.pw_input.setPlaceholderText("Mật khẩu...")
+        self.pw_input.setPlaceholderText("Mat khau...")
         self.pw_input.setStyleSheet(
             "QLineEdit { border:1px solid #ddd; border-radius:6px; "
             "padding:7px 10px; font-size:13px; }")
@@ -778,13 +755,13 @@ class _ConfirmPasswordDialog(QDialog):
         layout.addWidget(self.err_lbl)
 
         btn_row = QHBoxLayout()
-        btn_cancel = QPushButton("Hủy")
+        btn_cancel = QPushButton("Huy")
         btn_cancel.setStyleSheet(
             "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
             "border-radius:6px; padding:6px 14px; }")
         btn_cancel.clicked.connect(self.reject)
 
-        btn_ok = QPushButton("Xác nhận xóa")
+        btn_ok = QPushButton("Xac nhan xoa")
         btn_ok.setStyleSheet(
             "QPushButton { background:#E24B4A; color:#fff; border:none; "
             "border-radius:6px; padding:6px 14px; font-weight:500; } "
@@ -809,13 +786,13 @@ class _ConfirmPasswordDialog(QDialog):
             ).fetchone()
             conn.close()
             if not row:
-                self.err_lbl.setText("Tài khoản không tồn tại.")
+                self.err_lbl.setText("Tai khoan khong ton tai.")
                 self.err_lbl.show()
                 return
             expected = hashlib.sha256(
                 (row["salt"] + self.pw_input.text()).encode()).hexdigest()
             if expected != row["password_hash"]:
-                self.err_lbl.setText("Mật khẩu không đúng.")
+                self.err_lbl.setText("Mat khau khong dung.")
                 self.err_lbl.show()
                 return
             self.accept()
@@ -825,12 +802,12 @@ class _ConfirmPasswordDialog(QDialog):
 
 
 class _AddUserDialog(QDialog):
-    """Dialog thêm user mới (admin only)."""
+    """Dialog them user moi (admin only)."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Thêm người dùng mới")
-        self.setFixedSize(400, 340)
+        self.setWindowTitle("Them nguoi dung moi")
+        self.setFixedSize(400, 300)
         self.setStyleSheet("QDialog { background:#fff; } "
                            "QLabel { font-size:12px; color:#444; }")
         self._build()
@@ -848,26 +825,26 @@ class _AddUserDialog(QDialog):
               "padding:7px 10px; font-size:12px; background:#fff; color:#222; }")
 
         self.le_fullname = QLineEdit()
-        self.le_fullname.setPlaceholderText("Họ và tên")
+        self.le_fullname.setPlaceholderText("Ho va ten")
         self.le_fullname.setStyleSheet(_s)
-        form.addRow("Họ tên:", self.le_fullname)
+        form.addRow("Ho ten:", self.le_fullname)
 
         self.le_username = QLineEdit()
-        self.le_username.setPlaceholderText("3–30 ký tự, không dấu cách")
+        self.le_username.setPlaceholderText("3-30 ky tu, khong dau cach")
         self.le_username.setStyleSheet(_s)
         form.addRow("Username:", self.le_username)
 
         self.le_pw = QLineEdit()
         self.le_pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_pw.setPlaceholderText("Tối thiểu 6 ký tự")
+        self.le_pw.setPlaceholderText("Toi thieu 6 ky tu")
         self.le_pw.setStyleSheet(_s)
-        form.addRow("Mật khẩu:", self.le_pw)
+        form.addRow("Mat khau:", self.le_pw)
 
         self.cb_role = QComboBox()
-        self.cb_role.addItem("Người dùng", "user")
-        self.cb_role.addItem("Quản trị viên", "admin")
+        self.cb_role.addItem("Nguoi dung", "user")
+        self.cb_role.addItem("Quan tri vien", "admin")
         self.cb_role.setStyleSheet(_s)
-        form.addRow("Vai trò:", self.cb_role)
+        form.addRow("Vai tro:", self.cb_role)
 
         layout.addLayout(form)
 
@@ -878,12 +855,12 @@ class _AddUserDialog(QDialog):
 
         layout.addStretch()
         btn_row = QHBoxLayout()
-        btn_cancel = QPushButton("Hủy")
+        btn_cancel = QPushButton("Huy")
         btn_cancel.setStyleSheet(
             "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
             "border-radius:6px; padding:7px 14px; }")
         btn_cancel.clicked.connect(self.reject)
-        btn_ok = QPushButton("➕  Thêm user")
+        btn_ok = QPushButton("Them user")
         btn_ok.setStyleSheet(
             "QPushButton { background:#E6F1FB; color:#0C447C; "
             "border:1px solid #B5D4F4; border-radius:6px; "
@@ -901,13 +878,13 @@ class _AddUserDialog(QDialog):
         role     = self.cb_role.currentData()
 
         if not fullname or not username or not password:
-            self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
+            self._show_msg("Vui long dien day du thong tin.", "error")
             return
         if len(username) < 3:
-            self._show_msg("Username phải có ít nhất 3 ký tự.", "error")
+            self._show_msg("Username phai co it nhat 3 ky tu.", "error")
             return
         if len(password) < 6:
-            self._show_msg("Mật khẩu phải có ít nhất 6 ký tự.", "error")
+            self._show_msg("Mat khau phai co it nhat 6 ky tu.", "error")
             return
 
         from app.data.auth_manager import AuthManager
@@ -916,7 +893,6 @@ class _AddUserDialog(QDialog):
             self._show_msg(result["message"], "error")
             return
 
-        # Cập nhật role nếu là admin
         if role == "admin":
             from user_session import session
             import sqlite3
@@ -938,13 +914,13 @@ class _AddUserDialog(QDialog):
 
 
 class _EditUserDialog(QDialog):
-    """Dialog sửa thông tin user (admin only)."""
+    """Dialog sua thong tin user (admin only)."""
 
     def __init__(self, user: dict, parent=None):
         super().__init__(parent)
         self.user = user
-        self.setWindowTitle(f"Sửa thông tin @{user['username']}")
-        self.setFixedSize(400, 280)
+        self.setWindowTitle(f"Sua thong tin @{user['username']}")
+        self.setFixedSize(400, 260)
         self.setStyleSheet("QDialog { background:#fff; } "
                            "QLabel { font-size:12px; color:#444; }")
         self._build()
@@ -963,7 +939,7 @@ class _EditUserDialog(QDialog):
 
         self.le_fullname = QLineEdit(self.user.get("full_name") or "")
         self.le_fullname.setStyleSheet(_s)
-        form.addRow("Họ tên:", self.le_fullname)
+        form.addRow("Ho ten:", self.le_fullname)
 
         un = QLineEdit(self.user.get("username") or "")
         un.setReadOnly(True)
@@ -971,19 +947,19 @@ class _EditUserDialog(QDialog):
         form.addRow("Username:", un)
 
         self.cb_role = QComboBox()
-        self.cb_role.addItem("Người dùng", "user")
-        self.cb_role.addItem("Quản trị viên", "admin")
+        self.cb_role.addItem("Nguoi dung", "user")
+        self.cb_role.addItem("Quan tri vien", "admin")
         self.cb_role.setStyleSheet(_s)
         idx = self.cb_role.findData(self.user.get("role", "user"))
         if idx >= 0:
             self.cb_role.setCurrentIndex(idx)
-        form.addRow("Vai trò:", self.cb_role)
+        form.addRow("Vai tro:", self.cb_role)
 
         self.le_reset_pw = QLineEdit()
         self.le_reset_pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_reset_pw.setPlaceholderText("Để trống = không đổi")
+        self.le_reset_pw.setPlaceholderText("De trong = khong doi")
         self.le_reset_pw.setStyleSheet(_s)
-        form.addRow("Đặt lại mật khẩu:", self.le_reset_pw)
+        form.addRow("Dat lai mat khau:", self.le_reset_pw)
 
         layout.addLayout(form)
 
@@ -994,12 +970,12 @@ class _EditUserDialog(QDialog):
 
         layout.addStretch()
         btn_row = QHBoxLayout()
-        btn_cancel = QPushButton("Hủy")
+        btn_cancel = QPushButton("Huy")
         btn_cancel.setStyleSheet(
             "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
             "border-radius:6px; padding:7px 14px; }")
         btn_cancel.clicked.connect(self.reject)
-        btn_ok = QPushButton("💾  Lưu")
+        btn_ok = QPushButton("Luu")
         btn_ok.setStyleSheet(
             "QPushButton { background:#E6F1FB; color:#0C447C; "
             "border:1px solid #B5D4F4; border-radius:6px; "
@@ -1016,7 +992,7 @@ class _EditUserDialog(QDialog):
         new_pw   = self.le_reset_pw.text()
 
         if not fullname:
-            self._show_msg("Họ tên không được để trống.", "error")
+            self._show_msg("Ho ten khong duoc de trong.", "error")
             return
 
         try:
@@ -1029,7 +1005,7 @@ class _EditUserDialog(QDialog):
             )
             if new_pw:
                 if len(new_pw) < 6:
-                    self._show_msg("Mật khẩu mới phải có ít nhất 6 ký tự.", "error")
+                    self._show_msg("Mat khau moi phai co it nhat 6 ky tu.", "error")
                     conn.close()
                     return
                 salt    = _sec.token_hex(16)
@@ -1054,9 +1030,9 @@ class _EditUserDialog(QDialog):
         self.msg_lbl.show()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Main SettingsFrame — dùng QTabWidget
-# ══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
+# Main SettingsFrame -- dung QTabWidget
+# ==============================================================================
 
 class SettingsFrame(QWidget):
     def __init__(self, main_window=None):
@@ -1088,7 +1064,6 @@ class SettingsFrame(QWidget):
         layout.setSpacing(0)
         layout.addWidget(self._build_toolbar())
 
-        # QTabWidget
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet("""
             QTabWidget::pane {
@@ -1120,13 +1095,11 @@ class SettingsFrame(QWidget):
             }
         """)
 
-        # Tab 1: Cài đặt ứng dụng (nội dung cũ)
         self.app_tab = self._build_app_tab()
-        self.tabs.addTab(self.app_tab, "⚙  Ứng dụng")
+        self.tabs.addTab(self.app_tab, "Ung dung")
 
-        # Tab 2: Thông tin tài khoản (mới)
         self.profile_tab = UserProfileTab(main_window=self.main_window)
-        self.tabs.addTab(self.profile_tab, "👤  Tài khoản")
+        self.tabs.addTab(self.profile_tab, "Tai khoan")
 
         self.tabs.currentChanged.connect(self._on_tab_changed)
         layout.addWidget(self.tabs)
@@ -1135,7 +1108,7 @@ class SettingsFrame(QWidget):
         if index == 1:
             self.profile_tab.refresh()
 
-    # ── Toolbar ───────────────────────────────────────────────────────────────
+    # -- Toolbar --
 
     def _build_toolbar(self):
         bar = QWidget()
@@ -1145,7 +1118,7 @@ class SettingsFrame(QWidget):
         layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(10)
 
-        title = QLabel("Cài đặt")
+        title = QLabel("Cai dat")
         title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
@@ -1154,18 +1127,18 @@ class SettingsFrame(QWidget):
         self.status_label.setStyleSheet("color:#1D9E75; font-size:12px; border:none;")
         layout.addWidget(self.status_label)
 
-        btn_reload = QPushButton("Tải lại")
+        btn_reload = QPushButton("Tai lai")
         btn_reload.setStyleSheet(self._btn_normal())
         btn_reload.clicked.connect(self.refresh)
         layout.addWidget(btn_reload)
 
-        btn_save = QPushButton("Lưu cài đặt")
+        btn_save = QPushButton("Luu cai dat")
         btn_save.setStyleSheet(self._btn_primary())
         btn_save.clicked.connect(self._save)
         layout.addWidget(btn_save)
         return bar
 
-    # ── Tab Ứng dụng (giữ nguyên nội dung cũ) ────────────────────────────────
+    # -- Tab Ung dung --
 
     def _build_app_tab(self) -> QWidget:
         widget = QWidget()
@@ -1197,64 +1170,64 @@ class SettingsFrame(QWidget):
         return widget
 
     def _build_app_info(self):
-        panel, grid = self._panel("Thông tin ứng dụng")
+        panel, grid = self._panel("Thong tin ung dung")
 
         try:
             from user_session import session
             if session.is_logged_in:
-                self._add_readonly(grid, 0, "Người dùng",
+                self._add_readonly(grid, 0, "Nguoi dung",
                     f"{session.full_name} (@{session.username})")
                 self._add_readonly(grid, 1, "Database",
                     str(session.db_path))
-                self._add_readonly(grid, 2, "Thư mục dữ liệu",
+                self._add_readonly(grid, 2, "Thu muc du lieu",
                     str(session.data_dir))
-                self._add_readonly(grid, 3, "Tên ứng dụng", APP_NAME)
-                self._add_readonly(grid, 4, "Phiên bản", APP_VERSION)
+                self._add_readonly(grid, 3, "Ten ung dung", APP_NAME)
+                self._add_readonly(grid, 4, "Phien ban", APP_VERSION)
             else:
-                self._add_readonly(grid, 0, "Tên ứng dụng", APP_NAME)
-                self._add_readonly(grid, 1, "Phiên bản", APP_VERSION)
+                self._add_readonly(grid, 0, "Ten ung dung", APP_NAME)
+                self._add_readonly(grid, 1, "Phien ban", APP_VERSION)
                 self._add_readonly(grid, 2, "Database", str(_get_db_path()))
         except ImportError:
-            self._add_readonly(grid, 0, "Tên ứng dụng", APP_NAME)
-            self._add_readonly(grid, 1, "Phiên bản", APP_VERSION)
+            self._add_readonly(grid, 0, "Ten ung dung", APP_NAME)
+            self._add_readonly(grid, 1, "Phien ban", APP_VERSION)
             self._add_readonly(grid, 2, "Database", str(_get_db_path()))
 
         self.body.addWidget(panel)
 
     def _build_general_settings(self):
-        panel, grid = self._panel("Cài đặt chung")
+        panel, grid = self._panel("Cai dat chung")
 
         self.currency_combo = QComboBox()
         self.currency_combo.addItems(["VND", "USD", "EUR"])
-        self._add_control(grid, 0, "Tiền tệ mặc định", self.currency_combo)
+        self._add_control(grid, 0, "Tien te mac dinh", self.currency_combo)
 
         self.date_combo = QComboBox()
         self.date_combo.addItems(["dd/MM/yyyy", "yyyy-MM-dd", "MM/dd/yyyy"])
-        self._add_control(grid, 1, "Định dạng ngày", self.date_combo)
+        self._add_control(grid, 1, "Dinh dang ngay", self.date_combo)
 
         self.month_combo = QComboBox()
-        self.month_combo.addItem("Tháng hiện tại", "current")
-        self.month_combo.addItem("Tháng gần nhất có dữ liệu", "latest_data")
-        self._add_control(grid, 2, "Tháng mặc định", self.month_combo)
+        self.month_combo.addItem("Thang hien tai", "current")
+        self.month_combo.addItem("Thang gan nhat co du lieu", "latest_data")
+        self._add_control(grid, 2, "Thang mac dinh", self.month_combo)
 
-        self.auto_refresh_check = QCheckBox("Tự động làm mới dữ liệu")
+        self.auto_refresh_check = QCheckBox("Tu dong lam moi du lieu")
         self.auto_refresh_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 3, "Làm mới", self.auto_refresh_check)
+        self._add_control(grid, 3, "Lam moi", self.auto_refresh_check)
 
         self.window_mode_combo = QComboBox()
-        self.window_mode_combo.addItem("Mặc định (1150x700)", "default")
-        self.window_mode_combo.addItem("Lớn (1366x768)", "large")
-        self.window_mode_combo.addItem("Toàn màn hình", "fullscreen")
-        self._add_control(grid, 4, "Chế độ cửa sổ", self.window_mode_combo)
+        self.window_mode_combo.addItem("Mac dinh (1150x700)", "default")
+        self.window_mode_combo.addItem("Lon (1366x768)", "large")
+        self.window_mode_combo.addItem("Toan man hinh", "fullscreen")
+        self._add_control(grid, 4, "Che do cua so", self.window_mode_combo)
 
         self.theme_combo = QComboBox()
-        self.theme_combo.addItem("Sáng", "light")
-        self.theme_combo.addItem("Tối", "dark")
-        self.theme_combo.addItem("Theo hệ thống", "auto")
+        self.theme_combo.addItem("Sang", "light")
+        self.theme_combo.addItem("Toi", "dark")
+        self.theme_combo.addItem("Theo he thong", "auto")
         self.theme_combo.currentIndexChanged.connect(
             lambda: theme_engine.set_mode(self.theme_combo.currentData())
         )
-        self._add_control(grid, 5, "Chủ đề UI", self.theme_combo)
+        self._add_control(grid, 5, "Chu de UI", self.theme_combo)
 
         accent_row = QWidget()
         accent_row.setStyleSheet("background:transparent;")
@@ -1271,31 +1244,31 @@ class SettingsFrame(QWidget):
             btn.clicked.connect(lambda _, c=hex_color: theme_engine.set_accent(c))
             accent_layout.addWidget(btn)
         accent_layout.addStretch()
-        self._add_control(grid, 6, "Màu nhấn (Accent)", accent_row)
+        self._add_control(grid, 6, "Mau nhan (Accent)", accent_row)
 
         self.body.addWidget(panel)
 
     def _build_ai_settings(self):
-        panel, grid = self._panel("Cài đặt AI")
+        panel, grid = self._panel("Cai dat AI")
 
-        self.auto_classify_check = QCheckBox("Tự động phân loại giao dịch")
+        self.auto_classify_check = QCheckBox("Tu dong phan loai giao dich")
         self.auto_classify_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 0, "Phân loại", self.auto_classify_check)
+        self._add_control(grid, 0, "Phan loai", self.auto_classify_check)
 
-        self.anomaly_check = QCheckBox("Bật phát hiện bất thường")
+        self.anomaly_check = QCheckBox("Bat phat hien bat thuong")
         self.anomaly_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 1, "Bất thường", self.anomaly_check)
+        self._add_control(grid, 1, "Bat thuong", self.anomaly_check)
 
         self.forecast_combo = QComboBox()
-        self.forecast_combo.addItem("Tự động", "auto")
-        self.forecast_combo.addItem("Trung bình động", "moving_average")
-        self.forecast_combo.addItem("Prophet nếu có", "prophet")
-        self._add_control(grid, 2, "Phương pháp dự báo", self.forecast_combo)
+        self.forecast_combo.addItem("Tu dong", "auto")
+        self.forecast_combo.addItem("Trung binh dong", "moving_average")
+        self.forecast_combo.addItem("Prophet neu co", "prophet")
+        self._add_control(grid, 2, "Phuong phap du bao", self.forecast_combo)
 
         self.chat_engine_combo = QComboBox()
         self.chat_engine_combo.addItem("Gemini API", "gemini")
         self.chat_engine_combo.addItem("Ollama offline", "ollama")
-        self.chat_engine_combo.addItem("Model nhúng", "embedded")
+        self.chat_engine_combo.addItem("Model nhung", "embedded")
         self._add_control(grid, 3, "Engine chatbot", self.chat_engine_combo)
 
         self.package_labels = {}
@@ -1310,13 +1283,13 @@ class SettingsFrame(QWidget):
             self.package_labels[package] = lbl
             row.addWidget(lbl)
         row.addStretch()
-        self._add_control(grid, 4, "Trạng thái package", status_row)
+        self._add_control(grid, 4, "Trang thai package", status_row)
         self.body.addWidget(panel)
 
         QTimer.singleShot(200, self._refresh_package_status)
 
     def _build_api_settings(self):
-        panel, grid = self._panel("Cấu hình API & Cloud")
+        panel, grid = self._panel("Cau hinh API & Cloud")
 
         self.gemini_key = QLineEdit()
         self.gemini_key.setEchoMode(QLineEdit.EchoMode.Password)
@@ -1338,55 +1311,55 @@ class SettingsFrame(QWidget):
         self.body.addWidget(panel)
 
     def _build_data_tools(self):
-        panel, grid = self._panel("Quản lý dữ liệu")
+        panel, grid = self._panel("Quan ly du lieu")
 
-        btn_backup = QPushButton("Sao lưu database")
+        btn_backup = QPushButton("Sao luu database")
         btn_backup.setStyleSheet(self._btn_primary())
         btn_backup.clicked.connect(self._backup_db)
         self._add_control(grid, 0, "Backup", btn_backup)
 
-        btn_export = QPushButton("Xuất Excel")
+        btn_export = QPushButton("Xuat Excel")
         btn_export.setStyleSheet(self._btn_normal())
         btn_export.clicked.connect(self._export_excel)
-        self._add_control(grid, 1, "Xuất dữ liệu", btn_export)
+        self._add_control(grid, 1, "Xuat du lieu", btn_export)
 
-        btn_restore = QPushButton("Phục hồi database")
+        btn_restore = QPushButton("Phuc hoi database")
         btn_restore.setStyleSheet(self._btn_danger())
         btn_restore.clicked.connect(self._restore_db)
-        self._add_control(grid, 2, "Phục hồi", btn_restore)
+        self._add_control(grid, 2, "Phuc hoi", btn_restore)
 
-        btn_folder = QPushButton("Mở thư mục dữ liệu")
+        btn_folder = QPushButton("Mo thu muc du lieu")
         btn_folder.setStyleSheet(self._btn_normal())
         btn_folder.clicked.connect(self._open_data_folder)
-        self._add_control(grid, 3, "Thư mục", btn_folder)
+        self._add_control(grid, 3, "Thu muc", btn_folder)
 
         self.backup_info = QLabel("")
         self.backup_info.setWordWrap(True)
         self.backup_info.setStyleSheet("color:#888; font-size:11px; border:none;")
-        self._add_control(grid, 4, "Trạng thái", self.backup_info)
+        self._add_control(grid, 4, "Trang thai", self.backup_info)
 
         self.body.addWidget(panel)
 
     def _build_cloud_sync(self):
-        panel, grid = self._panel("Đồng bộ đám mây (Cloud Sync)")
+        panel, grid = self._panel("Dong bo dam may (Cloud Sync)")
 
         self.cloud_provider = QComboBox()
         self.cloud_provider.addItems(["Google Drive", "Dropbox", "OneDrive"])
         self.cloud_provider.setStyleSheet(self._input_style())
-        self._add_control(grid, 0, "Dịch vụ", self.cloud_provider)
+        self._add_control(grid, 0, "Dich vu", self.cloud_provider)
 
-        btn_sync = QPushButton("Đồng bộ ngay")
+        btn_sync = QPushButton("Dong bo ngay")
         btn_sync.setStyleSheet(self._btn_primary())
         btn_sync.clicked.connect(self._sync_cloud)
-        self._add_control(grid, 1, "Đồng bộ", btn_sync)
+        self._add_control(grid, 1, "Dong bo", btn_sync)
 
-        self.cloud_info = QLabel("Chưa cấu hình")
+        self.cloud_info = QLabel("Chua cau hinh")
         self.cloud_info.setStyleSheet("color:#888; font-size:11px; border:none;")
-        self._add_control(grid, 2, "Trạng thái", self.cloud_info)
+        self._add_control(grid, 2, "Trang thai", self.cloud_info)
 
         self.body.addWidget(panel)
 
-    # ── Refresh / Save ────────────────────────────────────────────────────────
+    # -- Refresh / Save --
 
     def refresh(self):
         self.settings = load_settings()
@@ -1405,7 +1378,6 @@ class SettingsFrame(QWidget):
         self.supabase_key.setText(get_env_value("SUPABASE_KEY"))
         self._refresh_package_status()
 
-        # Cũng refresh profile tab nếu đang mở
         if self.tabs.currentIndex() == 1:
             self.profile_tab.refresh()
 
@@ -1425,28 +1397,28 @@ class SettingsFrame(QWidget):
         update_env_value("GEMINI_API_KEY", self.gemini_key.text().strip())
         update_env_value("SUPABASE_URL",   self.supabase_url.text().strip())
         update_env_value("SUPABASE_KEY",   self.supabase_key.text().strip())
-        self.status_label.setText("Đã lưu ✓")
+        self.status_label.setText("Da luu")
         QTimer.singleShot(3000, lambda: self.status_label.setText(""))
-        QMessageBox.information(self, "Thông báo", "Cài đặt đã được lưu thành công!")
+        QMessageBox.information(self, "Thong bao", "Cai dat da duoc luu thanh cong!")
         if self.main_window:
             self.main_window.refresh_all()
 
-    # ── Data actions ──────────────────────────────────────────────────────────
+    # -- Data actions --
 
     def _backup_db(self):
         try:
             target = backup_database()
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi backup", str(e))
+            QMessageBox.critical(self, "Loi backup", str(e))
             return
-        self.backup_info.setText(f"Đã tạo backup: {target.name}")
-        QMessageBox.information(self, "Thành công",
-                                f"Đã sao lưu database:\n{target}")
+        self.backup_info.setText(f"Da tao backup: {target.name}")
+        QMessageBox.information(self, "Thanh cong",
+                                f"Da sao luu database:\n{target}")
 
     def _export_excel(self):
         exports_dir = get_exports_dir()
         path, _ = QFileDialog.getSaveFileName(
-            self, "Lưu file Excel",
+            self, "Luu file Excel",
             str(exports_dir / "finance_export.xlsx"),
             "Excel Files (*.xlsx)"
         )
@@ -1455,10 +1427,10 @@ class SettingsFrame(QWidget):
         try:
             target = export_database_to_excel(path)
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi xuất Excel", str(e))
+            QMessageBox.critical(self, "Loi xuat Excel", str(e))
             return
-        self.backup_info.setText(f"Đã xuất Excel: {Path(target).name}")
-        QMessageBox.information(self, "Thành công", f"Đã xuất dữ liệu:\n{target}")
+        self.backup_info.setText(f"Da xuat Excel: {Path(target).name}")
+        QMessageBox.information(self, "Thanh cong", f"Da xuat du lieu:\n{target}")
 
     def _restore_db(self):
         try:
@@ -1468,16 +1440,16 @@ class SettingsFrame(QWidget):
             backup_dir = str(DATA_DIR)
 
         path, _ = QFileDialog.getOpenFileName(
-            self, "Chọn file database", backup_dir,
+            self, "Chon file database", backup_dir,
             "SQLite Database (*.db);;All Files (*)"
         )
         if not path:
             return
         reply = QMessageBox.warning(
-            self, "Xác nhận phục hồi",
-            "Phục hồi database sẽ ghi đè dữ liệu hiện tại.\n"
-            "App sẽ tự động sao lưu trước khi ghi đè.\n\n"
-            "Bạn có muốn tiếp tục?",
+            self, "Xac nhan phuc hoi",
+            "Phuc hoi database se ghi de du lieu hien tai.\n"
+            "App se tu dong sao luu truoc khi ghi de.\n\n"
+            "Ban co muon tiep tuc?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
@@ -1485,15 +1457,15 @@ class SettingsFrame(QWidget):
         try:
             backup_path = restore_database(path)
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi phục hồi", str(e))
+            QMessageBox.critical(self, "Loi phuc hoi", str(e))
             return
         self.backup_info.setText(
-            f"Đã phục hồi. Backup cũ: {Path(str(backup_path)).name if backup_path else 'N/A'}")
+            f"Da phuc hoi. Backup cu: {Path(str(backup_path)).name if backup_path else 'N/A'}")
         if self.main_window:
             self.main_window.refresh_all()
         QMessageBox.information(
-            self, "Thành công",
-            f"Đã phục hồi database.\nBackup trước khi phục hồi:\n{backup_path}"
+            self, "Thanh cong",
+            f"Da phuc hoi database.\nBackup truoc khi phuc hoi:\n{backup_path}"
         )
 
     def _open_data_folder(self):
@@ -1510,26 +1482,26 @@ class SettingsFrame(QWidget):
 
     def _sync_cloud(self):
         provider = self.cloud_provider.currentText()
-        self.cloud_info.setText(f"Đang đồng bộ với {provider}...")
+        self.cloud_info.setText(f"Dang dong bo voi {provider}...")
         self.cloud_info.setStyleSheet("color:#0C447C; font-size:11px; border:none;")
         success, msg = SyncManager.sync_to_cloud()
         if success:
             self.cloud_info.setText(
-                f"Đã đồng bộ lúc: {datetime.now().strftime('%H:%M:%S')}")
+                f"Da dong bo luc: {datetime.now().strftime('%H:%M:%S')}")
             self.cloud_info.setStyleSheet("color:#3B6D11; font-size:11px; border:none;")
             QMessageBox.information(self, "Cloud Sync", msg)
         else:
-            self.cloud_info.setText("Đồng bộ thất bại")
+            self.cloud_info.setText("Dong bo that bai")
             self.cloud_info.setStyleSheet("color:#A32D2D; font-size:11px; border:none;")
             QMessageBox.warning(self, "Cloud Sync", msg)
 
     def _refresh_package_status(self):
         statuses = package_status(list(self.package_labels.keys()))
         for name, ok in statuses.items():
-            self.package_labels[name].setText(f"{name}: {'OK' if ok else 'thiếu'}")
+            self.package_labels[name].setText(f"{name}: {'OK' if ok else 'thieu'}")
             self.package_labels[name].setStyleSheet(self._badge_style(ok))
 
-    # ── Helpers ───────────────────────────────────────────────────────────────
+    # -- Helpers --
 
     @staticmethod
     def _set_combo_data(combo, value):
