@@ -68,7 +68,7 @@ class SidebarButton(QPushButton):
             border-radius: 8px;
             text-align: left;
             padding: 9px 14px 9px 11px;
-            font-size: 13px;
+            font-size:18px;
             font-weight: 600;
         }
     """
@@ -80,7 +80,7 @@ class SidebarButton(QPushButton):
             border-radius: 8px;
             text-align: left;
             padding: 9px 14px;
-            font-size: 13px;
+            font-size:18px;
         }
         QPushButton:hover {
             background: rgba(255,255,255,0.12);
@@ -216,10 +216,10 @@ class Sidebar(QWidget):
         title_col = QVBoxLayout()
         title_col.setSpacing(1)
         title = QLabel("Finance AI")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         title.setStyleSheet("color: #FFFFFF; border: none; background: transparent;")
         subtitle = QLabel(f"Tháng {datetime.now().strftime('%m/%Y')}")
-        subtitle.setFont(QFont("Segoe UI", 9))
+        subtitle.setFont(QFont("Segoe UI", 14))
         subtitle.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
@@ -262,7 +262,7 @@ class Sidebar(QWidget):
         }
         for section_name, pages in sections.items():
             sec_lbl = QLabel(section_name)
-            sec_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+            sec_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
             sec_lbl.setStyleSheet(
                 "color: rgba(255,255,255,0.4); padding: 10px 8px 4px; "
                 "border: none; letter-spacing: 1.5px; background: transparent;"
@@ -297,12 +297,12 @@ class Sidebar(QWidget):
         bcl.setContentsMargins(12, 8, 12, 8)
         bcl.setSpacing(3)
         fl_label = QLabel("Tổng số dư")
-        fl_label.setFont(QFont("Segoe UI", 9))
+        fl_label.setFont(QFont("Segoe UI", 14))
         fl_label.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
         self.balance_label = QLabel("...")
-        self.balance_label.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        self.balance_label.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         self.balance_label.setStyleSheet(
             "color: #7CE8C3; border: none; background: transparent;"
         )
@@ -317,7 +317,7 @@ class Sidebar(QWidget):
                 background: rgba(255,255,255,0.08);
                 color: rgba(255,255,255,0.75);
                 border: 1px solid rgba(255,255,255,0.12);
-                border-radius: 8px; font-size: 12px; padding: 0 10px;
+                border-radius: 8px; font-size:17px; padding: 0 10px;
             }
             QPushButton:hover { background: rgba(255,255,255,0.15); color: white; }
         """)
@@ -332,7 +332,7 @@ class Sidebar(QWidget):
                 background: rgba(232, 80, 32, 0.15);
                 color: #FF8B6A;
                 border: 1px solid rgba(232, 80, 32, 0.3);
-                border-radius: 8px; font-size: 12px; padding: 0 10px;
+                border-radius: 8px; font-size:17px; padding: 0 10px;
             }
             QPushButton:hover { background: rgba(232, 80, 32, 0.25); color: #FFAA8A; }
         """)
@@ -372,13 +372,13 @@ class Sidebar(QWidget):
         name_col.setSpacing(2)
         display = full_name[:16] if len(full_name) > 16 else full_name
         self._full_name_lbl = QLabel(display)
-        self._full_name_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        self._full_name_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         self._full_name_lbl.setStyleSheet(
             "color: #FFFFFF; border: none; background: transparent;"
         )
         role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
         self._role_lbl = QLabel(role_map.get(role, "Người dùng"))
-        self._role_lbl.setFont(QFont("Segoe UI", 9))
+        self._role_lbl.setFont(QFont("Segoe UI", 14))
         self._role_lbl.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
@@ -389,7 +389,7 @@ class Sidebar(QWidget):
 
         arrow = QLabel("›")
         arrow.setStyleSheet(
-            "color: rgba(255,255,255,0.3); font-size:18px; border:none; background:transparent;"
+            "color: rgba(255,255,255,0.3); font-size:23px; border:none; background:transparent;"
         )
         hl.addWidget(arrow)
         w.mousePressEvent = lambda e: self._navigate("Hồ sơ")
@@ -459,12 +459,12 @@ class _LoadingPlaceholder(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         spinner = QLabel("⏳")
-        spinner.setFont(QFont("Segoe UI Emoji", 32))
+        spinner.setFont(QFont("Segoe UI Emoji", 37))
         spinner.setAlignment(Qt.AlignmentFlag.AlignCenter)
         spinner.setStyleSheet("border:none; background:transparent;")
 
         msg = QLabel(f"Đang tải {page_name}...")
-        msg.setFont(QFont("Segoe UI", 13))
+        msg.setFont(QFont("Segoe UI", 18))
         msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         msg.setStyleSheet("color: #4A6785; border:none; background:transparent;")
 
@@ -615,7 +615,7 @@ class MainWindow(QMainWindow):
         placeholder = QWidget()
         lbl = QLabel(f"Trang '{page}' — đang phát triển")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet("color:#4A6785; font-size:14px;")
+        lbl.setStyleSheet("color:#4A6785; font-size:19px;")
         from PyQt6.QtWidgets import QVBoxLayout as VBL
         VBL(placeholder).addWidget(lbl)
         return placeholder

@@ -68,7 +68,7 @@ class ReportFrame(QWidget):
         gpl.setSpacing(12)
 
         t = QLabel("Tạo báo cáo PDF tháng")
-        t.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         t.setStyleSheet("border:none;")
         gpl.addWidget(t)
 
@@ -76,20 +76,20 @@ class ReportFrame(QWidget):
             "Xuất báo cáo tổng kết tài chính tháng bao gồm: tổng kết thu chi, "
             "phân tích theo danh mục, danh sách giao dịch và dự báo AI tháng tới.")
         desc.setWordWrap(True)
-        desc.setFont(QFont("Segoe UI", 11))
+        desc.setFont(QFont("Segoe UI", 16))
         desc.setStyleSheet("color:#666; border:none;")
         gpl.addWidget(desc)
 
         row = QHBoxLayout()
         lbl = QLabel("Chọn tháng:")
-        lbl.setFont(QFont("Segoe UI", 12))
+        lbl.setFont(QFont("Segoe UI", 17))
         lbl.setStyleSheet("color:#444; border:none;")
         row.addWidget(lbl)
 
         self.cb_month = QComboBox()
         self.cb_month.setFixedWidth(160)
         self.cb_month.setStyleSheet(
-            "QComboBox { border:1px solid #ddd; border-radius:6px; padding:6px 10px; font-size:12px; background:#fff; }")
+            "QComboBox { border:1px solid #ddd; border-radius:6px; padding:6px 10px; font-size:17px; background:#fff; }")
         self._populate_months()
         row.addWidget(self.cb_month)
         row.addStretch()
@@ -97,7 +97,7 @@ class ReportFrame(QWidget):
         self.btn_gen = QPushButton("Tạo & Tải PDF")
         self.btn_gen.setFixedHeight(38)
         self.btn_gen.setStyleSheet(
-            "QPushButton { background:#378ADD; color:#fff; border:none; border-radius:8px; padding:8px 24px; font-size:13px; font-weight:500; } QPushButton:hover { background:#185FA5; } QPushButton:disabled { background:#ccc; }")
+            "QPushButton { background:#378ADD; color:#fff; border:none; border-radius:8px; padding:8px 24px; font-size:18px; font-weight:500; } QPushButton:hover { background:#185FA5; } QPushButton:disabled { background:#ccc; }")
         self.btn_gen.clicked.connect(self._generate_report)
         row.addWidget(self.btn_gen)
         gpl.addLayout(row)
@@ -111,7 +111,7 @@ class ReportFrame(QWidget):
         gpl.addWidget(self.progress)
 
         self.status_lbl = QLabel("")
-        self.status_lbl.setFont(QFont("Segoe UI", 11))
+        self.status_lbl.setFont(QFont("Segoe UI", 16))
         self.status_lbl.setStyleSheet("color:#1D9E75; border:none;")
         gpl.addWidget(self.status_lbl)
 
@@ -124,7 +124,7 @@ class ReportFrame(QWidget):
         self.preview_layout.setContentsMargins(24, 20, 24, 20)
         self.preview_layout.setSpacing(10)
         preview_title = QLabel("Xem trước nội dung báo cáo")
-        preview_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        preview_title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         preview_title.setStyleSheet("border:none;")
         self.preview_layout.addWidget(preview_title)
         self.stats_grid = QGridLayout()
@@ -139,7 +139,7 @@ class ReportFrame(QWidget):
         hist_l.setContentsMargins(24, 20, 24, 20)
         hist_l.setSpacing(8)
         hist_title = QLabel("File báo cáo đã tạo")
-        hist_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        hist_title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         hist_title.setStyleSheet("border:none;")
         hist_l.addWidget(hist_title)
         self.hist_layout = QVBoxLayout()
@@ -162,7 +162,7 @@ class ReportFrame(QWidget):
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
         title = QLabel("Báo cáo")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
         return bar
@@ -226,11 +226,11 @@ class ReportFrame(QWidget):
             cl = QVBoxLayout(card)
             cl.setContentsMargins(12, 10, 12, 10)
             lbl = QLabel(label)
-            lbl.setFont(QFont("Segoe UI", 10))
+            lbl.setFont(QFont("Segoe UI", 15))
             lbl.setStyleSheet("color:#888; border:none;")
             cl.addWidget(lbl)
             val = QLabel(value)
-            val.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+            val.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
             val.setStyleSheet(f"color:{color}; border:none;")
             cl.addWidget(val)
             self.stats_grid.addWidget(card, row, col)
@@ -304,7 +304,7 @@ class ReportFrame(QWidget):
 
         if not files:
             lbl = QLabel("Chưa có báo cáo nào được tạo.")
-            lbl.setStyleSheet("color:#bbb; font-size:12px; border:none;")
+            lbl.setStyleSheet("color:#bbb; font-size:17px; border:none;")
             self.hist_layout.addWidget(lbl)
             return
 
@@ -316,13 +316,13 @@ class ReportFrame(QWidget):
             rl.setSpacing(12)
 
             name_lbl = QLabel(f.name)
-            name_lbl.setFont(QFont("Segoe UI", 12))
+            name_lbl.setFont(QFont("Segoe UI", 17))
             name_lbl.setStyleSheet("color:#333; border:none;")
             rl.addWidget(name_lbl)
 
             size_kb = f.stat().st_size // 1024
             size_lbl = QLabel(f"{size_kb} KB")
-            size_lbl.setFont(QFont("Segoe UI", 10))
+            size_lbl.setFont(QFont("Segoe UI", 15))
             size_lbl.setStyleSheet("color:#aaa; border:none;")
             rl.addWidget(size_lbl)
             rl.addStretch()
@@ -330,7 +330,7 @@ class ReportFrame(QWidget):
             btn_open = QPushButton("Mở")
             btn_open.setFixedSize(50, 26)
             btn_open.setStyleSheet(
-                "QPushButton { background:#E6F1FB; color:#0C447C; border:none; border-radius:5px; font-size:11px; font-weight:500; } QPushButton:hover { background:#B5D4F4; }")
+                "QPushButton { background:#E6F1FB; color:#0C447C; border:none; border-radius:5px; font-size:16px; font-weight:500; } QPushButton:hover { background:#B5D4F4; }")
             btn_open.clicked.connect(lambda _, p=str(f): self._open_file(p))
             rl.addWidget(btn_open)
 

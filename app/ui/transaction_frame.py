@@ -1,12 +1,4 @@
-# app/ui/transaction_frame.py  (cập nhật: sửa bug alert + account dropdown + pagination)
-"""
-Thay đổi so với phiên bản cũ:
-  - Sửa bug: add_transaction() trả về int (tx_id), không phải dict
-    → Xóa đoạn check alert.get("type") gây lỗi
-  - TransactionDialog: thêm dropdown chọn tài khoản thay vì hardcode account_id=1
-  - Thêm phân trang (pagination) cho bảng giao dịch (100 dòng/trang)
-  - FIX: alternating row color không còn bị override bởi dark theme (text vô hình)
-"""
+# app/ui/transaction_frame.py  
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
@@ -89,7 +81,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
         title = QLabel("Giao dịch")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
         for text, slot in [("Nhập CSV", self._import_csv), ("Xuất Excel", self._export_excel)]:
@@ -109,7 +101,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         bar.setStyleSheet(
             "QWidget { background:#f7f7f7; border-bottom:1px solid #e8e8e8; } "
             "QComboBox,QLineEdit { border:1px solid #ddd; border-radius:5px; "
-            "padding:3px 8px; font-size:12px; background:#fff; color:#333; }"
+            "padding:3px 8px; font-size:17px; background:#fff; color:#333; }"
         )
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
@@ -160,7 +152,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
                 background: #ffffff;
                 border: none;
                 gridline-color: #f0f0f0;
-                font-size: 12px;
+                font-size:17px;
                 alternate-background-color: #F4F8FF;
             }
             QTableWidget::item {
@@ -183,7 +175,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
             QHeaderView::section {
                 background: #f7f7f7;
                 color: #888888;
-                font-size: 10px;
+                font-size:15px;
                 font-weight: bold;
                 border: none;
                 border-bottom: 1px solid #e8e8e8;
@@ -207,8 +199,8 @@ class TransactionFrame(QWidget, BusConnectMixin):
         bar.setFixedHeight(36)
         bar.setStyleSheet(
             "QWidget { background:#fff; border-top:1px solid #e8e8e8; } "
-            "QLabel { font-size:11px; color:#999; } "
-            "QPushButton { font-size:11px; }"
+            "QLabel { font-size:16px; color:#999; } "
+            "QPushButton { font-size:16px; }"
         )
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
@@ -235,7 +227,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         self.btn_prev.clicked.connect(lambda: self._change_page(-1))
 
         self.lbl_page = QLabel("Trang 1 / 1")
-        self.lbl_page.setStyleSheet("color:#555; font-size:11px;")
+        self.lbl_page.setStyleSheet("color:#555; font-size:16px;")
 
         self.btn_next = QPushButton("Tiếp ▶")
         self.btn_next.setFixedHeight(24)
@@ -352,12 +344,12 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
         self.lbl_count.setText(f"{len(transactions)} giao dịch")
         self.lbl_income.setText(f"Thu: {income:,.0f} đ".replace(",", "."))
-        self.lbl_income.setStyleSheet("font-size:11px; color:#1D9E75;")
+        self.lbl_income.setStyleSheet("font-size:16px; color:#1D9E75;")
         self.lbl_expense.setText(f"Chi: {expense:,.0f} đ".replace(",", "."))
-        self.lbl_expense.setStyleSheet("font-size:11px; color:#E24B4A;")
+        self.lbl_expense.setStyleSheet("font-size:16px; color:#E24B4A;")
         self.lbl_anomaly.setText(f"Bất thường: {anomaly}" if anomaly else "")
         if anomaly:
-            self.lbl_anomaly.setStyleSheet("font-size:11px; color:#E24B4A;")
+            self.lbl_anomaly.setStyleSheet("font-size:16px; color:#E24B4A;")
 
     # ── Actions ───────────────────────────────────────────────────────────────
 
@@ -418,7 +410,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         menu = QMenu(self)
         menu.setStyleSheet(
             "QMenu { background:#fff; border:1px solid #ddd; border-radius:6px; } "
-            "QMenu::item { padding:6px 16px; font-size:12px; } "
+            "QMenu::item { padding:6px 16px; font-size:17px; } "
             "QMenu::item:selected { background:#E6F1FB; color:#0C447C; }"
         )
         menu.addAction("Sửa").triggered.connect(
@@ -545,13 +537,13 @@ class TransactionFrame(QWidget, BusConnectMixin):
             return (
                 "QPushButton { background:#E6F1FB; color:#0C447C; "
                 "border:1px solid #B5D4F4; border-radius:6px; "
-                "padding:6px 14px; font-size:12px; font-weight:500; } "
+                "padding:6px 14px; font-size:17px; font-weight:500; } "
                 "QPushButton:hover { background:#B5D4F4; }"
             )
         return (
             "QPushButton { background:#fff; color:#555; "
             "border:1px solid #ddd; border-radius:6px; "
-            "padding:6px 12px; font-size:12px; } "
+            "padding:6px 12px; font-size:17px; } "
             "QPushButton:hover { background:#f5f5f5; }"
         )
 
@@ -567,10 +559,10 @@ class TransactionDialog(QDialog):
         self.setFixedSize(440, 480)
         self.setStyleSheet(
             "QDialog { background:#fff; } "
-            "QLabel { font-size:12px; color:#444; } "
+            "QLabel { font-size:17px; color:#444; } "
             "QLineEdit,QComboBox,QDoubleSpinBox,QDateEdit,QTextEdit { "
             "border:1px solid #ddd; border-radius:6px; "
-            "padding:6px 10px; font-size:13px; background:#fff; color:#222; }"
+            "padding:6px 10px; font-size:18px; background:#fff; color:#222; }"
         )
         self._build(is_edit)
         if is_edit:

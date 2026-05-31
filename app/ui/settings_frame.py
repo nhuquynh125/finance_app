@@ -102,7 +102,7 @@ class UserProfileTab(QWidget):
         self.avatar_lbl = QLabel("?")
         self.avatar_lbl.setFixedSize(64, 64)
         self.avatar_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.avatar_lbl.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
+        self.avatar_lbl.setFont(QFont("Segoe UI", 29, QFont.Weight.Bold))
         self.avatar_lbl.setStyleSheet(
             "background:#378ADD; color:white; border-radius:32px; border:none;")
         top_row.addWidget(self.avatar_lbl)
@@ -110,14 +110,14 @@ class UserProfileTab(QWidget):
         info_col = QVBoxLayout()
         info_col.setSpacing(2)
         self.username_badge = QLabel("@--")
-        self.username_badge.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        self.username_badge.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         self.username_badge.setStyleSheet("color:#1A2B45; border:none;")
         self.role_badge = QLabel("--")
         self.role_badge.setStyleSheet(
             "QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
-            "border-radius:10px; padding:2px 10px; font-size:11px; }")
+            "border-radius:10px; padding:2px 10px; font-size:16px; }")
         self.last_login_lbl = QLabel("")
-        self.last_login_lbl.setStyleSheet("color:#aaa; font-size:11px; border:none;")
+        self.last_login_lbl.setStyleSheet("color:#aaa; font-size:16px; border:none;")
         info_col.addWidget(self.username_badge)
         info_col.addWidget(self.role_badge)
         info_col.addWidget(self.last_login_lbl)
@@ -215,7 +215,7 @@ class UserProfileTab(QWidget):
 
         header_row = QHBoxLayout()
         desc = QLabel("Xem va quan ly toan bo tai khoan trong he thong.")
-        desc.setStyleSheet("color:#888; font-size:12px; border:none;")
+        desc.setStyleSheet("color:#888; font-size:17px; border:none;")
         header_row.addWidget(desc)
         header_row.addStretch()
         btn_add_user = QPushButton("Them user")
@@ -236,13 +236,13 @@ class UserProfileTab(QWidget):
         self.user_table.setStyleSheet("""
             QTableWidget {
                 background:#fff; border:1px solid #e8e8e8;
-                border-radius:8px; gridline-color:#f0f0f0; font-size:12px;
+                border-radius:8px; gridline-color:#f0f0f0; font-size:17px;
             }
             QTableWidget::item { padding:6px 10px; color:#333; }
             QTableWidget::item:selected { background:#E6F1FB; color:#0C447C; }
             QHeaderView::section {
                 background:#f7f7f7; color:#888;
-                font-size:10px; font-weight:bold;
+                font-size:15px; font-weight:bold;
                 border:none; border-bottom:1px solid #e8e8e8;
                 padding:5px 10px;
             }
@@ -271,12 +271,12 @@ class UserProfileTab(QWidget):
         row = QHBoxLayout()
         col = QVBoxLayout()
         title = QLabel("Xoa tai khoan")
-        title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         title.setStyleSheet("color:#A32D2D; border:none;")
         desc = QLabel(
             "Xoa vinh vien tai khoan va toan bo du lieu tai chinh.\n"
             "Hanh dong nay KHONG THE hoan tac.")
-        desc.setStyleSheet("color:#888; font-size:11px; border:none;")
+        desc.setStyleSheet("color:#888; font-size:16px; border:none;")
         desc.setWordWrap(True)
         col.addWidget(title)
         col.addWidget(desc)
@@ -383,7 +383,7 @@ class UserProfileTab(QWidget):
                     btn_edit.setFixedSize(40, 22)
                     btn_edit.setStyleSheet(
                         "QPushButton { background:#E6F1FB; color:#0C447C; "
-                        "border:none; border-radius:4px; font-size:10px; } "
+                        "border:none; border-radius:4px; font-size:15px; } "
                         "QPushButton:hover { background:#B5D4F4; }")
                     btn_edit.clicked.connect(
                         lambda _, u=dict(row): self._open_edit_user_dialog(u))
@@ -393,7 +393,7 @@ class UserProfileTab(QWidget):
                     btn_toggle.setFixedSize(40, 22)
                     btn_toggle.setStyleSheet(
                         "QPushButton { background:#FAEEDA; color:#633806; "
-                        "border:none; border-radius:4px; font-size:10px; } "
+                        "border:none; border-radius:4px; font-size:15px; } "
                         "QPushButton:hover { background:#f5d5a0; }")
                     btn_toggle.clicked.connect(
                         lambda _, uid=row["id"], cur=bool(row["is_active"]):
@@ -403,7 +403,7 @@ class UserProfileTab(QWidget):
                     btn_del.setFixedSize(40, 22)
                     btn_del.setStyleSheet(
                         "QPushButton { background:#FCEBEB; color:#A32D2D; "
-                        "border:none; border-radius:4px; font-size:10px; } "
+                        "border:none; border-radius:4px; font-size:15px; } "
                         "QPushButton:hover { background:#f5c6cb; }")
                     btn_del.clicked.connect(
                         lambda _, uname=row["username"]:
@@ -415,7 +415,7 @@ class UserProfileTab(QWidget):
                     self.user_table.setCellWidget(r, 6, btn_w)
                 else:
                     me = QLabel("(ban)")
-                    me.setStyleSheet("color:#aaa; font-size:11px; padding:0 6px;")
+                    me.setStyleSheet("color:#aaa; font-size:16px; padding:0 6px;")
                     self.user_table.setCellWidget(r, 6, me)
 
             self.user_table.resizeRowsToContents()
@@ -643,7 +643,7 @@ class UserProfileTab(QWidget):
         }
         self.pw_msg.setStyleSheet(
             f"QLabel {{ {colors.get(kind, colors['error'])} "
-            f"border-radius:8px; padding:8px 12px; font-size:12px; }}")
+            f"border-radius:8px; padding:8px 12px; font-size:17px; }}")
         self.pw_msg.setText(msg)
         self.pw_msg.show()
         QTimer.singleShot(5000, self.pw_msg.hide)
@@ -663,7 +663,7 @@ class UserProfileTab(QWidget):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
         lbl = QLabel(title)
-        lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         lbl.setStyleSheet("color:#1A2B45; border:none;")
         layout.addWidget(lbl)
         return panel
@@ -678,27 +678,27 @@ class UserProfileTab(QWidget):
     @staticmethod
     def _input_style():
         return ("QLineEdit { border:1px solid #ddd; border-radius:6px; "
-                "padding:7px 10px; font-size:12px; background:#fff; color:#222; }")
+                "padding:7px 10px; font-size:17px; background:#fff; color:#222; }")
 
     @staticmethod
     def _btn_primary():
         return ("QPushButton { background:#E6F1FB; color:#0C447C; "
                 "border:1px solid #B5D4F4; border-radius:6px; "
-                "padding:7px 16px; font-size:12px; font-weight:500; } "
+                "padding:7px 16px; font-size:17px; font-weight:500; } "
                 "QPushButton:hover { background:#B5D4F4; }")
 
     @staticmethod
     def _btn_normal():
         return ("QPushButton { background:#fff; color:#555; "
                 "border:1px solid #ddd; border-radius:6px; "
-                "padding:7px 12px; font-size:12px; } "
+                "padding:7px 12px; font-size:17px; } "
                 "QPushButton:hover { background:#f5f5f5; }")
 
     @staticmethod
     def _btn_danger():
         return ("QPushButton { background:#fff; color:#A32D2D; "
                 "border:1px solid #E24B4A; border-radius:6px; "
-                "padding:7px 14px; font-size:12px; } "
+                "padding:7px 14px; font-size:17px; } "
                 "QPushButton:hover { background:#FCEBEB; }")
 
     @staticmethod
@@ -737,7 +737,7 @@ class _ConfirmPasswordDialog(QDialog):
 
         lbl = QLabel(f"Nhap mat khau cua @{self.username} de xac nhan xoa:")
         lbl.setWordWrap(True)
-        lbl.setStyleSheet("font-size:12px; color:#444; border:none;")
+        lbl.setStyleSheet("font-size:17px; color:#444; border:none;")
         layout.addWidget(lbl)
 
         self.pw_input = QLineEdit()
@@ -745,12 +745,12 @@ class _ConfirmPasswordDialog(QDialog):
         self.pw_input.setPlaceholderText("Mat khau...")
         self.pw_input.setStyleSheet(
             "QLineEdit { border:1px solid #ddd; border-radius:6px; "
-            "padding:7px 10px; font-size:13px; }")
+            "padding:7px 10px; font-size:18px; }")
         self.pw_input.returnPressed.connect(self._verify)
         layout.addWidget(self.pw_input)
 
         self.err_lbl = QLabel("")
-        self.err_lbl.setStyleSheet("color:#E24B4A; font-size:11px; border:none;")
+        self.err_lbl.setStyleSheet("color:#E24B4A; font-size:16px; border:none;")
         self.err_lbl.hide()
         layout.addWidget(self.err_lbl)
 
@@ -809,7 +809,7 @@ class _AddUserDialog(QDialog):
         self.setWindowTitle("Them nguoi dung moi")
         self.setFixedSize(400, 300)
         self.setStyleSheet("QDialog { background:#fff; } "
-                           "QLabel { font-size:12px; color:#444; }")
+                           "QLabel { font-size:17px; color:#444; }")
         self._build()
 
     def _build(self):
@@ -822,7 +822,7 @@ class _AddUserDialog(QDialog):
         form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
         _s = ("QLineEdit,QComboBox { border:1px solid #ddd; border-radius:6px; "
-              "padding:7px 10px; font-size:12px; background:#fff; color:#222; }")
+              "padding:7px 10px; font-size:17px; background:#fff; color:#222; }")
 
         self.le_fullname = QLineEdit()
         self.le_fullname.setPlaceholderText("Ho va ten")
@@ -908,7 +908,7 @@ class _AddUserDialog(QDialog):
              if kind == "error"
              else "background:#EAF3DE; color:#2D7D1A; border:1px solid #B8DFAA;")
         self.msg_lbl.setStyleSheet(
-            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:12px; }}")
+            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:17px; }}")
         self.msg_lbl.setText(msg)
         self.msg_lbl.show()
 
@@ -922,7 +922,7 @@ class _EditUserDialog(QDialog):
         self.setWindowTitle(f"Sua thong tin @{user['username']}")
         self.setFixedSize(400, 260)
         self.setStyleSheet("QDialog { background:#fff; } "
-                           "QLabel { font-size:12px; color:#444; }")
+                           "QLabel { font-size:17px; color:#444; }")
         self._build()
 
     def _build(self):
@@ -931,7 +931,7 @@ class _EditUserDialog(QDialog):
         layout.setSpacing(10)
 
         _s = ("QLineEdit,QComboBox { border:1px solid #ddd; border-radius:6px; "
-              "padding:7px 10px; font-size:12px; background:#fff; color:#222; }")
+              "padding:7px 10px; font-size:17px; background:#fff; color:#222; }")
 
         form = QFormLayout()
         form.setSpacing(10)
@@ -1025,7 +1025,7 @@ class _EditUserDialog(QDialog):
              if kind == "error"
              else "background:#EAF3DE; color:#2D7D1A; border:1px solid #B8DFAA;")
         self.msg_lbl.setStyleSheet(
-            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:12px; }}")
+            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:17px; }}")
         self.msg_lbl.setText(msg)
         self.msg_lbl.show()
 
@@ -1076,7 +1076,7 @@ class SettingsFrame(QWidget):
                 border: none;
                 border-bottom: 2px solid transparent;
                 padding: 10px 20px;
-                font-size: 12px;
+                font-size:17px;
                 font-family: 'Segoe UI';
                 min-width: 120px;
             }
@@ -1119,12 +1119,12 @@ class SettingsFrame(QWidget):
         layout.setSpacing(10)
 
         title = QLabel("Cai dat")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
 
         self.status_label = QLabel("")
-        self.status_label.setStyleSheet("color:#1D9E75; font-size:12px; border:none;")
+        self.status_label.setStyleSheet("color:#1D9E75; font-size:17px; border:none;")
         layout.addWidget(self.status_label)
 
         btn_reload = QPushButton("Tai lai")
@@ -1335,7 +1335,7 @@ class SettingsFrame(QWidget):
 
         self.backup_info = QLabel("")
         self.backup_info.setWordWrap(True)
-        self.backup_info.setStyleSheet("color:#888; font-size:11px; border:none;")
+        self.backup_info.setStyleSheet("color:#888; font-size:16px; border:none;")
         self._add_control(grid, 4, "Trang thai", self.backup_info)
 
         self.body.addWidget(panel)
@@ -1354,7 +1354,7 @@ class SettingsFrame(QWidget):
         self._add_control(grid, 1, "Dong bo", btn_sync)
 
         self.cloud_info = QLabel("Chua cau hinh")
-        self.cloud_info.setStyleSheet("color:#888; font-size:11px; border:none;")
+        self.cloud_info.setStyleSheet("color:#888; font-size:16px; border:none;")
         self._add_control(grid, 2, "Trang thai", self.cloud_info)
 
         self.body.addWidget(panel)
@@ -1483,16 +1483,16 @@ class SettingsFrame(QWidget):
     def _sync_cloud(self):
         provider = self.cloud_provider.currentText()
         self.cloud_info.setText(f"Dang dong bo voi {provider}...")
-        self.cloud_info.setStyleSheet("color:#0C447C; font-size:11px; border:none;")
+        self.cloud_info.setStyleSheet("color:#0C447C; font-size:16px; border:none;")
         success, msg = SyncManager.sync_to_cloud()
         if success:
             self.cloud_info.setText(
                 f"Da dong bo luc: {datetime.now().strftime('%H:%M:%S')}")
-            self.cloud_info.setStyleSheet("color:#3B6D11; font-size:11px; border:none;")
+            self.cloud_info.setStyleSheet("color:#3B6D11; font-size:16px; border:none;")
             QMessageBox.information(self, "Cloud Sync", msg)
         else:
             self.cloud_info.setText("Dong bo that bai")
-            self.cloud_info.setStyleSheet("color:#A32D2D; font-size:11px; border:none;")
+            self.cloud_info.setStyleSheet("color:#A32D2D; font-size:16px; border:none;")
             QMessageBox.warning(self, "Cloud Sync", msg)
 
     def _refresh_package_status(self):
@@ -1518,7 +1518,7 @@ class SettingsFrame(QWidget):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(12)
         label = QLabel(title)
-        label.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        label.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         label.setStyleSheet("color:#222; border:none;")
         layout.addWidget(label)
         grid = QGridLayout()
@@ -1534,51 +1534,51 @@ class SettingsFrame(QWidget):
         value_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse)
         value_label.setWordWrap(True)
-        value_label.setStyleSheet("color:#555; font-size:12px; border:none;")
+        value_label.setStyleSheet("color:#555; font-size:17px; border:none;")
         self._add_control(grid, row, label, value_label)
 
     def _add_control(self, grid, row, label, widget):
         label_widget = QLabel(label)
         label_widget.setFixedWidth(150)
-        label_widget.setStyleSheet("color:#888; font-size:12px; border:none;")
+        label_widget.setStyleSheet("color:#888; font-size:17px; border:none;")
         grid.addWidget(label_widget, row, 0, Qt.AlignmentFlag.AlignTop)
         grid.addWidget(widget, row, 1)
 
     @staticmethod
     def _input_style():
         return ("QLineEdit { border:1px solid #ddd; border-radius:6px; "
-                "padding:6px 10px; font-size:12px; background:#fff; color:#222; }")
+                "padding:6px 10px; font-size:17px; background:#fff; color:#222; }")
 
     @staticmethod
     def _check_style():
-        return ("QCheckBox { color:#333; font-size:12px; border:none; } "
+        return ("QCheckBox { color:#333; font-size:17px; border:none; } "
                 "QCheckBox::indicator { width:16px; height:16px; }")
 
     @staticmethod
     def _badge_style(ok):
         if ok:
             return ("QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
-                    "border-radius:10px; padding:3px 10px; font-size:11px; }")
+                    "border-radius:10px; padding:3px 10px; font-size:16px; }")
         return ("QLabel { background:#FCEBEB; color:#A32D2D; border:none; "
-                "border-radius:10px; padding:3px 10px; font-size:11px; }")
+                "border-radius:10px; padding:3px 10px; font-size:16px; }")
 
     @staticmethod
     def _btn_primary():
         return ("QPushButton { background:#E6F1FB; color:#0C447C; "
                 "border:1px solid #B5D4F4; border-radius:6px; "
-                "padding:6px 14px; font-size:12px; font-weight:500; } "
+                "padding:6px 14px; font-size:17px; font-weight:500; } "
                 "QPushButton:hover { background:#B5D4F4; }")
 
     @staticmethod
     def _btn_normal():
         return ("QPushButton { background:#fff; color:#555; "
                 "border:1px solid #ddd; border-radius:6px; "
-                "padding:6px 12px; font-size:12px; } "
+                "padding:6px 12px; font-size:17px; } "
                 "QPushButton:hover { background:#f5f5f5; }")
 
     @staticmethod
     def _btn_danger():
         return ("QPushButton { background:#fff; color:#A32D2D; "
                 "border:1px solid #E24B4A; border-radius:6px; "
-                "padding:6px 12px; font-size:12px; } "
+                "padding:6px 12px; font-size:17px; } "
                 "QPushButton:hover { background:#FCEBEB; }")

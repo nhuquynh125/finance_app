@@ -1,15 +1,4 @@
 # app/ui/dashboard_frame.py
-"""
-Dashboard -- tong quan tai chinh thang.
-
-Fix blank-screen:
-  - __init__ KHONG con goi QTimer.singleShot(100, self.refresh) truc tiep.
-    Viec refresh() duoc goi boi MainWindow._navigate() sau khi frame visible.
-  - Debounce timer giu nguyen (150ms) -- chong flood event-bus.
-  - Matplotlib backend duoc set mot lan o module level.
-  - Khong thay doi bat ky logic nghiep vu nao.
-"""
-
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QScrollArea, QFrame, QGridLayout,
@@ -64,24 +53,24 @@ class MetricCard(QFrame):
         top = QHBoxLayout()
         if icon:
             ic = QLabel(icon)
-            ic.setFont(QFont("Segoe UI Emoji", 16))
+            ic.setFont(QFont("Segoe UI Emoji", 21))
             ic.setStyleSheet("border:none; background:transparent;")
             ic.setFixedWidth(28)
             top.addWidget(ic)
         lbl = QLabel(label)
-        lbl.setFont(QFont("Segoe UI", 10))
+        lbl.setFont(QFont("Segoe UI", 15))
         lbl.setStyleSheet("color:#4A6785; border:none; background:transparent;")
         top.addWidget(lbl)
         top.addStretch()
         layout.addLayout(top)
 
         self.val_lbl = QLabel(value)
-        self.val_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        self.val_lbl.setFont(QFont("Segoe UI", 23, QFont.Weight.Bold))
         self.val_lbl.setStyleSheet(f"color:{color}; border:none; background:transparent;")
         layout.addWidget(self.val_lbl)
 
         self.trend_lbl = QLabel("")
-        self.trend_lbl.setFont(QFont("Segoe UI", 9))
+        self.trend_lbl.setFont(QFont("Segoe UI", 14))
         self.trend_lbl.setStyleSheet("color:#4A6785; border:none; background:transparent;")
         layout.addWidget(self.trend_lbl)
 
@@ -174,13 +163,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
         layout.setSpacing(12)
 
         title = QLabel("Dashboard")
-        title.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet(f"color:{NAVY}; border:none;")
         layout.addWidget(title)
 
         # Su dung text thuan khong emoji de tranh UnicodeEncodeError tren Windows
         today_lbl = QLabel(datetime.now().strftime("[%d/%m/%Y]"))
-        today_lbl.setStyleSheet("color:#4A6785; font-size:12px; border:none;")
+        today_lbl.setStyleSheet("color:#4A6785; font-size:17px; border:none;")
         layout.addWidget(today_lbl)
 
         layout.addStretch()
@@ -192,7 +181,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 border: 1.5px solid {BORDER_BLUE};
                 border-radius: 8px;
                 padding: 5px 10px;
-                font-size: 12px;
+                font-size:17px;
                 background: {CARD_WHITE};
                 color: {NAVY};
             }}
@@ -209,7 +198,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                     stop:0 {NAVY_MID}, stop:1 {NAVY});
                 color: #FFFFFF; border: none; border-radius: 9px;
-                padding: 0 18px; font-size: 12px; font-weight: 600;
+                padding: 0 18px; font-size:17px; font-weight: 600;
             }}
             QPushButton:hover {{
                 background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
@@ -263,15 +252,15 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         bar_header = QHBoxLayout()
         t1 = QLabel("Thu chi 6 thang gan day")
-        t1.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t1.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t1.setStyleSheet(f"color:{NAVY}; border:none;")
         bar_header.addWidget(t1)
         bar_header.addStretch()
         for color, text in [(MINT, "Thu nhap"), (ORANGE, "Chi tieu")]:
             dot = QLabel("*")
-            dot.setStyleSheet(f"color:{color}; font-size:14px; border:none;")
+            dot.setStyleSheet(f"color:{color}; font-size:19px; border:none;")
             lbl = QLabel(text)
-            lbl.setStyleSheet("color:#4A6785; font-size:11px; border:none;")
+            lbl.setStyleSheet("color:#4A6785; font-size:16px; border:none;")
             bar_header.addWidget(dot)
             bar_header.addWidget(lbl)
             bar_header.addSpacing(8)
@@ -297,7 +286,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.pie_layout.setSpacing(6)
 
         t2 = QLabel("Danh muc chi tieu")
-        t2.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t2.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t2.setStyleSheet(f"color:{NAVY}; border:none;")
         self.pie_layout.addWidget(t2)
 
@@ -324,7 +313,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
 
         header = QHBoxLayout()
         t = QLabel("Giao dich gan day")
-        t.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t.setStyleSheet(f"color:{NAVY}; border:none;")
         header.addWidget(t)
         header.addStretch()
@@ -333,7 +322,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background:transparent; color:{NAVY_MID};
-                    border:none; font-size:12px; font-weight:500;
+                    border:none; font-size:17px; font-weight:500;
                 }}
                 QPushButton:hover {{ color:{NAVY}; }}
             """)
@@ -454,9 +443,9 @@ class DashboardFrame(QWidget, BusConnectMixin):
                color=ORANGE, alpha=0.90, zorder=3, linewidth=0)
 
         ax.set_xticks(list(x))
-        ax.set_xticklabels(labels, fontsize=9, color="#4A6785")
+        ax.set_xticklabels(labels, fontsize=14, color="#4A6785")
         ax.tick_params(labelsize=9, colors="#4A6785", length=0)
-        ax.set_ylabel("Trieu d", fontsize=9, color="#4A6785")
+        ax.set_ylabel("Trieu d", fontsize=14, color="#4A6785")
         ax.yaxis.grid(True, color=BORDER_BLUE, linewidth=0.8, zorder=0)
         ax.set_axisbelow(True)
         ax.set_ylim(bottom=0)
@@ -510,12 +499,12 @@ class DashboardFrame(QWidget, BusConnectMixin):
             dot.setStyleSheet(f"background:{color}; border-radius:4px; border:none;")
             rl.addWidget(dot)
             lbl = QLabel(name)
-            lbl.setFont(QFont("Segoe UI", 10))
+            lbl.setFont(QFont("Segoe UI", 15))
             lbl.setStyleSheet(f"color:{NAVY}; border:none;")
             rl.addWidget(lbl)
             rl.addStretch()
             pct_lbl = QLabel(f"{pct:.0f}%")
-            pct_lbl.setStyleSheet("color:#4A6785; font-size:10px; border:none;")
+            pct_lbl.setStyleSheet("color:#4A6785; font-size:15px; border:none;")
             rl.addWidget(pct_lbl)
             self.pie_layout.addWidget(row_w)
             self._pie_legend_widgets.append(row_w)
@@ -531,7 +520,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         if not txs:
             lbl = QLabel("Chua co giao dich trong thang nay")
             lbl.setStyleSheet(
-                "color:#4A6785; font-size:12px; padding:16px; border:none;"
+                "color:#4A6785; font-size:17px; padding:16px; border:none;"
             )
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.tx_layout.addWidget(lbl)
@@ -559,7 +548,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             dot = QLabel(dot_text)
             dot.setFixedSize(32, 32)
             dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            dot.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+            dot.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
             dot.setStyleSheet(
                 f"background:{dot_bg}; color:{dot_color}; "
                 f"border-radius:8px; border:none;"
@@ -578,19 +567,19 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 desc_str += "  [!]"
 
             name_lbl = QLabel(desc_str)
-            name_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+            name_lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
             name_lbl.setStyleSheet(f"color:{NAVY}; border:none; background:transparent;")
             dl.addWidget(name_lbl)
 
             meta = QLabel(f"{tx['date']}{cat_label} . {tx.get('account_name', '')}")
-            meta.setFont(QFont("Segoe UI", 10))
+            meta.setFont(QFont("Segoe UI", 15))
             meta.setStyleSheet("color:#4A6785; border:none; background:transparent;")
             dl.addWidget(meta)
             rl.addWidget(desc_w)
             rl.addStretch()
 
             amt = QLabel(f"{dot_text}{tx['amount']:,.0f} d".replace(",", "."))
-            amt.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+            amt.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
             amt.setStyleSheet(
                 f"color:{dot_color}; border:none; background:transparent;"
             )

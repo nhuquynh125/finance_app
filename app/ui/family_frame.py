@@ -59,7 +59,7 @@ class FamilyFrame(QWidget):
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
         title = QLabel("Quản lý Gia đình")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
         btn_refresh = QPushButton("Làm mới")
@@ -103,13 +103,13 @@ class FamilyFrame(QWidget):
         il.setContentsMargins(20, 16, 20, 16)
 
         icon = QLabel("👨‍👩‍👧‍👦")
-        icon.setFont(QFont("Segoe UI Emoji", 32))
+        icon.setFont(QFont("Segoe UI Emoji", 37))
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon.setStyleSheet("border:none;")
         il.addWidget(icon)
 
         title = QLabel("Quản lý tài chính gia đình")
-        title.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("color:#1A2B45; border:none;")
         il.addWidget(title)
@@ -120,7 +120,7 @@ class FamilyFrame(QWidget):
         )
         desc.setWordWrap(True)
         desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        desc.setStyleSheet("color:#7a7872; border:none; font-size:12px;")
+        desc.setStyleSheet("color:#7a7872; border:none; font-size:17px;")
         il.addWidget(desc)
         layout.addWidget(intro)
 
@@ -170,7 +170,7 @@ class FamilyFrame(QWidget):
 
         top_row = QHBoxLayout()
         name_lbl = QLabel(f"📋  {group['name']}")
-        name_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         name_lbl.setStyleSheet("color:#1A2B45; border:none;")
         top_row.addWidget(name_lbl)
         top_row.addStretch()
@@ -181,7 +181,7 @@ class FamilyFrame(QWidget):
         role_badge = QLabel(role_text)
         role_badge.setStyleSheet(
             f"QLabel {{ background:{role_bg}; color:{role_color}; "
-            f"border:none; border-radius:10px; padding:3px 12px; font-size:11px; }}")
+            f"border:none; border-radius:10px; padding:3px 12px; font-size:16px; }}")
         top_row.addWidget(role_badge)
         hl.addLayout(top_row)
 
@@ -189,7 +189,7 @@ class FamilyFrame(QWidget):
         info_row.setSpacing(20)
 
         member_lbl = QLabel(f"👥  {group['member_count']} thành viên")
-        member_lbl.setStyleSheet("color:#555; font-size:12px; border:none;")
+        member_lbl.setStyleSheet("color:#555; font-size:17px; border:none;")
         info_row.addWidget(member_lbl)
 
         # Hiển thị mã mời nếu là owner
@@ -203,7 +203,7 @@ class FamilyFrame(QWidget):
             if row:
                 code_lbl = QLabel(f"🔑  Mã mời: {row['invite_code']}")
                 code_lbl.setStyleSheet(
-                    "color:#0C447C; font-size:12px; font-weight:bold; border:none;")
+                    "color:#0C447C; font-size:17px; font-weight:bold; border:none;")
                 info_row.addWidget(code_lbl)
 
         info_row.addStretch()
@@ -219,7 +219,7 @@ class FamilyFrame(QWidget):
         ml.setSpacing(8)
 
         members_title = QLabel("Thành viên")
-        members_title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        members_title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         members_title.setStyleSheet("border:none; color:#1A2B45;")
         ml.addWidget(members_title)
 
@@ -267,18 +267,18 @@ class FamilyFrame(QWidget):
         cl.setSpacing(8)
 
         icon_lbl = QLabel(icon)
-        icon_lbl.setFont(QFont("Segoe UI Emoji", 22))
+        icon_lbl.setFont(QFont("Segoe UI Emoji", 27))
         icon_lbl.setStyleSheet("border:none;")
         cl.addWidget(icon_lbl)
 
         t = QLabel(title)
-        t.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         t.setStyleSheet("color:#1A2B45; border:none;")
         cl.addWidget(t)
 
         d = QLabel(desc)
         d.setWordWrap(True)
-        d.setStyleSheet("color:#7a7872; font-size:12px; border:none;")
+        d.setStyleSheet("color:#7a7872; font-size:17px; border:none;")
         cl.addWidget(d)
 
         cl.addSpacing(6)
@@ -304,7 +304,7 @@ class FamilyFrame(QWidget):
         avatar = QLabel(initial)
         avatar.setFixedSize(34, 34)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        avatar.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         color = "#378ADD" if member["role"] == "owner" else "#888"
         avatar.setStyleSheet(
             f"background:{color}; color:white; border-radius:17px; border:none;")
@@ -317,12 +317,12 @@ class FamilyFrame(QWidget):
         nc.setSpacing(1)
 
         name_lbl = QLabel(member["username"])
-        name_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         name_lbl.setStyleSheet("color:#1A2B45; border:none;")
         nc.addWidget(name_lbl)
 
         role_lbl = QLabel(member["role_display"])
-        role_lbl.setFont(QFont("Segoe UI", 10))
+        role_lbl.setFont(QFont("Segoe UI", 15))
         role_lbl.setStyleSheet("color:#8FA8C4; border:none;")
         nc.addWidget(role_lbl)
 
@@ -338,7 +338,7 @@ class FamilyFrame(QWidget):
             except Exception:
                 joined_str = joined[:10]
             joined_lbl = QLabel(joined_str)
-            joined_lbl.setStyleSheet("color:#aaa; font-size:10px; border:none;")
+            joined_lbl.setStyleSheet("color:#aaa; font-size:15px; border:none;")
             rl.addWidget(joined_lbl)
 
         return row
@@ -431,7 +431,7 @@ class FamilyFrame(QWidget):
     def _btn_primary() -> str:
         return (
             "QPushButton { background:#185FA5; color:white; border:none; "
-            "border-radius:8px; padding:8px 16px; font-weight:500; font-size:12px; } "
+            "border-radius:8px; padding:8px 16px; font-weight:500; font-size:17px; } "
             "QPushButton:hover { background:#144f8a; }"
         )
 
@@ -440,7 +440,7 @@ class FamilyFrame(QWidget):
         return (
             "QPushButton { background:#fff; color:#555; "
             "border:1px solid #ddd; border-radius:8px; "
-            "padding:8px 16px; font-size:12px; } "
+            "padding:8px 16px; font-size:17px; } "
             "QPushButton:hover { background:#f5f5f5; }"
         )
 
@@ -449,6 +449,6 @@ class FamilyFrame(QWidget):
         return (
             "QPushButton { background:#fff; color:#C0392B; "
             "border:1px solid #E24B4A; border-radius:8px; "
-            "padding:8px 16px; font-size:12px; } "
+            "padding:8px 16px; font-size:17px; } "
             "QPushButton:hover { background:#FCEBEB; }"
         )

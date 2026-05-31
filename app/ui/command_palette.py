@@ -133,7 +133,7 @@ class CommandPalette(QDialog):
         ir.setSpacing(8)
 
         search_icon = QLabel("⌘")
-        search_icon.setFont(QFont("Segoe UI", 14))
+        search_icon.setFont(QFont("Segoe UI", 19))
         search_icon.setStyleSheet("color: #aaa; border: none; background: transparent;")
         ir.addWidget(search_icon)
 
@@ -143,7 +143,7 @@ class CommandPalette(QDialog):
             QLineEdit {
                 border: none;
                 background: transparent;
-                font-size: 14px;
+                font-size:19px;
                 color: #222;
                 padding: 0;
             }
@@ -153,7 +153,7 @@ class CommandPalette(QDialog):
         ir.addWidget(self._input)
 
         shortcut_hint = QLabel("Esc để đóng")
-        shortcut_hint.setStyleSheet("color: #ccc; font-size: 11px; border: none; background: transparent;")
+        shortcut_hint.setStyleSheet("color: #ccc; font-size:16px; border: none; background: transparent;")
         ir.addWidget(shortcut_hint)
         cl.addWidget(input_row)
 
@@ -188,7 +188,7 @@ class CommandPalette(QDialog):
         fl = QHBoxLayout(footer)
         fl.setContentsMargins(12, 6, 12, 6)
         hints = QLabel("↑↓ di chuyển  ·  Enter chọn  ·  Ctrl+K đóng/mở")
-        hints.setStyleSheet("color: #ccc; font-size: 10px; border: none; background: transparent;")
+        hints.setStyleSheet("color: #ccc; font-size:15px; border: none; background: transparent;")
         fl.addWidget(hints)
         cl.addWidget(footer)
 
@@ -227,13 +227,13 @@ class CommandPalette(QDialog):
         tc.setSpacing(1)
 
         title = QLabel(cmd.title)
-        title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         title.setStyleSheet("color: #222; border: none; background: transparent;")
         tc.addWidget(title)
 
         if cmd.subtitle:
             sub = QLabel(cmd.subtitle)
-            sub.setFont(QFont("Segoe UI", 10))
+            sub.setFont(QFont("Segoe UI", 15))
             sub.setStyleSheet("color: #888; border: none; background: transparent;")
             tc.addWidget(sub)
 
@@ -247,7 +247,7 @@ class CommandPalette(QDialog):
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
                 padding: 2px 6px;
-                font-size: 10px;
+                font-size:15px;
                 font-family: monospace;
             """)
             layout.addWidget(sc_lbl)

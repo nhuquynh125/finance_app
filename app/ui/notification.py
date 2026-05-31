@@ -83,7 +83,7 @@ class ToastWidget(QFrame):
         icon = QLabel(ICONS.get(item.kind, "i"))
         icon.setFixedSize(24, 24)
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        icon.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         icon.setStyleSheet(f"""
             background: {border};
             color: white;
@@ -99,13 +99,13 @@ class ToastWidget(QFrame):
         tc.setSpacing(2)
 
         title_lbl = QLabel(item.title)
-        title_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        title_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         title_lbl.setStyleSheet(f"color: {text}; border: none; background: transparent;")
         tc.addWidget(title_lbl)
 
         if item.message:
             msg_lbl = QLabel(item.message)
-            msg_lbl.setFont(QFont("Segoe UI", 10))
+            msg_lbl.setFont(QFont("Segoe UI", 15))
             msg_lbl.setWordWrap(True)
             msg_lbl.setStyleSheet(f"color: {text}; border: none; background: transparent; opacity: 0.8;")
             tc.addWidget(msg_lbl)
@@ -119,7 +119,7 @@ class ToastWidget(QFrame):
                 background: transparent;
                 color: {text};
                 border: none;
-                font-size: 16px;
+                font-size:21px;
                 font-weight: bold;
                 border-radius: 10px;
             }}
@@ -200,12 +200,12 @@ class NotificationCenter(QDialog):
         hl = QHBoxLayout(header)
         hl.setContentsMargins(16, 12, 16, 12)
         title = QLabel("Thông báo")
-        title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         title.setStyleSheet("border: none;")
         hl.addWidget(title)
         hl.addStretch()
         count = QLabel(f"{len(history)} thông báo")
-        count.setStyleSheet("color: #aaa; font-size: 11px; border: none;")
+        count.setStyleSheet("color: #aaa; font-size:16px; border: none;")
         hl.addWidget(count)
         layout.addWidget(header)
 
@@ -222,7 +222,7 @@ class NotificationCenter(QDialog):
         if not history:
             empty = QLabel("Chưa có thông báo nào")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            empty.setStyleSheet("color: #bbb; font-size: 13px; padding: 40px; border: none;")
+            empty.setStyleSheet("color: #bbb; font-size:18px; padding: 40px; border: none;")
             cl.addWidget(empty)
         else:
             for item in reversed(history[-50:]):
@@ -250,19 +250,19 @@ class NotificationCenter(QDialog):
 
         row = QHBoxLayout()
         title = QLabel(item.title)
-        title.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         title.setStyleSheet("border: none; color: #222;")
         row.addWidget(title)
         row.addStretch()
         ts = time.strftime("%H:%M %d/%m", time.localtime(item.timestamp))
         time_lbl = QLabel(ts)
-        time_lbl.setStyleSheet("color: #aaa; font-size: 10px; border: none;")
+        time_lbl.setStyleSheet("color: #aaa; font-size:15px; border: none;")
         row.addWidget(time_lbl)
         cl.addLayout(row)
 
         if item.message:
             msg = QLabel(item.message)
-            msg.setFont(QFont("Segoe UI", 10))
+            msg.setFont(QFont("Segoe UI", 15))
             msg.setWordWrap(True)
             msg.setStyleSheet("color: #555; border: none;")
             cl.addWidget(msg)

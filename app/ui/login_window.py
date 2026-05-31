@@ -1,19 +1,4 @@
 #app/ui/login_window.py
-"""
-Màn hình đăng nhập Finance AI — Navy / Mint / Cam theme từ logo.
-
-Fix blank-screen / flicker khi mở:
-  - LoginWindow.__init__ KHÔNG gọi showNormal() / showFullScreen() trong
-    _apply_window_settings() trực tiếp. Kích thước được đặt qua resize()
-    và move() trước khi show(). showFullScreen() chỉ được gọi SAU khi
-    cửa sổ đã được show() bởi caller (main.py), thông qua singleShot(0).
-  - Tách _configure_size() (gọi trong __init__) khỏi việc show window.
-  - Giữ nguyên toàn bộ logic nghiệp vụ, UI, và animation.
-
-Fix input field styles:
-  - StyledInput dùng objectName + selector cụ thể để không bị theme_engine override.
-  - LoginWindow setStyleSheet riêng để isolate khỏi global QSS.
-"""
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
@@ -83,7 +68,7 @@ QFrame#loginCard QLineEdit {
     border: 1.5px solid #D0E4F7 !important;
     border-radius: 10px;
     padding: 0 16px;
-    font-size: 13px;
+    font-size:15px;
     background: #F5F9FF;
     color: #0B2A4A;
     font-family: 'Segoe UI', sans-serif;
@@ -119,7 +104,7 @@ QFrame#loginCard QPushButton {
 QWidget#loginWindow QCheckBox,
 QFrame#loginCard QCheckBox {
     color: #3A6B9A;
-    font-size: 12px;
+    font-size:14px;
     border: none;
     background: transparent;
 }
@@ -171,7 +156,7 @@ class StyledInput(QWidget):
                 border: 1.5px solid #D0E4F7;
                 border-radius: 10px;
                 padding: 0 {right_padding} 0 16px;
-                font-size: 13px;
+                font-size:15px;
                 background-color: #F5F9FF;
                 color: #0B2A4A;
                 font-family: 'Segoe UI', sans-serif;
@@ -199,7 +184,7 @@ class StyledInput(QWidget):
                     background: transparent;
                     border: none;
                     border-radius: 6px;
-                    font-size: 16px;
+                    font-size:18px;
                     color: #8BAEC8;
                     padding: 0;
                 }
@@ -274,28 +259,28 @@ class LoginPanel(QWidget):
         layout.setSpacing(0)
 
         welcome = QLabel("Chào mừng trở lại!")
-        welcome.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        welcome.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         welcome.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(welcome)
-        layout.addSpacing(4)
+        layout.addSpacing(2)
 
         hint = QLabel("Đăng nhập để quản lý tài chính thông minh")
-        hint.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
+        hint.setStyleSheet("color:#4A6785; font-size:14px; border:none; background:transparent;")
         layout.addWidget(hint)
-        layout.addSpacing(24)
+        layout.addSpacing(6)
 
         def _field_label(text):
             lbl = QLabel(text)
             lbl.setStyleSheet(
-                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "color:#3A6B9A; font-size:14px; font-weight:600; "
                 "border:none; background:transparent;")
             return lbl
 
         layout.addWidget(_field_label("Tên đăng nhập"))
-        layout.addSpacing(6)
+        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(14)
+        layout.addSpacing(8)
 
         pass_row_lbl = QHBoxLayout()
         pass_row_lbl.addWidget(_field_label("Mật khẩu"))
@@ -303,23 +288,23 @@ class LoginPanel(QWidget):
         forgot_btn = QPushButton("Quên mật khẩu?")
         forgot_btn.setStyleSheet(
             "QPushButton { background:transparent; color:#1A6BAF; border:none; "
-            "font-size:12px; padding:0; } "
+            "font-size:14px; padding:0; } "
             "QPushButton:hover { color:#0B2A4A; }"
         )
         forgot_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         forgot_btn.clicked.connect(self.go_forgot.emit)
         pass_row_lbl.addWidget(forgot_btn)
         layout.addLayout(pass_row_lbl)
-        layout.addSpacing(6)
+        layout.addSpacing(4)
 
         self.password_input = StyledInput("Nhập mật khẩu...", is_password=True)
         self.password_input.returnPressed.connect(self._do_login)
         layout.addWidget(self.password_input)
-        layout.addSpacing(14)
+        layout.addSpacing(4)
 
         self.remember_check = QCheckBox("Ghi nhớ đăng nhập")
         self.remember_check.setStyleSheet("""
-            QCheckBox { color:#3A6B9A; font-size:12px; border:none; background:transparent; }
+            QCheckBox { color:#3A6B9A; font-size:14px; border:none; background:transparent; }
             QCheckBox::indicator {
                 width:16px; height:16px; border-radius:4px;
                 border:1.5px solid #D0E4F7; background:#F5F9FF;
@@ -327,7 +312,7 @@ class LoginPanel(QWidget):
             QCheckBox::indicator:checked { background:#1A6BAF; border-color:#1A6BAF; }
         """)
         layout.addWidget(self.remember_check)
-        layout.addSpacing(20)
+        layout.addSpacing(6)
 
         self.error_lbl = QLabel("")
         self.error_lbl.setObjectName("errorLabel")
@@ -338,7 +323,7 @@ class LoginPanel(QWidget):
                 border: 1px solid #F5C6CB;
                 border-radius: 8px;
                 padding: 8px 12px;
-                font-size: 12px;
+                font-size:14px;
             }
         """)
         self.error_lbl.setWordWrap(True)
@@ -347,7 +332,7 @@ class LoginPanel(QWidget):
 
         self.login_btn = QPushButton("Đăng nhập")
         self.login_btn.setFixedHeight(48)
-        self.login_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        self.login_btn.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
         self.login_btn.setObjectName("loginBtn")
         self.login_btn.setStyleSheet("""
             QPushButton#loginBtn {
@@ -367,19 +352,18 @@ class LoginPanel(QWidget):
         """)
         self.login_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.login_btn.clicked.connect(self._do_login)
-        layout.addSpacing(4)
         layout.addWidget(self.login_btn)
-        layout.addSpacing(20)
+        layout.addSpacing(6)
 
         reg_row = QHBoxLayout()
         reg_row.addStretch()
         no_acc = QLabel("Chưa có tài khoản?")
-        no_acc.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
+        no_acc.setStyleSheet("color:#4A6785; font-size:14px; border:none; background:transparent;")
         reg_row.addWidget(no_acc)
         reg_btn = QPushButton("Đăng ký ngay")
         reg_btn.setStyleSheet("""
             QPushButton { background:transparent; color:#1A6BAF;
-                border:none; font-size:12px; font-weight:600; padding:0 4px; }
+                border:none; font-size:14px; font-weight:600; padding:0 4px; }
             QPushButton:hover { color:#0B2A4A; }
         """)
         reg_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -434,62 +418,62 @@ class RegisterPanel(QWidget):
         back_btn = QPushButton("← Quay lại đăng nhập")
         back_btn.setStyleSheet(
             "QPushButton { background:transparent; color:#1A6BAF; border:none; "
-            "font-size:12px; padding:0; } "
+            "font-size:14px; padding:0; } "
             "QPushButton:hover { color:#0B2A4A; }"
         )
         back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         back_btn.clicked.connect(self.go_login.emit)
         layout.addWidget(back_btn)
-        layout.addSpacing(14)
+        layout.addSpacing(8)
 
         title = QLabel("Tạo tài khoản mới")
-        title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(title)
         layout.addSpacing(4)
 
         sub = QLabel("Điền thông tin để bắt đầu quản lý tài chính")
-        sub.setStyleSheet("color:#4A6785; font-size:12px; border:none; background:transparent;")
+        sub.setStyleSheet("color:#4A6785; font-size:14px; border:none; background:transparent;")
         layout.addWidget(sub)
-        layout.addSpacing(20)
+        layout.addSpacing(6)
 
         def _lbl(text):
             l = QLabel(text)
             l.setStyleSheet(
-                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "color:#3A6B9A; font-size:14px; font-weight:600; "
                 "border:none; background:transparent;")
             return l
 
         layout.addWidget(_lbl("Họ và tên"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.fullname_input = StyledInput("Nguyễn Văn A...")
         layout.addWidget(self.fullname_input)
-        layout.addSpacing(10)
+        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Số điện thoại (định danh chính)"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.phone_input = StyledInput("0912 345 678...")
         layout.addWidget(self.phone_input)
-        layout.addSpacing(10)
+        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Tên đăng nhập"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập (3-30 ký tự)...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(10)
+        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Mật khẩu"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.password_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
         layout.addWidget(self.password_input)
-        layout.addSpacing(10)
+        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Xác nhận mật khẩu"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.confirm_input = StyledInput("Nhập lại mật khẩu...", is_password=True)
         self.confirm_input.returnPressed.connect(self._do_register)
         layout.addWidget(self.confirm_input)
-        layout.addSpacing(14)
+        layout.addSpacing(6)
 
         self.msg_lbl = QLabel("")
         self.msg_lbl.setWordWrap(True)
@@ -498,7 +482,7 @@ class RegisterPanel(QWidget):
 
         self.reg_btn = QPushButton("Tạo tài khoản")
         self.reg_btn.setFixedHeight(48)
-        self.reg_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        self.reg_btn.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
         self.reg_btn.setObjectName("regBtn")
         self.reg_btn.setStyleSheet("""
             QPushButton#regBtn {
@@ -551,13 +535,13 @@ class RegisterPanel(QWidget):
             self.msg_lbl.setStyleSheet("""
                 QLabel { background-color:#FEF0EB; color:#C0392B;
                     border:1px solid #F5C6CB; border-radius:8px;
-                    padding:8px 12px; font-size:12px; }
+                    padding:8px 12px; font-size:14px; }
             """)
         else:
             self.msg_lbl.setStyleSheet("""
                 QLabel { background-color:#EAF7F2; color:#0A4F3E;
                     border:1px solid #B8DFAA; border-radius:8px;
-                    padding:8px 12px; font-size:12px; }
+                    padding:8px 12px; font-size:14px; }
             """)
         self.msg_lbl.setText(msg)
         self.msg_lbl.show()
@@ -581,51 +565,51 @@ class ForgotPanel(QWidget):
         back_btn = QPushButton("← Quay lại đăng nhập")
         back_btn.setStyleSheet(
             "QPushButton { background:transparent; color:#1A6BAF; border:none; "
-            "font-size:12px; padding:0; }"
+            "font-size:14px; padding:0; }"
         )
         back_btn.clicked.connect(self.go_login.emit)
         layout.addWidget(back_btn)
         layout.addSpacing(14)
 
         icon = QLabel("🔑")
-        icon.setFont(QFont("Segoe UI Emoji", 32))
+        icon.setFont(QFont("Segoe UI Emoji", 34))
         icon.setStyleSheet("border:none; background:transparent;")
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon)
         layout.addSpacing(10)
 
         title = QLabel("Đặt lại mật khẩu")
-        title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
-        layout.addSpacing(20)
+        layout.addSpacing(6)
 
         def _lbl(text):
             l = QLabel(text)
             l.setStyleSheet(
-                "color:#3A6B9A; font-size:12px; font-weight:600; "
+                "color:#3A6B9A; font-size:14px; font-weight:600; "
                 "border:none; background:transparent;")
             return l
 
         layout.addWidget(_lbl("Tên đăng nhập"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(12)
+        layout.addSpacing(8)
 
         layout.addWidget(_lbl("Mật khẩu mới"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.new_pass_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
         layout.addWidget(self.new_pass_input)
-        layout.addSpacing(12)
+        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Xác nhận mật khẩu mới"))
-        layout.addSpacing(5)
+        layout.addSpacing(4)
         self.confirm_input = StyledInput("Nhập lại mật khẩu...", is_password=True)
         self.confirm_input.returnPressed.connect(self._do_reset)
         layout.addWidget(self.confirm_input)
-        layout.addSpacing(14)
+        layout.addSpacing(6)
 
         self.msg_lbl = QLabel("")
         self.msg_lbl.setWordWrap(True)
@@ -634,7 +618,7 @@ class ForgotPanel(QWidget):
 
         reset_btn = QPushButton("Đặt lại mật khẩu")
         reset_btn.setFixedHeight(48)
-        reset_btn.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        reset_btn.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
         reset_btn.setObjectName("resetBtn")
         reset_btn.setStyleSheet("""
             QPushButton#resetBtn {
@@ -677,7 +661,7 @@ class ForgotPanel(QWidget):
             else "background-color:#EAF7F2; color:#0A4F3E; border:1px solid #B8DFAA;"
         )
         self.msg_lbl.setStyleSheet(
-            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:12px; }}"
+            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:14px; }}"
         )
         self.msg_lbl.setText(msg)
         self.msg_lbl.show()
@@ -722,7 +706,7 @@ class BrandingPanel(QWidget):
             layout.addSpacing(16)
         else:
             icon_lbl = QLabel("🤖")
-            icon_lbl.setFont(QFont("Segoe UI Emoji", 52))
+            icon_lbl.setFont(QFont("Segoe UI Emoji", 54))
             icon_lbl.setStyleSheet(self._T)
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(icon_lbl)
@@ -736,7 +720,7 @@ class BrandingPanel(QWidget):
                 size=13, color="rgba(255,255,255,0.85)", center=True, wrap=True,
             )
         )
-        layout.addSpacing(28)
+        layout.addSpacing(16)
 
         features = [
             ("🤖", "AI Chatbot tư vấn tài chính"),
@@ -757,12 +741,12 @@ class BrandingPanel(QWidget):
             pill_l.setContentsMargins(14, 8, 14, 8)
             pill_l.setSpacing(10)
             ic = QLabel(icon_char)
-            ic.setFont(QFont("Segoe UI Emoji", 13))
+            ic.setFont(QFont("Segoe UI Emoji", 15))
             ic.setStyleSheet(self._T)
             ic.setFixedWidth(26)
             pill_l.addWidget(ic)
             tx = QLabel(feat_text)
-            tx.setFont(QFont("Segoe UI", 11))
+            tx.setFont(QFont("Segoe UI", 13))
             tx.setStyleSheet(f"{self._T} color: rgba(255,255,255,0.9);")
             pill_l.addWidget(tx)
             pill_l.addStretch()
@@ -868,7 +852,7 @@ class LoginWindow(QWidget):
             ts_l.addWidget(lo)
             ts_l.addSpacing(8)
         app_name = QLabel("Finance AI")
-        app_name.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        app_name.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         app_name.setStyleSheet(
             "color:#0B2A4A; border:none; background:transparent;")
         ts_l.addWidget(app_name)

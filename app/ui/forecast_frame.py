@@ -88,18 +88,18 @@ class ForecastCanvas(FigureCanvasQTAgg):
             except Exception:
                 lbl = m
             labels.append(lbl)
-        ax.set_xticklabels(labels, fontsize=9)
+        ax.set_xticklabels(labels, fontsize=14)
         for i, tick in enumerate(ax.get_xticklabels()):
             if i >= n_hist:
                 tick.set_color("#378ADD")
                 tick.set_fontweight("bold")
 
-        ax.set_ylabel("Triệu đồng", fontsize=9)
+        ax.set_ylabel("Triệu đồng", fontsize=14)
         ax.yaxis.grid(True, color="#eeeeee", linewidth=0.5)
         ax.set_axisbelow(True)
         for s in ax.spines.values():
             s.set_visible(False)
-        ax.legend(fontsize=9, framealpha=0, loc="upper left")
+        ax.legend(fontsize=14, framealpha=0, loc="upper left")
         self.draw()
 
 
@@ -143,7 +143,7 @@ class ForecastFrame(QWidget):
         layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(10)
         title = QLabel("Dự báo chi tiêu")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
 
@@ -191,11 +191,11 @@ class ForecastFrame(QWidget):
             cl = QVBoxLayout(card)
             cl.setContentsMargins(16, 12, 16, 12)
             lbl = QLabel(label)
-            lbl.setFont(QFont("Segoe UI", 10))
+            lbl.setFont(QFont("Segoe UI", 15))
             lbl.setStyleSheet("color:#aaa; border:none;")
             cl.addWidget(lbl)
             val_lbl = QLabel(val)
-            val_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+            val_lbl.setFont(QFont("Segoe UI", 23, QFont.Weight.Bold))
             val_lbl.setStyleSheet(f"color:{color}; border:none;")
             cl.addWidget(val_lbl)
             g.addWidget(card, 0, i)
@@ -216,18 +216,18 @@ class ForecastFrame(QWidget):
         cp_l.setContentsMargins(14, 12, 14, 12)
         ch = QHBoxLayout()
         t = QLabel("Lịch sử & dự báo chi tiêu")
-        t.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t.setStyleSheet("border:none;")
         ch.addWidget(t)
         ch.addStretch()
         self.method_badge = QLabel("Chưa chạy")
-        self.method_badge.setStyleSheet("QLabel { background:#EAF3DE; color:#3B6D11; border:none; border-radius:10px; padding:2px 10px; font-size:11px; font-weight:500; }")
+        self.method_badge.setStyleSheet("QLabel { background:#EAF3DE; color:#3B6D11; border:none; border-radius:10px; padding:2px 10px; font-size:16px; font-weight:500; }")
         ch.addWidget(self.method_badge)
         cp_l.addLayout(ch)
         self.chart_placeholder = QLabel("Nhấn 'Chạy dự báo AI' để xem biểu đồ")
         self.chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.chart_placeholder.setFixedHeight(220)
-        self.chart_placeholder.setStyleSheet("color:#bbb; font-size:13px; border:none;")
+        self.chart_placeholder.setStyleSheet("color:#bbb; font-size:18px; border:none;")
         cp_l.addWidget(self.chart_placeholder)
         self.chart_canvas = ForecastCanvas()
         self.chart_canvas.setFixedHeight(220)
@@ -242,12 +242,12 @@ class ForecastFrame(QWidget):
         self.cat_layout.setContentsMargins(14, 12, 14, 12)
         self.cat_layout.setSpacing(4)
         t2 = QLabel("Dự báo theo danh mục")
-        t2.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t2.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t2.setStyleSheet("border:none;")
         self.cat_layout.addWidget(t2)
         self.cat_placeholder = QLabel("Chưa có dữ liệu")
         self.cat_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.cat_placeholder.setStyleSheet("color:#bbb; font-size:12px; border:none;")
+        self.cat_placeholder.setStyleSheet("color:#bbb; font-size:17px; border:none;")
         self.cat_layout.addWidget(self.cat_placeholder)
         self.cat_layout.addStretch()
         row_l.addWidget(self.cat_panel, stretch=1)
@@ -261,18 +261,18 @@ class ForecastFrame(QWidget):
         self.anom_layout.setSpacing(4)
         h = QHBoxLayout()
         t = QLabel("Giao dịch bất thường phát hiện bởi AI")
-        t.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t.setStyleSheet("border:none;")
         h.addWidget(t)
         h.addStretch()
         badge = QLabel("Isolation Forest")
-        badge.setStyleSheet("QLabel { background:#f0f0f0; color:#888; border:none; border-radius:10px; padding:2px 10px; font-size:11px; }")
+        badge.setStyleSheet("QLabel { background:#f0f0f0; color:#888; border:none; border-radius:10px; padding:2px 10px; font-size:16px; }")
         h.addWidget(badge)
         self.anom_layout.addLayout(h)
         self.anom_placeholder = QLabel("Nhấn 'Phát hiện bất thường' để phân tích")
         self.anom_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.anom_placeholder.setFixedHeight(60)
-        self.anom_placeholder.setStyleSheet("color:#bbb; font-size:12px; border:none;")
+        self.anom_placeholder.setStyleSheet("color:#bbb; font-size:17px; border:none;")
         self.anom_layout.addWidget(self.anom_placeholder)
         self.cl.addWidget(self.anom_panel)
 
@@ -369,7 +369,7 @@ class ForecastFrame(QWidget):
 
             n_lbl = QLabel(name[:10])
             n_lbl.setFixedWidth(72)
-            n_lbl.setFont(QFont("Segoe UI", 11))
+            n_lbl.setFont(QFont("Segoe UI", 16))
             n_lbl.setStyleSheet("color:#555; border:none;")
             rl.addWidget(n_lbl)
 
@@ -389,7 +389,7 @@ class ForecastFrame(QWidget):
             v_lbl = QLabel(self._fmt_short(val))
             v_lbl.setFixedWidth(62)
             v_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
-            v_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            v_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
             v_lbl.setStyleSheet("color:#333; border:none;")
             rl.addWidget(v_lbl)
             self.cat_layout.addWidget(row_w)
@@ -408,7 +408,7 @@ class ForecastFrame(QWidget):
         if not anomalies:
             ok_lbl = QLabel("Không phát hiện giao dịch bất thường")
             ok_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            ok_lbl.setStyleSheet("color:#1D9E75; font-size:12px; padding:16px; border:none;")
+            ok_lbl.setStyleSheet("color:#1D9E75; font-size:17px; padding:16px; border:none;")
             self.anom_layout.addWidget(ok_lbl)
             return
         for tx in anomalies[:8]:
@@ -428,7 +428,7 @@ class ForecastFrame(QWidget):
             score_lbl = QLabel(str(risk))
             score_lbl.setFixedSize(38, 38)
             score_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            score_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            score_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
             score_lbl.setStyleSheet(f"background:{bg}; color:{tc}; border-radius:8px; border:none;")
             rl.addWidget(score_lbl)
 
@@ -443,7 +443,7 @@ class ForecastFrame(QWidget):
             if cat:
                 name_str += f"  —  {cat}"
             n = QLabel(name_str)
-            n.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+            n.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
             n.setStyleSheet("color:#222; border:none;")
             dl.addWidget(n)
 
@@ -452,14 +452,14 @@ class ForecastFrame(QWidget):
             if reasons:
                 meta_parts.append(reasons[0])
             meta = QLabel("  ·  ".join(filter(None, meta_parts)))
-            meta.setFont(QFont("Segoe UI", 10))
+            meta.setFont(QFont("Segoe UI", 15))
             meta.setStyleSheet("color:#aaa; border:none;")
             dl.addWidget(meta)
             rl.addWidget(desc_w)
             rl.addStretch()
 
             amt = QLabel(f"-{self._fmt(tx.get('amount', 0))}")
-            amt.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+            amt.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
             amt.setStyleSheet("color:#E24B4A; border:none;")
             rl.addWidget(amt)
             self.anom_layout.addWidget(row)
@@ -493,8 +493,8 @@ class ForecastFrame(QWidget):
         if v >= 1e3: return f"{v/1e3:.0f}K đ"
         return f"{v:.0f} đ"
     @staticmethod
-    def _btn_primary(): return "QPushButton { background:#E6F1FB; color:#0C447C; border:1px solid #B5D4F4; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:500; } QPushButton:hover { background:#B5D4F4; } QPushButton:disabled { background:#eee; color:#bbb; border-color:#eee; }"
+    def _btn_primary(): return "QPushButton { background:#E6F1FB; color:#0C447C; border:1px solid #B5D4F4; border-radius:6px; padding:6px 14px; font-size:17px; font-weight:500; } QPushButton:hover { background:#B5D4F4; } QPushButton:disabled { background:#eee; color:#bbb; border-color:#eee; }"
     @staticmethod
-    def _btn_normal():  return "QPushButton { background:#fff; color:#555; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-size:12px; } QPushButton:hover { background:#f5f5f5; } QPushButton:disabled { color:#bbb; }"
+    def _btn_normal():  return "QPushButton { background:#fff; color:#555; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-size:17px; } QPushButton:hover { background:#f5f5f5; } QPushButton:disabled { color:#bbb; }"
     @staticmethod
-    def _combo_style(): return "QComboBox { border:1px solid #ddd; border-radius:5px; padding:4px 8px; font-size:12px; background:#fff; color:#333; }"
+    def _combo_style(): return "QComboBox { border:1px solid #ddd; border-radius:5px; padding:4px 8px; font-size:17px; background:#fff; color:#333; }"

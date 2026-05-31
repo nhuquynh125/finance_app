@@ -317,18 +317,18 @@ class StatCard(QFrame):
 
         top = QHBoxLayout()
         icon_lbl = QLabel(icon)
-        icon_lbl.setFont(QFont("Segoe UI Emoji", 16))
+        icon_lbl.setFont(QFont("Segoe UI Emoji", 21))
         icon_lbl.setStyleSheet("border:none; background:transparent;")
         top.addWidget(icon_lbl)
         top.addStretch()
         lbl = QLabel(label)
-        lbl.setFont(QFont("Segoe UI", 9))
+        lbl.setFont(QFont("Segoe UI", 14))
         lbl.setStyleSheet("color:#aaa; border:none;")
         top.addWidget(lbl)
         layout.addLayout(top)
 
         self.val_lbl = QLabel(value)
-        self.val_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        self.val_lbl.setFont(QFont("Segoe UI", 23, QFont.Weight.Bold))
         self.val_lbl.setStyleSheet(f"color:{color}; border:none;")
         layout.addWidget(self.val_lbl)
 
@@ -390,7 +390,7 @@ class ProfileFrame(QWidget):
         layout.setSpacing(10)
 
         title = QLabel("Hồ sơ cá nhân")
-        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
 
@@ -423,18 +423,18 @@ class ProfileFrame(QWidget):
         info.setSpacing(6)
 
         self.lbl_display_name = QLabel("—")
-        self.lbl_display_name.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        self.lbl_display_name.setFont(QFont("Segoe UI", 25, QFont.Weight.Bold))
         self.lbl_display_name.setStyleSheet("color:#1A2B45; border:none;")
         info.addWidget(self.lbl_display_name)
 
         self.lbl_username_at = QLabel("@—")
-        self.lbl_username_at.setStyleSheet("color:#8FA8C4; font-size:13px; border:none;")
+        self.lbl_username_at.setStyleSheet("color:#8FA8C4; font-size:18px; border:none;")
         info.addWidget(self.lbl_username_at)
 
         self.lbl_role_badge = QLabel("—")
         self.lbl_role_badge.setStyleSheet(
             "QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
-            "border-radius:10px; padding:3px 12px; font-size:11px; max-width:120px; }")
+            "border-radius:10px; padding:3px 12px; font-size:16px; max-width:120px; }")
         info.addWidget(self.lbl_role_badge)
         info.addStretch()
         row.addLayout(info, stretch=1)
@@ -457,7 +457,7 @@ class ProfileFrame(QWidget):
         avatar_actions.addWidget(self.btn_remove_avatar)
 
         hint = QLabel("PNG, JPG, GIF · tối đa 5MB")
-        hint.setStyleSheet("color:#bbb; font-size:10px; border:none;")
+        hint.setStyleSheet("color:#bbb; font-size:15px; border:none;")
         avatar_actions.addWidget(hint)
         row.addLayout(avatar_actions)
 
@@ -473,7 +473,7 @@ class ProfileFrame(QWidget):
         color_row = QHBoxLayout()
         color_row.setSpacing(8)
         clr_lbl = QLabel("Màu đại diện:")
-        clr_lbl.setStyleSheet("color:#888; font-size:12px; border:none;")
+        clr_lbl.setStyleSheet("color:#888; font-size:17px; border:none;")
         color_row.addWidget(clr_lbl)
 
         self._color_btns: dict[str, QPushButton] = {}
@@ -549,7 +549,7 @@ class ProfileFrame(QWidget):
             "Giới thiệu ngắn về bản thân... VD: Kỹ sư phần mềm tại Hà Nội 🏙")
         self.te_bio.setStyleSheet(
             "QTextEdit { border:1px solid #ddd; border-radius:6px; "
-            "padding:8px; font-size:12px; background:#fff; color:#222; }")
+            "padding:8px; font-size:17px; background:#fff; color:#222; }")
         form.addRow("Giới thiệu:", self.te_bio)
 
         pl.addLayout(form)
@@ -594,7 +594,7 @@ class ProfileFrame(QWidget):
             "QProgressBar { background:#f0f0f0; border:none; border-radius:3px; } "
             "QProgressBar::chunk { background:#E24B4A; border-radius:3px; }")
         self.pw_strength_lbl = QLabel("")
-        self.pw_strength_lbl.setStyleSheet("color:#aaa; font-size:10px; border:none;")
+        self.pw_strength_lbl.setStyleSheet("color:#aaa; font-size:15px; border:none;")
 
         strength_w = QWidget()
         strength_w.setStyleSheet("background:transparent;")
@@ -736,10 +736,10 @@ class ProfileFrame(QWidget):
             ]
             for i, (label, value) in enumerate(items):
                 lbl = QLabel(label)
-                lbl.setStyleSheet("color:#888; font-size:11px; border:none;")
+                lbl.setStyleSheet("color:#888; font-size:16px; border:none;")
                 lbl.setFixedWidth(160)
                 val = QLabel(value)
-                val.setStyleSheet("color:#333; font-size:11px; border:none;")
+                val.setStyleSheet("color:#333; font-size:16px; border:none;")
                 val.setWordWrap(True)
                 val.setTextInteractionFlags(
                     Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -889,7 +889,7 @@ class ProfileFrame(QWidget):
             f"QProgressBar::chunk {{ background:{colors[score]}; border-radius:3px; }}")
         self.pw_strength_lbl.setText(labels[score] if pw else "")
         self.pw_strength_lbl.setStyleSheet(
-            f"color:{colors[score]}; font-size:10px; border:none;")
+            f"color:{colors[score]}; font-size:15px; border:none;")
 
     def _change_password(self):
         old_pw  = self.le_old_pw.text()
@@ -947,7 +947,7 @@ class ProfileFrame(QWidget):
         }
         self.pw_msg.setStyleSheet(
             f"QLabel {{ {colors.get(kind, colors['error'])} "
-            f"border-radius:8px; padding:8px 12px; font-size:12px; }}")
+            f"border-radius:8px; padding:8px 12px; font-size:17px; }}")
         self.pw_msg.setText(msg)
         self.pw_msg.show()
         QTimer.singleShot(5000, self.pw_msg.hide)
@@ -964,7 +964,7 @@ class ProfileFrame(QWidget):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
         lbl = QLabel(title)
-        lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         lbl.setStyleSheet("color:#1A2B45; border:none;")
         layout.addWidget(lbl)
         div = QFrame()
@@ -976,24 +976,24 @@ class ProfileFrame(QWidget):
     @staticmethod
     def _input_style() -> str:
         return ("QLineEdit { border:1px solid #ddd; border-radius:6px; "
-                "padding:7px 10px; font-size:12px; background:#fff; color:#222; }")
+                "padding:7px 10px; font-size:17px; background:#fff; color:#222; }")
 
     @staticmethod
     def _btn_primary() -> str:
         return ("QPushButton { background:#378ADD; color:#fff; border:none; "
-                "border-radius:8px; padding:7px 18px; font-size:12px; font-weight:500; } "
+                "border-radius:8px; padding:7px 18px; font-size:17px; font-weight:500; } "
                 "QPushButton:hover { background:#185FA5; }")
 
     @staticmethod
     def _btn_normal() -> str:
         return ("QPushButton { background:#fff; color:#555; "
                 "border:1px solid #ddd; border-radius:6px; "
-                "padding:7px 12px; font-size:12px; } "
+                "padding:7px 12px; font-size:17px; } "
                 "QPushButton:hover { background:#f5f5f5; }")
 
     @staticmethod
     def _btn_danger() -> str:
         return ("QPushButton { background:#fff; color:#A32D2D; "
                 "border:1px solid #E24B4A; border-radius:6px; "
-                "padding:7px 12px; font-size:12px; } "
+                "padding:7px 12px; font-size:17px; } "
                 "QPushButton:hover { background:#FCEBEB; }")

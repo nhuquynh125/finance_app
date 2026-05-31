@@ -110,7 +110,7 @@ class MessageBubble(QFrame):
             avatar = QLabel("🤖")
             avatar.setFixedSize(32, 32)
             avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            avatar.setFont(QFont("Segoe UI Emoji", 14))
+            avatar.setFont(QFont("Segoe UI Emoji", 19))
             avatar.setStyleSheet(
                 "background:#E6F1FB; border-radius:16px; border:none;")
             outer.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignTop)
@@ -135,7 +135,7 @@ class MessageBubble(QFrame):
                     border-radius: 14px;
                     border-bottom-right-radius: 4px;
                     padding: 10px 14px;
-                    font-size: 13px;
+                    font-size:18px;
                     font-family: 'Segoe UI';
                     line-height: 1.5;
                 }
@@ -151,7 +151,7 @@ class MessageBubble(QFrame):
                     border-bottom-left-radius: 4px;
                     border: 1px solid #e0e8f0;
                     padding: 10px 14px;
-                    font-size: 13px;
+                    font-size:18px;
                     font-family: 'Segoe UI';
                     line-height: 1.5;
                 }
@@ -216,7 +216,7 @@ class TypingIndicator(QFrame):
         avatar = QLabel("🤖")
         avatar.setFixedSize(32, 32)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setFont(QFont("Segoe UI Emoji", 14))
+        avatar.setFont(QFont("Segoe UI Emoji", 19))
         avatar.setStyleSheet(
             "background:#E6F1FB; border-radius:16px; border:none;")
         layout.addWidget(avatar, alignment=Qt.AlignmentFlag.AlignTop)
@@ -229,7 +229,7 @@ class TypingIndicator(QFrame):
                 border-radius: 14px;
                 border: 1px solid #e0e8f0;
                 padding: 10px 18px;
-                font-size: 18px;
+                font-size:23px;
                 letter-spacing: 4px;
             }
         """)
@@ -297,18 +297,18 @@ class ChatbotFrame(QWidget):
 
         # Bot avatar + name
         bot_icon = QLabel("🤖")
-        bot_icon.setFont(QFont("Segoe UI Emoji", 18))
+        bot_icon.setFont(QFont("Segoe UI Emoji", 23))
         bot_icon.setStyleSheet("border:none;")
         layout.addWidget(bot_icon)
 
         name_col = QVBoxLayout()
         name_col.setSpacing(0)
         name_lbl = QLabel("Trợ lý Tài chính AI")
-        name_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         name_lbl.setStyleSheet("color:#1A2B45; border:none;")
         name_col.addWidget(name_lbl)
         status_lbl = QLabel("● Hoạt động — Không cần internet")
-        status_lbl.setFont(QFont("Segoe UI", 10))
+        status_lbl.setFont(QFont("Segoe UI", 15))
         status_lbl.setStyleSheet("color:#1D9E75; border:none;")
         name_col.addWidget(status_lbl)
         layout.addLayout(name_col)
@@ -324,7 +324,7 @@ class ChatbotFrame(QWidget):
                 border: none;
                 border-radius: 10px;
                 padding: 3px 12px;
-                font-size: 11px;
+                font-size:16px;
                 font-weight: 600;
             }
         """)
@@ -338,7 +338,7 @@ class ChatbotFrame(QWidget):
                 border: 1px solid #ddd;
                 border-radius: 6px;
                 padding: 5px 12px;
-                font-size: 12px;
+                font-size:17px;
             }
             QPushButton:hover { background: #f5f5f5; }
         """)
@@ -378,7 +378,7 @@ class ChatbotFrame(QWidget):
         layout.setSpacing(6)
 
         hint = QLabel("Gợi ý:")
-        hint.setStyleSheet("color:#bbb; font-size:11px; border:none;")
+        hint.setStyleSheet("color:#bbb; font-size:16px; border:none;")
         layout.addWidget(hint)
 
         for prompt in self.QUICK_PROMPTS:
@@ -390,7 +390,7 @@ class ChatbotFrame(QWidget):
                     border: 1px solid #D0E4F7;
                     border-radius: 14px;
                     padding: 4px 12px;
-                    font-size: 11px;
+                    font-size:16px;
                     font-weight: 500;
                 }
                 QPushButton:hover {
@@ -425,7 +425,7 @@ class ChatbotFrame(QWidget):
                 border: 1.5px solid #D0E4F7;
                 border-radius: 22px;
                 padding: 8px 18px;
-                font-size: 13px;
+                font-size:18px;
                 background: #F5F9FF;
                 color: #1A2B45;
                 font-family: 'Segoe UI';
@@ -448,7 +448,7 @@ class ChatbotFrame(QWidget):
                 color: #ffffff;
                 border: none;
                 border-radius: 20px;
-                font-size: 12px;
+                font-size:17px;
                 font-weight: 600;
             }
             QPushButton:hover {
