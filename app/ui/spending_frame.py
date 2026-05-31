@@ -238,7 +238,7 @@ class CategoryRow(QWidget):
         self._data = cat_data
         self._indent = indent
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(48 if not indent else 42)
+        self.setFixedHeight(42 if not indent else 36)
         bg = CARD_WHITE
         self.setStyleSheet(f"""
             QWidget {{
@@ -259,18 +259,18 @@ class CategoryRow(QWidget):
 
         color = self._data.get("color", NAVY_LIGHT)
         dot = QFrame()
-        dot.setFixedSize(28 if not self._indent else 22, 28 if not self._indent else 22)
+        dot.setFixedSize(22 if not self._indent else 18, 22 if not self._indent else 18)
         dot.setStyleSheet(f"""
             QFrame {{
                 background: {color};
-                border-radius: {14 if not self._indent else 11}px;
+                border-radius: {11 if not self._indent else 9}px;
                 border: none;
             }}
         """)
         layout.addWidget(dot)
 
         name_lbl = QLabel(self._data.get("name", ""))
-        font_size = 12 if not self._indent else 11
+        font_size = 11 if not self._indent else 10
         name_lbl.setFont(QFont("Segoe UI", font_size))
         name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         layout.addWidget(name_lbl, stretch=1)
@@ -291,14 +291,14 @@ class CategoryRow(QWidget):
             layout.addWidget(tag)
 
         amt_lbl = QLabel(self._fmt(self._data.get("total", 0)))
-        font_size_amt = 12 if not self._indent else 11
+        font_size_amt = 11 if not self._indent else 10
         amt_lbl.setFont(QFont("Segoe UI", font_size_amt, QFont.Weight.Medium))
         amt_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         layout.addWidget(amt_lbl)
 
         if not self._indent:
             arrow = QLabel("›")
-            arrow.setFont(QFont("Segoe UI", 21))
+            arrow.setFont(QFont("Segoe UI", 14))
             arrow.setStyleSheet(f"color:{BORDER_BLUE}; border:none; background:transparent;")
             layout.addWidget(arrow)
 
@@ -332,7 +332,7 @@ class ParentCategoryRow(QWidget):
 
         # Header row (danh mục cha)
         self._header = QWidget()
-        self._header.setFixedHeight(52)
+        self._header.setFixedHeight(46)
         self._header.setCursor(Qt.CursorShape.PointingHandCursor)
         self._header.setStyleSheet(f"""
             QWidget {{
@@ -349,30 +349,30 @@ class ParentCategoryRow(QWidget):
 
         color = self._parent_data.get("color", NAVY_LIGHT)
         dot = QFrame()
-        dot.setFixedSize(32, 32)
+        dot.setFixedSize(24, 24)
         dot.setStyleSheet(f"""
             QFrame {{
                 background: {color};
-                border-radius: 10px;
+                border-radius: 8px;
                 border: none;
             }}
         """)
         hl.addWidget(dot)
 
         name_lbl = QLabel(self._parent_data.get("name", ""))
-        name_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
         name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         hl.addWidget(name_lbl, stretch=1)
 
         amt_lbl = QLabel(self._fmt(self._parent_data.get("total", 0)))
-        amt_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Medium))
+        amt_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Medium))
         amt_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
         hl.addWidget(amt_lbl)
 
         self._arrow_lbl = QLabel("∨" if self._expanded else "∨")
-        self._arrow_lbl.setFont(QFont("Segoe UI", 18))
+        self._arrow_lbl.setFont(QFont("Segoe UI", 13))
         self._arrow_lbl.setStyleSheet(
-            f"color:{NAVY_MID}; border:none; background:transparent; min-width:18px;")
+            f"color:{NAVY_MID}; border:none; background:transparent; min-width:14px;")
         hl.addWidget(self._arrow_lbl)
 
         self._layout.addWidget(self._header)
@@ -435,7 +435,7 @@ class BudgetMiniCard(QWidget):
 
         name = self._data.get("name", "Ngân sách")
         name_lbl = QLabel(name)
-        name_lbl.setFont(QFont("Segoe UI", 29, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
         name_lbl.setStyleSheet(f"border:none; color:{TEXT_DARK};")
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(name_lbl)
@@ -467,7 +467,7 @@ class BudgetMiniCard(QWidget):
         layout.addWidget(prog_track)
 
         status_lbl = QLabel(status_text)
-        status_lbl.setFont(QFont("Segoe UI", 27))
+        status_lbl.setFont(QFont("Segoe UI", 12))
         status_lbl.setStyleSheet(f"border:none; {status_sty}")
         status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(status_lbl)
@@ -477,7 +477,7 @@ class BudgetMiniCard(QWidget):
         show_amount = limit if limit > 0 else suggest
 
         amount_lbl = QLabel(self._fmt(show_amount))
-        amount_lbl.setFont(QFont("Segoe UI", 31, QFont.Weight.Bold))
+        amount_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
         amount_lbl.setStyleSheet(f"color:{bar_color}; border:none;")
         amount_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(amount_lbl)
@@ -489,7 +489,7 @@ class BudgetMiniCard(QWidget):
                     background: transparent;
                     color: {NAVY_MID};
                     border: none;
-                    font-size:24px;
+                    font-size:11px;
                     text-align: center;
                     padding: 0;
                 }}
@@ -1154,7 +1154,7 @@ class SpendingFrame(QWidget):
 
     def _build_topbar(self) -> QWidget:
         bar = QWidget()
-        bar.setFixedHeight(65)
+        bar.setFixedHeight(72)
         bar.setStyleSheet(
             f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
         layout = QHBoxLayout(bar)
@@ -1162,7 +1162,7 @@ class SpendingFrame(QWidget):
         layout.setSpacing(8)
 
         title = QLabel("Quản lý chi tiêu")
-        title.setFont(QFont("Segoe UI", 33, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         title.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(title)
@@ -1197,19 +1197,19 @@ class SpendingFrame(QWidget):
         nav = QHBoxLayout()
         nav.addStretch()
         self._btn_prev_m = QPushButton("‹")
-        self._btn_prev_m.setFixedSize(40, 40)
+        self._btn_prev_m.setFixedSize(44, 44)
         self._btn_prev_m.setStyleSheet(self._nav_btn_style())
         self._btn_prev_m.clicked.connect(self._prev_month)
         nav.addWidget(self._btn_prev_m)
 
         self._month_lbl = QLabel("Tháng này")
-        self._month_lbl.setFont(QFont("Segoe UI", 31, QFont.Weight.Bold))
+        self._month_lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         self._month_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._month_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         nav.addWidget(self._month_lbl)
 
         self._btn_next_m = QPushButton("›")
-        self._btn_next_m.setFixedSize(40, 40)
+        self._btn_next_m.setFixedSize(44, 44)
         self._btn_next_m.setStyleSheet(self._nav_btn_style())
         self._btn_next_m.clicked.connect(self._next_month)
         nav.addWidget(self._btn_next_m)
@@ -1277,23 +1277,23 @@ class SpendingFrame(QWidget):
         card._mode = click_mode
 
         cl = QVBoxLayout(card)
-        cl.setContentsMargins(14, 10, 14, 10)
-        cl.setSpacing(4)
+        cl.setContentsMargins(18, 14, 18, 14)
+        cl.setSpacing(6)
 
         lbl = QLabel(label)
-        lbl.setFont(QFont("Segoe UI", 28))
+        lbl.setFont(QFont("Segoe UI", 15))
         lbl.setStyleSheet(f"color:{TEXT_MUTED}; border:none; background:transparent;")
         cl.addWidget(lbl)
 
         row = QHBoxLayout()
         val = QLabel(value)
-        val.setFont(QFont("Segoe UI", 29, QFont.Weight.Bold))
+        val.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         val.setStyleSheet(
             f"color:{RED_SOFT if click_mode == 'expense' else MINT}; "
             f"border:none; background:transparent;")
         
         arrow = QLabel("↑")
-        arrow.setFont(QFont("Segoe UI", 20))
+        arrow.setFont(QFont("Segoe UI", 16))
         arrow.setStyleSheet(f"color:{NAVY_MID}; border:none; background:transparent;")
         
         row.addWidget(val)
@@ -1367,14 +1367,14 @@ class SpendingFrame(QWidget):
 
         # ── Section header: tiêu đề + nút Quản lý ──
         sec_hdr = QWidget()
-        sec_hdr.setFixedHeight(60)
+        sec_hdr.setFixedHeight(68)
         sec_hdr.setStyleSheet(
             f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
         sec_hl = QHBoxLayout(sec_hdr)
         sec_hl.setContentsMargins(16, 0, 8, 0)
         sec_hl.setSpacing(8)
         sec_title = QLabel("Danh mục")
-        sec_title.setFont(QFont("Segoe UI", 35, QFont.Weight.Bold))
+        sec_title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         sec_title.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         sec_hl.addWidget(sec_title)
         sec_hl.addStretch()
@@ -1386,9 +1386,9 @@ class SpendingFrame(QWidget):
                 color:{NAVY_MID};
                 border:1px solid {BORDER_BLUE};
                 border-radius:8px;
-                font-size:26px;
+                font-size:13px;
                 font-weight:600;
-                padding:0 12px;
+                padding:0 10px;
             }}
             QPushButton:hover {{ background:{BORDER_BLUE}; color:{NAVY}; }}
         """)
@@ -1436,9 +1436,9 @@ class SpendingFrame(QWidget):
                 background: transparent;
                 color: {NAVY_MID};
                 border: none;
-                font-size:21px;
+                font-size:13px;
                 font-weight: 600;
-                padding: 10px;
+                padding: 6px;
             }}
             QPushButton:hover {{ color: {NAVY}; }}
         """)
@@ -1459,14 +1459,14 @@ class SpendingFrame(QWidget):
 
         header_row = QHBoxLayout()
         hdr = QLabel("Ngân sách chi tiêu")
-        hdr.setFont(QFont("Segoe UI", 31, QFont.Weight.Bold))
+        hdr.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         hdr.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         header_row.addWidget(hdr)
         header_row.addStretch()
         see_all = QPushButton("Xem tất cả  ›")
         see_all.setStyleSheet(f"""
             QPushButton {{ background:transparent; color:{NAVY_MID};
-                border:none; font-size:25px; font-weight:500; }}
+                border:none; font-size:13px; font-weight:500; }}
             QPushButton:hover {{ color:{NAVY}; }}
         """)
         if self.main_window:
@@ -1605,20 +1605,20 @@ class SpendingFrame(QWidget):
             row_w = QWidget()
             row_w.setStyleSheet("background:transparent;")
             rl = QHBoxLayout(row_w)
-            rl.setContentsMargins(0, 2, 0, 2)
-            rl.setSpacing(6)
+            rl.setContentsMargins(0, 1, 0, 1)
+            rl.setSpacing(5)
             dot = QFrame()
-            dot.setFixedSize(10, 10)
+            dot.setFixedSize(8, 8)
             dot.setStyleSheet(
-                f"background:{seg['color']}; border-radius:5px; border:none;")
+                f"background:{seg['color']}; border-radius:4px; border:none;")
             rl.addWidget(dot)
             pct_lbl = QLabel(f"{pct:.0f}%")
-            pct_lbl.setFont(QFont("Segoe UI", 22, QFont.Weight.Bold))
+            pct_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
             pct_lbl.setStyleSheet(f"color:{seg['color']}; border:none;")
-            pct_lbl.setFixedWidth(65)
+            pct_lbl.setFixedWidth(38)
             rl.addWidget(pct_lbl)
-            name_lbl = QLabel(seg["name"][:12])
-            name_lbl.setFont(QFont("Segoe UI", 27))
+            name_lbl = QLabel(seg["name"][:14])
+            name_lbl.setFont(QFont("Segoe UI", 11))
             name_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
             rl.addWidget(name_lbl)
             rl.addStretch()
@@ -2038,9 +2038,9 @@ class SpendingFrame(QWidget):
                     color:{NAVY_MID};
                     border:none;
                     border-bottom:3px solid {NAVY_MID};
-                    font-size:21px;
+                    font-size:13px;
                     font-weight:600;
-                    padding:8px 0;
+                    padding:6px 0;
                 }}
             """
         return f"""
@@ -2049,8 +2049,8 @@ class SpendingFrame(QWidget):
                 color:{NAVY_LIGHT};
                 border:none;
                 border-bottom:3px solid transparent;
-                font-size:21px;
-                padding:8px 0;
+                font-size:13px;
+                padding:6px 0;
             }}
             QPushButton:hover {{ color:{TEXT_DARK}; }}
         """
