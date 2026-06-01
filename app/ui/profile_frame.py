@@ -522,12 +522,12 @@ class ProfileFrame(QWidget):
         self.le_fullname = QLineEdit()
         self.le_fullname.setPlaceholderText("Họ và tên đầy đủ...")
         self.le_fullname.setStyleSheet(self._input_style())
-        form.addRow(self._form_label("Họ và tên *:"), self.le_fullname)
+        form.addRow(self._form_label("Họ và tên:"), self.le_fullname)
 
         self.le_phone = QLineEdit()
         self.le_phone.setPlaceholderText("0912 345 678 (bắt buộc, dùng làm mã định danh)")
         self.le_phone.setStyleSheet(self._input_style())
-        form.addRow(self._form_label("Số điện thoại *:"), self.le_phone)
+        form.addRow(self._form_label("Số điện thoại:"), self.le_phone)
 
         self.le_username_ro = QLineEdit()
         self.le_username_ro.setReadOnly(True)

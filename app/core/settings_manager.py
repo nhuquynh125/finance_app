@@ -33,7 +33,7 @@ DEFAULT_SETTINGS = {
     "auto_classification": True,
     "anomaly_detection": True,
     "forecast_method": "auto",
-    "chat_engine": "gemini",
+    "chat_engine": "finance_ai",
     "window_mode": "default",
 }
 

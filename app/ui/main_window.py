@@ -59,7 +59,7 @@ def _get_logo_pixmap(size: int = 40) -> QPixmap | None:
 # ── Sidebar components ────────────────────────────────────────────────────────
 
 class SidebarButton(QPushButton):
-    STYLE_ACTIVE = """
+    STYLE_ACTIVE_EXPANDED = """
         QPushButton {
             background: rgba(255,255,255,0.18);
             color: #FFFFFF;
@@ -68,11 +68,11 @@ class SidebarButton(QPushButton):
             border-radius: 8px;
             text-align: left;
             padding: 9px 14px 9px 11px;
-            font-size:18px;
+            font-size:16px;
             font-weight: 600;
         }
     """
-    STYLE_NORMAL = """
+    STYLE_NORMAL_EXPANDED = """
         QPushButton {
             background: transparent;
             color: rgba(255,255,255,0.75);
@@ -80,6 +80,34 @@ class SidebarButton(QPushButton):
             border-radius: 8px;
             text-align: left;
             padding: 9px 14px;
+            font-size:16px;
+        }
+        QPushButton:hover {
+            background: rgba(255,255,255,0.12);
+            color: #FFFFFF;
+        }
+    """
+    STYLE_ACTIVE_COLLAPSED = """
+        QPushButton {
+            background: rgba(255,255,255,0.18);
+            color: #FFFFFF;
+            border: none;
+            border-left: 3px solid #E8921A;
+            border-radius: 8px;
+            text-align: center;
+            padding: 9px 0px;
+            font-size:18px;
+            font-weight: 600;
+        }
+    """
+    STYLE_NORMAL_COLLAPSED = """
+        QPushButton {
+            background: transparent;
+            color: rgba(255,255,255,0.75);
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            padding: 9px 0px;
             font-size:18px;
         }
         QPushButton:hover {
@@ -92,21 +120,29 @@ class SidebarButton(QPushButton):
         super().__init__(parent)
         self._icon = icon.strip()
         self._text = text.strip()
-        self.setFixedHeight(38)
+        self.setFixedHeight(40)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.set_active(False)
-        self.set_expanded(True)
+        self._is_active = False
+        self._is_expanded = True
+        self._update_appearance()
 
     def set_active(self, active: bool):
-        self.setStyleSheet(self.STYLE_ACTIVE if active else self.STYLE_NORMAL)
+        self._is_active = active
+        self._update_appearance()
 
     def set_expanded(self, expanded: bool):
-        if expanded:
+        self._is_expanded = expanded
+        self._update_appearance()
+
+    def _update_appearance(self):
+        if self._is_expanded:
             self.setText(f"  {self._icon}  {self._text}")
             self.setToolTip("")
+            self.setStyleSheet(self.STYLE_ACTIVE_EXPANDED if self._is_active else self.STYLE_NORMAL_EXPANDED)
         else:
-            self.setText(f"  {self._icon}")
+            self.setText(self._icon)
             self.setToolTip(self._text)
+            self.setStyleSheet(self.STYLE_ACTIVE_COLLAPSED if self._is_active else self.STYLE_NORMAL_COLLAPSED)
 
 
 class _SidebarAvatar(QPushButton):
@@ -183,6 +219,43 @@ class _SidebarAvatar(QPushButton):
 
 
 class Sidebar(QWidget):
+    _BTN_BELL_EXPANDED = """
+        QPushButton {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.75);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; font-size:16px; padding: 0 10px;
+        }
+        QPushButton:hover { background: rgba(255,255,255,0.15); color: white; }
+    """
+    _BTN_BELL_COLLAPSED = """
+        QPushButton {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.75);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; font-size:18px; padding: 0;
+        }
+        QPushButton:hover { background: rgba(255,255,255,0.15); color: white; }
+    """
+    _BTN_LOGOUT_EXPANDED = """
+        QPushButton {
+            background: rgba(232, 80, 32, 0.15);
+            color: #FF8B6A;
+            border: 1px solid rgba(232, 80, 32, 0.3);
+            border-radius: 8px; font-size:16px; padding: 0 10px;
+        }
+        QPushButton:hover { background: rgba(232, 80, 32, 0.25); color: #FFAA8A; }
+    """
+    _BTN_LOGOUT_COLLAPSED = """
+        QPushButton {
+            background: rgba(232, 80, 32, 0.15);
+            color: #FF8B6A;
+            border: 1px solid rgba(232, 80, 32, 0.3);
+            border-radius: 8px; font-size:18px; padding: 0;
+        }
+        QPushButton:hover { background: rgba(232, 80, 32, 0.25); color: #FFAA8A; }
+    """
+
     def __init__(self, current_user: dict = None, parent=None):
         super().__init__(parent)
         self.current_user = current_user or {}
@@ -349,31 +422,15 @@ class Sidebar(QWidget):
         fl.addWidget(self.balance_card)
 
         self.btn_bell = QPushButton("🔔  Thông báo")
-        self.btn_bell.setFixedHeight(32)
-        self.btn_bell.setStyleSheet("""
-            QPushButton {
-                background: rgba(255,255,255,0.08);
-                color: rgba(255,255,255,0.75);
-                border: 1px solid rgba(255,255,255,0.12);
-                border-radius: 8px; font-size:17px; padding: 0 10px;
-            }
-            QPushButton:hover { background: rgba(255,255,255,0.15); color: white; }
-        """)
+        self.btn_bell.setFixedHeight(36)
+        self.btn_bell.setStyleSheet(self._BTN_BELL_EXPANDED)
         self.btn_bell.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_bell.clicked.connect(lambda: notifier.show_center(self.window()))
         fl.addWidget(self.btn_bell)
 
         self.btn_logout = QPushButton("⏻  Đăng xuất")
-        self.btn_logout.setFixedHeight(32)
-        self.btn_logout.setStyleSheet("""
-            QPushButton {
-                background: rgba(232, 80, 32, 0.15);
-                color: #FF8B6A;
-                border: 1px solid rgba(232, 80, 32, 0.3);
-                border-radius: 8px; font-size:17px; padding: 0 10px;
-            }
-            QPushButton:hover { background: rgba(232, 80, 32, 0.25); color: #FFAA8A; }
-        """)
+        self.btn_logout.setFixedHeight(36)
+        self.btn_logout.setStyleSheet(self._BTN_LOGOUT_EXPANDED)
         self.btn_logout.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_logout.clicked.connect(self._do_logout)
         fl.addWidget(self.btn_logout)
@@ -393,16 +450,17 @@ class Sidebar(QWidget):
         except Exception:
             color = "#E8921A"
 
-        w = QPushButton()
-        w.setStyleSheet("QPushButton { background: transparent; border: none; text-align: left; } QPushButton:hover { background: rgba(255,255,255,0.05); border-radius: 10px; }")
-        w.setCursor(Qt.CursorShape.PointingHandCursor)
-        w.clicked.connect(lambda: self._navigate("Hồ sơ"))
-        hl = QHBoxLayout(w)
-        hl.setContentsMargins(14, 10, 14, 10)
-        hl.setSpacing(10)
+        self.user_info_btn = QPushButton()
+        self.user_info_btn.setFixedHeight(74)
+        self.user_info_btn.setStyleSheet("QPushButton { background: transparent; border: none; text-align: left; } QPushButton:hover { background: rgba(255,255,255,0.05); border-radius: 10px; }")
+        self.user_info_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.user_info_btn.clicked.connect(lambda: self._navigate("Hồ sơ"))
+        hl = QHBoxLayout(self.user_info_btn)
+        hl.setContentsMargins(9, 14, 9, 14)
+        hl.setSpacing(12)
 
         initials = (full_name[:2] if full_name else "?").upper()
-        self._avatar_btn = _SidebarAvatar(initials, color, size=36)
+        self._avatar_btn = _SidebarAvatar(initials, color, size=46)
         self._avatar_btn.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         hl.addWidget(self._avatar_btn)
 
@@ -411,15 +469,15 @@ class Sidebar(QWidget):
         name_col = QVBoxLayout(self.user_name_col_w)
         name_col.setContentsMargins(0, 0, 0, 0)
         name_col.setSpacing(2)
-        display = full_name[:18] if len(full_name) > 18 else full_name
+        display = full_name[:14] + "…" if len(full_name) > 15 else full_name
         self._full_name_lbl = QLabel(display)
-        self._full_name_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        self._full_name_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
         self._full_name_lbl.setStyleSheet(
             "color: #FFFFFF; border: none; background: transparent;"
         )
         role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
         self._role_lbl = QLabel(role_map.get(role, "Người dùng"))
-        self._role_lbl.setFont(QFont("Segoe UI", 14))
+        self._role_lbl.setFont(QFont("Segoe UI", 13))
         self._role_lbl.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
@@ -434,7 +492,7 @@ class Sidebar(QWidget):
         )
         self.user_arrow_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         hl.addWidget(self.user_arrow_lbl)
-        return w
+        return self.user_info_btn
 
     def toggle_sidebar(self):
         self.is_expanded = not self.is_expanded
@@ -452,7 +510,9 @@ class Sidebar(QWidget):
                 btn.set_expanded(True)
             self.balance_card.setVisible(True)
             self.btn_bell.setText("🔔  Thông báo")
+            self.btn_bell.setStyleSheet(self._BTN_BELL_EXPANDED)
             self.btn_logout.setText("⏻  Đăng xuất")
+            self.btn_logout.setStyleSheet(self._BTN_LOGOUT_EXPANDED)
             self.btn_toggle.setStyleSheet("""
                 QPushButton {
                     background: rgba(255,255,255,0.1);
@@ -466,7 +526,7 @@ class Sidebar(QWidget):
                 }
             """)
         else:
-            self.setFixedWidth(70)
+            self.setFixedWidth(64)
             if hasattr(self, 'logo_img'):
                 self.logo_img.setVisible(False)
             self.title_col_w.setVisible(False)
@@ -479,7 +539,9 @@ class Sidebar(QWidget):
                 btn.set_expanded(False)
             self.balance_card.setVisible(False)
             self.btn_bell.setText("🔔")
+            self.btn_bell.setStyleSheet(self._BTN_BELL_COLLAPSED)
             self.btn_logout.setText("⏻")
+            self.btn_logout.setStyleSheet(self._BTN_LOGOUT_COLLAPSED)
             self.btn_toggle.setStyleSheet("""
                 QPushButton {
                     background: transparent;
@@ -495,7 +557,7 @@ class Sidebar(QWidget):
 
     def _refresh_user_info(self, full_name: str, username: str, role: str):
         if self._full_name_lbl:
-            display = full_name[:16] if len(full_name) > 16 else full_name
+            display = full_name[:14] + "…" if len(full_name) > 15 else full_name
             self._full_name_lbl.setText(display)
         if self._role_lbl:
             role_map = {"admin": "Quản trị viên", "user": "Người dùng"}

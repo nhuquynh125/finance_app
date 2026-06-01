@@ -30,7 +30,6 @@ from app.core.settings_manager import (
     package_status, restore_database, save_settings,
     get_exports_dir, _get_db_path
 )
-from app.core.sync_manager import SyncManager
 from app.core.theme_engine import theme_engine
 
 try:
@@ -142,7 +141,6 @@ class SettingsFrame(QWidget):
         self._build_general_settings()
         self._build_ai_settings()
         self._build_data_tools()
-        self._build_cloud_sync()
         # NOTE: "Cấu hình API & Cloud" block REMOVED entirely
         self.body.addStretch()
 
@@ -228,9 +226,7 @@ class SettingsFrame(QWidget):
         self._add_control(grid, 2, "Phương pháp dự báo", self.forecast_combo)
 
         self.chat_engine_combo = QComboBox()
-        self.chat_engine_combo.addItem("Gemini API", "gemini")
-        self.chat_engine_combo.addItem("Ollama offline", "ollama")
-        self.chat_engine_combo.addItem("Model nhúng", "embedded")
+        self.chat_engine_combo.addItem("Finance-AI", "finance_ai")
         self.chat_engine_combo.setStyleSheet(self._combo_style())
         self._add_control(grid, 3, "Engine chatbot", self.chat_engine_combo)
 
@@ -279,26 +275,6 @@ class SettingsFrame(QWidget):
         self.backup_info.setFont(QFont("Segoe UI", 15))
         self.backup_info.setStyleSheet("color:#4A6785; border:none;")
         self._add_control(grid, 4, "Trạng thái", self.backup_info)
-
-        self.body.addWidget(panel)
-
-    def _build_cloud_sync(self):
-        panel, grid = self._panel("Đồng bộ đám mây (Cloud Sync)")
-
-        self.cloud_provider = QComboBox()
-        self.cloud_provider.addItems(["Google Drive", "Dropbox", "OneDrive"])
-        self.cloud_provider.setStyleSheet(self._combo_style())
-        self._add_control(grid, 0, "Dịch vụ", self.cloud_provider)
-
-        btn_sync = QPushButton("Đồng bộ ngay")
-        btn_sync.setStyleSheet(self._btn_primary())
-        btn_sync.clicked.connect(self._sync_cloud)
-        self._add_control(grid, 1, "Đồng bộ", btn_sync)
-
-        self.cloud_info = QLabel("Chưa cấu hình")
-        self.cloud_info.setFont(QFont("Segoe UI", 15))
-        self.cloud_info.setStyleSheet("color:#4A6785; border:none;")
-        self._add_control(grid, 2, "Trạng thái", self.cloud_info)
 
         self.body.addWidget(panel)
 
@@ -414,21 +390,6 @@ class SettingsFrame(QWidget):
             subprocess.call(["open", folder])
         else:
             subprocess.call(["xdg-open", folder])
-
-    def _sync_cloud(self):
-        provider = self.cloud_provider.currentText()
-        self.cloud_info.setText(f"Đang đồng bộ với {provider}...")
-        self.cloud_info.setStyleSheet("color:#0B2A4A; font-size:15px; border:none;")
-        success, msg = SyncManager.sync_to_cloud()
-        if success:
-            self.cloud_info.setText(
-                f"Đã đồng bộ lúc: {datetime.now().strftime('%H:%M:%S')}")
-            self.cloud_info.setStyleSheet("color:#3B6D11; font-size:15px; border:none;")
-            QMessageBox.information(self, "Cloud Sync", msg)
-        else:
-            self.cloud_info.setText("Đồng bộ thất bại")
-            self.cloud_info.setStyleSheet("color:#A32D2D; font-size:15px; border:none;")
-            QMessageBox.warning(self, "Cloud Sync", msg)
 
     def _refresh_package_status(self):
         statuses = package_status(list(self.package_labels.keys()))
