@@ -88,14 +88,25 @@ class SidebarButton(QPushButton):
         }
     """
 
-    def __init__(self, text, parent=None):
-        super().__init__(text, parent)
+    def __init__(self, icon: str, text: str, parent=None):
+        super().__init__(parent)
+        self._icon = icon.strip()
+        self._text = text.strip()
         self.setFixedHeight(38)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.set_active(False)
+        self.set_expanded(True)
 
     def set_active(self, active: bool):
         self.setStyleSheet(self.STYLE_ACTIVE if active else self.STYLE_NORMAL)
+
+    def set_expanded(self, expanded: bool):
+        if expanded:
+            self.setText(f"  {self._icon}  {self._text}")
+            self.setToolTip("")
+        else:
+            self.setText(f"  {self._icon}")
+            self.setToolTip(self._text)
 
 
 class _SidebarAvatar(QPushButton):
@@ -175,10 +186,12 @@ class Sidebar(QWidget):
     def __init__(self, current_user: dict = None, parent=None):
         super().__init__(parent)
         self.current_user = current_user or {}
-        self.setFixedWidth(220)
+        self.is_expanded = True
+        self.setFixedWidth(270)
         self.setStyleSheet("QWidget { background: transparent; }")
         self.setObjectName("sidebar")
         self._buttons: dict[str, SidebarButton] = {}
+        self.sec_lbls = []
         self._on_navigate = None
         self._on_logout = None
         self._avatar_btn: _SidebarAvatar | None = None
@@ -206,14 +219,18 @@ class Sidebar(QWidget):
         logo_l = QHBoxLayout(logo_w)
         logo_l.setContentsMargins(16, 18, 16, 14)
         logo_l.setSpacing(10)
+        
         logo_px = _get_logo_pixmap(36)
         if logo_px:
-            logo_img = QLabel()
-            logo_img.setPixmap(logo_px)
-            logo_img.setFixedSize(36, 36)
-            logo_img.setStyleSheet("border: none; background: transparent;")
-            logo_l.addWidget(logo_img)
-        title_col = QVBoxLayout()
+            self.logo_img = QLabel()
+            self.logo_img.setPixmap(logo_px)
+            self.logo_img.setFixedSize(36, 36)
+            self.logo_img.setStyleSheet("border: none; background: transparent;")
+            logo_l.addWidget(self.logo_img)
+            
+        self.title_col_w = QWidget()
+        title_col = QVBoxLayout(self.title_col_w)
+        title_col.setContentsMargins(0, 0, 0, 0)
         title_col.setSpacing(1)
         title = QLabel("Finance AI")
         title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
@@ -225,8 +242,28 @@ class Sidebar(QWidget):
         )
         title_col.addWidget(title)
         title_col.addWidget(subtitle)
-        logo_l.addLayout(title_col)
+        logo_l.addWidget(self.title_col_w)
         logo_l.addStretch()
+        
+        # Toggle button
+        self.btn_toggle = QPushButton("☰")
+        self.btn_toggle.setFixedSize(32, 32)
+        self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_toggle.setStyleSheet("""
+            QPushButton {
+                background: rgba(255,255,255,0.1);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 18px;
+            }
+            QPushButton:hover {
+                background: rgba(255,255,255,0.2);
+            }
+        """)
+        self.btn_toggle.clicked.connect(self.toggle_sidebar)
+        logo_l.addWidget(self.btn_toggle)
+
         layout.addWidget(logo_w)
         layout.addWidget(self._divider())
 
@@ -268,9 +305,10 @@ class Sidebar(QWidget):
                 "border: none; letter-spacing: 1.5px; background: transparent;"
             )
             nav_layout.addWidget(sec_lbl)
+            self.sec_lbls.append(sec_lbl)
             for page in pages:
                 icon = icons.get(page, "")
-                btn = SidebarButton(f"  {icon}  {page}")
+                btn = SidebarButton(icon, page)
                 btn.clicked.connect(lambda _, p=page: self._navigate(p))
                 nav_layout.addWidget(btn)
                 self._buttons[page] = btn
@@ -285,15 +323,15 @@ class Sidebar(QWidget):
         fl.setContentsMargins(14, 10, 14, 16)
         fl.setSpacing(8)
 
-        balance_card = QWidget()
-        balance_card.setStyleSheet("""
+        self.balance_card = QWidget()
+        self.balance_card.setStyleSheet("""
             QWidget {
                 background: rgba(255,255,255,0.08);
                 border-radius: 10px;
                 border: 1px solid rgba(255,255,255,0.12);
             }
         """)
-        bcl = QVBoxLayout(balance_card)
+        bcl = QVBoxLayout(self.balance_card)
         bcl.setContentsMargins(12, 8, 12, 8)
         bcl.setSpacing(3)
         fl_label = QLabel("Tổng số dư")
@@ -308,11 +346,11 @@ class Sidebar(QWidget):
         )
         bcl.addWidget(fl_label)
         bcl.addWidget(self.balance_label)
-        fl.addWidget(balance_card)
+        fl.addWidget(self.balance_card)
 
-        btn_bell = QPushButton("🔔  Thông báo")
-        btn_bell.setFixedHeight(32)
-        btn_bell.setStyleSheet("""
+        self.btn_bell = QPushButton("🔔  Thông báo")
+        self.btn_bell.setFixedHeight(32)
+        self.btn_bell.setStyleSheet("""
             QPushButton {
                 background: rgba(255,255,255,0.08);
                 color: rgba(255,255,255,0.75);
@@ -321,13 +359,13 @@ class Sidebar(QWidget):
             }
             QPushButton:hover { background: rgba(255,255,255,0.15); color: white; }
         """)
-        btn_bell.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_bell.clicked.connect(lambda: notifier.show_center(self.window()))
-        fl.addWidget(btn_bell)
+        self.btn_bell.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_bell.clicked.connect(lambda: notifier.show_center(self.window()))
+        fl.addWidget(self.btn_bell)
 
-        btn_logout = QPushButton("⏻  Đăng xuất")
-        btn_logout.setFixedHeight(32)
-        btn_logout.setStyleSheet("""
+        self.btn_logout = QPushButton("⏻  Đăng xuất")
+        self.btn_logout.setFixedHeight(32)
+        self.btn_logout.setStyleSheet("""
             QPushButton {
                 background: rgba(232, 80, 32, 0.15);
                 color: #FF8B6A;
@@ -336,9 +374,9 @@ class Sidebar(QWidget):
             }
             QPushButton:hover { background: rgba(232, 80, 32, 0.25); color: #FFAA8A; }
         """)
-        btn_logout.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_logout.clicked.connect(self._do_logout)
-        fl.addWidget(btn_logout)
+        self.btn_logout.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_logout.clicked.connect(self._do_logout)
+        fl.addWidget(self.btn_logout)
         layout.addWidget(footer)
 
     def _build_user_info_block(self, user: dict) -> QWidget:
@@ -368,35 +406,92 @@ class Sidebar(QWidget):
         self._avatar_btn.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         hl.addWidget(self._avatar_btn)
 
-        name_col = QVBoxLayout()
+        self.user_name_col_w = QWidget()
+        self.user_name_col_w.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        name_col = QVBoxLayout(self.user_name_col_w)
         name_col.setContentsMargins(0, 0, 0, 0)
         name_col.setSpacing(2)
-        display = full_name[:16] if len(full_name) > 16 else full_name
+        display = full_name[:18] if len(full_name) > 18 else full_name
         self._full_name_lbl = QLabel(display)
         self._full_name_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         self._full_name_lbl.setStyleSheet(
             "color: #FFFFFF; border: none; background: transparent;"
         )
-        self._full_name_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
         self._role_lbl = QLabel(role_map.get(role, "Người dùng"))
         self._role_lbl.setFont(QFont("Segoe UI", 14))
         self._role_lbl.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
-        self._role_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         name_col.addWidget(self._full_name_lbl)
         name_col.addWidget(self._role_lbl)
-        hl.addLayout(name_col)
+        hl.addWidget(self.user_name_col_w)
         hl.addStretch()
 
-        arrow = QLabel("›")
-        arrow.setStyleSheet(
+        self.user_arrow_lbl = QLabel("›")
+        self.user_arrow_lbl.setStyleSheet(
             "color: rgba(255,255,255,0.3); font-size:23px; border:none; background:transparent;"
         )
-        arrow.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        hl.addWidget(arrow)
+        self.user_arrow_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        hl.addWidget(self.user_arrow_lbl)
         return w
+
+    def toggle_sidebar(self):
+        self.is_expanded = not self.is_expanded
+        if self.is_expanded:
+            self.setFixedWidth(270)
+            if hasattr(self, 'logo_img'):
+                self.logo_img.setVisible(True)
+            self.title_col_w.setVisible(True)
+            if hasattr(self, 'user_name_col_w'):
+                self.user_name_col_w.setVisible(True)
+                self.user_arrow_lbl.setVisible(True)
+            for lbl in self.sec_lbls:
+                lbl.setVisible(True)
+            for btn in self._buttons.values():
+                btn.set_expanded(True)
+            self.balance_card.setVisible(True)
+            self.btn_bell.setText("🔔  Thông báo")
+            self.btn_logout.setText("⏻  Đăng xuất")
+            self.btn_toggle.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 18px;
+                }
+                QPushButton:hover {
+                    background: rgba(255,255,255,0.2);
+                }
+            """)
+        else:
+            self.setFixedWidth(70)
+            if hasattr(self, 'logo_img'):
+                self.logo_img.setVisible(False)
+            self.title_col_w.setVisible(False)
+            if hasattr(self, 'user_name_col_w'):
+                self.user_name_col_w.setVisible(False)
+                self.user_arrow_lbl.setVisible(False)
+            for lbl in self.sec_lbls:
+                lbl.setVisible(False)
+            for btn in self._buttons.values():
+                btn.set_expanded(False)
+            self.balance_card.setVisible(False)
+            self.btn_bell.setText("🔔")
+            self.btn_logout.setText("⏻")
+            self.btn_toggle.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 18px;
+                }
+                QPushButton:hover {
+                    background: rgba(255,255,255,0.1);
+                }
+            """)
 
     def _refresh_user_info(self, full_name: str, username: str, role: str):
         if self._full_name_lbl:

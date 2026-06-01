@@ -625,7 +625,6 @@ class ProfileFrame(QWidget):
             self._color = _get_user_color()
             initials    = (session.full_name or session.username)[:2].upper()
             self.avatar_w.set_user(initials, self._color)
-            self._highlight_color_btn(self._color)
 
             self.lbl_display_name.setText(session.full_name or session.username)
             self.lbl_username_at.setText(f"@{session.username}")
@@ -704,7 +703,7 @@ class ProfileFrame(QWidget):
 
     def _build_admin_card(self):
         """Panel chi hien voi admin -- quan ly danh sach user."""
-        self.admin_panel = self._panel_frame("Quản lý người dùng (Admin)")
+        self.admin_panel = self._panel("Quản lý người dùng (Admin)")
 
         pl = self.admin_panel.layout()
 
@@ -757,7 +756,7 @@ class ProfileFrame(QWidget):
         self.admin_panel.hide()
 
     def _build_danger_zone(self):
-        panel = self._panel_frame("Vùng nguy hiểm")
+        panel = self._panel("Vùng nguy hiểm")
         panel.setStyleSheet(
             "QFrame { background:#fff8f8; border:1px solid #fcc; border-radius:10px; }")
         pl = panel.layout()
@@ -1075,26 +1074,12 @@ class ProfileFrame(QWidget):
 
     def _set_color(self, hex_color: str):
         self._color = hex_color
-        self._highlight_color_btn(hex_color)
         try:
             from user_session import session
             initials = (session.full_name or session.username)[:2].upper()
             self.avatar_w.set_user(initials, hex_color)
         except Exception:
             pass
-
-    def _highlight_color_btn(self, selected: str):
-        for hex_c, btn in self._color_btns.items():
-            if hex_c.lower() == selected.lower():
-                btn.setStyleSheet(
-                    f"QPushButton {{ background:{hex_c}; border:3px solid #fff; "
-                    f"border-radius:14px; "
-                    f"outline: 2px solid {hex_c}; }}")
-            else:
-                btn.setStyleSheet(
-                    f"QPushButton {{ background:{hex_c}; border:2px solid transparent; "
-                    f"border-radius:14px; }} "
-                    f"QPushButton:hover {{ border-color:#fff; }}")
 
     def _update_pw_strength(self, pw: str):
         score = 0
