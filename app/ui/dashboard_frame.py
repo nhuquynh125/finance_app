@@ -326,7 +326,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 }}
                 QPushButton:hover {{ color:{NAVY}; }}
             """)
-            btn.clicked.connect(lambda: self.main_window._navigate("Giao dich"))
+            btn.clicked.connect(lambda: self.main_window._navigate("Giao dịch"))
             header.addWidget(btn)
         self.tx_layout.addLayout(header)
 

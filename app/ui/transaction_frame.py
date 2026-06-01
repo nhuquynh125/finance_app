@@ -17,13 +17,14 @@ import pandas as pd
 
 
 class ClassifyWorker(QThread):
-    finished = pyqtSignal()
+    finished = pyqtSignal(int)
 
     def __init__(self, transactions):
         super().__init__()
         self.transactions = transactions
 
     def run(self):
+        classified_count = 0
         try:
             from app.ai.classifier import TransactionClassifier
             from app.ai.anomaly_detector import AnomalyDetector
@@ -38,12 +39,13 @@ class ClassifyWorker(QThread):
                                 "UPDATE transactions SET category_id=? WHERE id=?",
                                 (cat_id, tx["id"])
                             )
+                            classified_count += 1
                 det.detect_and_mark()
         except Exception as e:
             from app.core.logger import get_logger
             get_logger(__name__).error(f"Lỗi phân loại AI: {e}", exc_info=True)
         finally:
-            self.finished.emit()
+            self.finished.emit(classified_count)
 
 
 class TransactionFrame(QWidget, BusConnectMixin):
@@ -82,6 +84,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         layout.setContentsMargins(16, 0, 16, 0)
         title = QLabel("Giao dịch")
         title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
+        title.setStyleSheet("color: #111111;")
         layout.addWidget(title)
         layout.addStretch()
         for text, slot in [("Nhập CSV", self._import_csv), ("Xuất Excel", self._export_excel)]:
@@ -132,10 +135,10 @@ class TransactionFrame(QWidget, BusConnectMixin):
         layout.addWidget(self.search_box)
         layout.addStretch()
 
-        btn_ai = QPushButton("Phân loại AI")
-        btn_ai.setStyleSheet(self._btn_style())
-        btn_ai.clicked.connect(self._run_ai_classify)
-        layout.addWidget(btn_ai)
+        self.btn_ai = QPushButton("Phân loại AI")
+        self.btn_ai.setStyleSheet(self._btn_style())
+        self.btn_ai.clicked.connect(self._run_ai_classify)
+        layout.addWidget(self.btn_ai)
         return bar
 
     def _build_table(self):
@@ -143,10 +146,6 @@ class TransactionFrame(QWidget, BusConnectMixin):
         self.table.setColumnCount(len(self.COLUMNS))
         self.table.setHorizontalHeaderLabels(self.COLUMNS)
 
-        # ── FIX: Explicitly set alternate-background-color to a light tint so
-        #    it is never overridden by the dark navy from the global theme QSS.
-        #    Without this, setAlternatingRowColors(True) picks up bg_secondary
-        #    (#122336 in dark mode) which makes text completely invisible.
         self.table.setStyleSheet("""
             QTableWidget {
                 background: #ffffff;
@@ -183,8 +182,14 @@ class TransactionFrame(QWidget, BusConnectMixin):
             }
         """)
 
+        # Căn chỉnh lại độ rộng cột theo content để vừa vặn hơn
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
@@ -321,9 +326,10 @@ class TransactionFrame(QWidget, BusConnectMixin):
             cat_name = tx.get("category_name") or ""
             cat_item = QTableWidgetItem(cat_name)
             cat_item.setForeground(QBrush(QColor(cat_colors.get(cat_name, "#888"))))
+            cat_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row_idx, 2, cat_item)
 
-            self._set_cell(row_idx, 3, tx.get("account_name") or "", "#888")
+            self._set_cell(row_idx, 3, tx.get("account_name") or "", "#888", Qt.AlignmentFlag.AlignCenter)
 
             sign  = "+" if tx["type"] == "income" else "-"
             color = "#1D9E75" if tx["type"] == "income" else "#E24B4A"
@@ -354,11 +360,22 @@ class TransactionFrame(QWidget, BusConnectMixin):
     # ── Actions ───────────────────────────────────────────────────────────────
 
     def _run_ai_classify(self):
+        self.btn_ai.setText("Đang phân loại...")
+        self.btn_ai.setEnabled(False)
         month = self.cb_month.currentData()
         txs = self.tm.get_transactions(month=month, limit=500)
         self.ai_worker = ClassifyWorker(txs)
-        self.ai_worker.finished.connect(self.refresh)
+        self.ai_worker.finished.connect(self._on_ai_finished)
         self.ai_worker.start()
+        
+    def _on_ai_finished(self, count):
+        self.btn_ai.setText("Phân loại AI")
+        self.btn_ai.setEnabled(True)
+        if count > 0:
+            QMessageBox.information(self, "Hoàn tất", f"AI đã tự động phân loại {count} giao dịch mới.")
+        else:
+            QMessageBox.information(self, "Hoàn tất", "Tất cả giao dịch đã có danh mục. AI không có dữ liệu mới để phân loại, nhưng đã kiểm tra các khoản bất thường.")
+        self.refresh()
 
     def _open_add_dialog(self):
         dialog = TransactionDialog(parent=self)
@@ -498,9 +515,10 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
-    def _set_cell(self, row: int, col: int, text: str, color: str = "#333"):
+    def _set_cell(self, row: int, col: int, text: str, color: str = "#333", align=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter):
         item = QTableWidgetItem(text)
         item.setForeground(QBrush(QColor(color)))
+        item.setTextAlignment(align)
         self.table.setItem(row, col, item)
 
     def _populate_months(self):

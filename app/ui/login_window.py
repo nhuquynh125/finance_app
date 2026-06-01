@@ -37,12 +37,6 @@ def _load_logo(size: int = 80) -> QPixmap | None:
                 )
     return None
 
-
-# ── Reusable styled input ─────────────────────────────────────────────────────
-
-# QSS riêng cho LoginWindow — KHÔNG bị theme_engine override
-# vì LoginWindow set stylesheet này SAU khi theme_engine chạy,
-# và dùng objectName selector cụ thể để tăng specificity.
 LOGIN_WINDOW_QSS = """
 /* ── LoginWindow isolation ── */
 QWidget#loginWindow {
@@ -125,11 +119,6 @@ QFrame#loginCard QCheckBox::indicator:checked {
 
 
 class StyledInput(QWidget):
-    """Input field có nút toggle password visibility.
-
-    Fix: dùng objectName + setProperty để tăng CSS specificity,
-    tránh bị global theme_engine QSS override.
-    """
 
     def __init__(self, placeholder: str, is_password: bool = False, parent=None):
         super().__init__(parent)
@@ -256,18 +245,16 @@ class LoginPanel(QWidget):
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setSpacing(16)
 
-        welcome = QLabel("Chào mừng trở lại!")
+        welcome = QLabel("💰Finance AI")
         welcome.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         welcome.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(welcome)
-        layout.addSpacing(2)
 
-        hint = QLabel("Đăng nhập để quản lý tài chính thông minh")
+        hint = QLabel("Quản lý tài chính thông minh")
         hint.setStyleSheet("color:#4A6785; font-size:14px; border:none; background:transparent;")
         layout.addWidget(hint)
-        layout.addSpacing(6)
 
         def _field_label(text):
             lbl = QLabel(text)
@@ -277,10 +264,8 @@ class LoginPanel(QWidget):
             return lbl
 
         layout.addWidget(_field_label("Tên đăng nhập"))
-        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(8)
 
         pass_row_lbl = QHBoxLayout()
         pass_row_lbl.addWidget(_field_label("Mật khẩu"))
@@ -295,12 +280,10 @@ class LoginPanel(QWidget):
         forgot_btn.clicked.connect(self.go_forgot.emit)
         pass_row_lbl.addWidget(forgot_btn)
         layout.addLayout(pass_row_lbl)
-        layout.addSpacing(4)
 
         self.password_input = StyledInput("Nhập mật khẩu...", is_password=True)
         self.password_input.returnPressed.connect(self._do_login)
         layout.addWidget(self.password_input)
-        layout.addSpacing(4)
 
         self.remember_check = QCheckBox("Ghi nhớ đăng nhập")
         self.remember_check.setStyleSheet("""
@@ -312,7 +295,6 @@ class LoginPanel(QWidget):
             QCheckBox::indicator:checked { background:#1A6BAF; border-color:#1A6BAF; }
         """)
         layout.addWidget(self.remember_check)
-        layout.addSpacing(6)
 
         self.error_lbl = QLabel("")
         self.error_lbl.setObjectName("errorLabel")
@@ -353,7 +335,6 @@ class LoginPanel(QWidget):
         self.login_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.login_btn.clicked.connect(self._do_login)
         layout.addWidget(self.login_btn)
-        layout.addSpacing(6)
 
         reg_row = QHBoxLayout()
         reg_row.addStretch()
@@ -413,7 +394,7 @@ class RegisterPanel(QWidget):
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setSpacing(12)
 
         back_btn = QPushButton("← Quay lại đăng nhập")
         back_btn.setStyleSheet(
@@ -424,18 +405,15 @@ class RegisterPanel(QWidget):
         back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         back_btn.clicked.connect(self.go_login.emit)
         layout.addWidget(back_btn)
-        layout.addSpacing(8)
 
         title = QLabel("Tạo tài khoản mới")
         title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         layout.addWidget(title)
-        layout.addSpacing(4)
 
         sub = QLabel("Điền thông tin để bắt đầu quản lý tài chính")
         sub.setStyleSheet("color:#4A6785; font-size:14px; border:none; background:transparent;")
         layout.addWidget(sub)
-        layout.addSpacing(6)
 
         def _lbl(text):
             l = QLabel(text)
@@ -445,35 +423,25 @@ class RegisterPanel(QWidget):
             return l
 
         layout.addWidget(_lbl("Họ và tên"))
-        layout.addSpacing(4)
         self.fullname_input = StyledInput("Nguyễn Văn A...")
         layout.addWidget(self.fullname_input)
-        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Số điện thoại (định danh chính)"))
-        layout.addSpacing(4)
         self.phone_input = StyledInput("0912 345 678...")
         layout.addWidget(self.phone_input)
-        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Tên đăng nhập"))
-        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập (3-30 ký tự)...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Mật khẩu"))
-        layout.addSpacing(4)
         self.password_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
         layout.addWidget(self.password_input)
-        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Xác nhận mật khẩu"))
-        layout.addSpacing(4)
         self.confirm_input = StyledInput("Nhập lại mật khẩu...", is_password=True)
         self.confirm_input.returnPressed.connect(self._do_register)
         layout.addWidget(self.confirm_input)
-        layout.addSpacing(6)
 
         self.msg_lbl = QLabel("")
         self.msg_lbl.setWordWrap(True)
@@ -560,7 +528,7 @@ class ForgotPanel(QWidget):
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setSpacing(16)
 
         back_btn = QPushButton("← Quay lại đăng nhập")
         back_btn.setStyleSheet(
@@ -569,21 +537,18 @@ class ForgotPanel(QWidget):
         )
         back_btn.clicked.connect(self.go_login.emit)
         layout.addWidget(back_btn)
-        layout.addSpacing(14)
 
         icon = QLabel("🔑")
         icon.setFont(QFont("Segoe UI Emoji", 34))
         icon.setStyleSheet("border:none; background:transparent;")
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon)
-        layout.addSpacing(10)
 
         title = QLabel("Đặt lại mật khẩu")
         title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet("color:#0B2A4A; border:none; background:transparent;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
-        layout.addSpacing(6)
 
         def _lbl(text):
             l = QLabel(text)
@@ -593,23 +558,17 @@ class ForgotPanel(QWidget):
             return l
 
         layout.addWidget(_lbl("Tên đăng nhập"))
-        layout.addSpacing(4)
         self.username_input = StyledInput("Nhập tên đăng nhập...")
         layout.addWidget(self.username_input)
-        layout.addSpacing(8)
 
         layout.addWidget(_lbl("Mật khẩu mới"))
-        layout.addSpacing(4)
         self.new_pass_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
         layout.addWidget(self.new_pass_input)
-        layout.addSpacing(4)
 
         layout.addWidget(_lbl("Xác nhận mật khẩu mới"))
-        layout.addSpacing(4)
         self.confirm_input = StyledInput("Nhập lại mật khẩu...", is_password=True)
         self.confirm_input.returnPressed.connect(self._do_reset)
         layout.addWidget(self.confirm_input)
-        layout.addSpacing(6)
 
         self.msg_lbl = QLabel("")
         self.msg_lbl.setWordWrap(True)
@@ -862,6 +821,7 @@ class LoginWindow(QWidget):
         right_outer.setContentsMargins(0, 0, 0, 0)
         right_outer.setSpacing(0)
         right_outer.addWidget(top_strip)
+        right_outer.addStretch(1)
 
         # Login card
         card_wrap = QVBoxLayout()
@@ -869,7 +829,7 @@ class LoginWindow(QWidget):
 
         card = QFrame()
         card.setObjectName("loginCard")
-        card.setFixedWidth(440)
+        card.setFixedWidth(400)
         card.setStyleSheet("""
             QFrame#loginCard {
                 background: #ffffff;
@@ -877,9 +837,9 @@ class LoginWindow(QWidget):
                 border: 1px solid #D0E4F7;
             }
         """)
-        card.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        card.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         card_l = QVBoxLayout(card)
-        card_l.setContentsMargins(40, 36, 40, 36)
+        card_l.setContentsMargins(32, 32, 32, 32)
         card_l.setSpacing(0)
 
         self.stack = QStackedWidget()
@@ -900,6 +860,19 @@ class LoginWindow(QWidget):
         self.register_panel.go_login.connect(lambda: self.stack.setCurrentIndex(0))
         self.register_panel.register_success.connect(self._on_register_success)
         self.forgot_panel.go_login.connect(lambda: self.stack.setCurrentIndex(0))
+
+        def _adjust_stack_height(idx):
+            for i in range(self.stack.count()):
+                w = self.stack.widget(i)
+                if i == idx:
+                    w.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+                else:
+                    w.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+            self.stack.adjustSize()
+            card.adjustSize()
+
+        self.stack.currentChanged.connect(_adjust_stack_height)
+        _adjust_stack_height(0)
 
         card_l.addWidget(self.stack)
         card_wrap.addWidget(card)

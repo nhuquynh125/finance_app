@@ -58,7 +58,7 @@ class FamilyFrame(QWidget):
         bar.setStyleSheet("background:#fff; border-bottom:1px solid #e8e8e8;")
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
-        title = QLabel("Quản lý Gia đình")
+        title = QLabel("Quản lý quỹ")
         title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
@@ -115,7 +115,7 @@ class FamilyFrame(QWidget):
         il.addWidget(title)
 
         desc = QLabel(
-            "Tạo nhóm gia đình để chia sẻ và theo dõi tài chính chung.\n"
+            "Tạo nhóm quỹ để cùng nhau góp quỹ,chia sẻ và theo dõi tài chính chung.\n"
             "Mỗi thành viên giữ database riêng, nhóm chỉ chia sẻ thống kê tổng hợp."
         )
         desc.setWordWrap(True)
@@ -131,7 +131,7 @@ class FamilyFrame(QWidget):
         card_create = self._action_card(
             icon="➕",
             title="Tạo nhóm mới",
-            desc="Bắt đầu nhóm gia đình và nhận mã mời để chia sẻ.",
+            desc="Bắt đầu nhóm quỹ và nhận mã mời để chia sẻ.",
             btn_text="Tạo nhóm",
             btn_primary=True,
             callback=self._on_create_group
@@ -141,7 +141,7 @@ class FamilyFrame(QWidget):
         card_join = self._action_card(
             icon="🔑",
             title="Tham gia nhóm",
-            desc="Nhập mã mời 6 ký tự từ thành viên gia đình.",
+            desc="Nhập mã mời 6 ký tự từ thành viên cùng tham gia quỹ.",
             btn_text="Tham gia",
             btn_primary=False,
             callback=self._on_join_group
@@ -347,7 +347,7 @@ class FamilyFrame(QWidget):
 
     def _on_create_group(self):
         name, ok = QInputDialog.getText(
-            self, "Tạo nhóm gia đình", "Tên nhóm:")
+            self, "Tạo nhóm quỹ", "Tên nhóm:")
         if not ok or not name.strip():
             return
 

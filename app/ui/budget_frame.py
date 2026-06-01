@@ -1,4 +1,7 @@
 # app/ui/budget_frame.py
+# Refactored: improved typography contrast, larger fonts, fixed button overlap,
+# tighter summary card margins, scaled-up AI tips text.
+
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QScrollArea, QFrame, QDialog, QFormLayout, QDoubleSpinBox,
@@ -12,6 +15,22 @@ from app.data.repositories import BudgetRepo
 from datetime import datetime
 
 
+# ── Design tokens ─────────────────────────────────────────────────────────────
+NAVY        = "#0B2A4A"
+NAVY_MID    = "#1A6BAF"
+NAVY_LIGHT  = "#378ADD"
+MINT        = "#1D9E75"
+ORANGE      = "#E8921A"
+RED_SOFT    = "#E24B4A"
+BG_PAGE     = "#F0F6FF"
+BORDER_BLUE = "#D0E4F7"
+CARD_WHITE  = "#FFFFFF"
+TEXT_DARK   = "#0B2A4A"
+TEXT_MID    = "#2C4A6A"
+TEXT_MUTED  = "#4A6785"
+ACCENT_BLUE = "#E6F1FB"
+
+
 class BudgetFrame(QWidget):
 
     def __init__(self, main_window=None):
@@ -22,6 +41,8 @@ class BudgetFrame(QWidget):
         self._build()
         QTimer.singleShot(100, self.refresh)
 
+    # ── Build ──────────────────────────────────────────────────────────────────
+
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -30,22 +51,22 @@ class BudgetFrame(QWidget):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border:none; background:#F0F6FF; }")
+        scroll.setStyleSheet(f"QScrollArea {{ border:none; background:{BG_PAGE}; }}")
         content = QWidget()
-        content.setStyleSheet("background:#F0F6FF;")
+        content.setStyleSheet(f"background:{BG_PAGE};")
         self.cl = QVBoxLayout(content)
         self.cl.setContentsMargins(16, 14, 16, 16)
-        self.cl.setSpacing(12)
+        self.cl.setSpacing(14)
 
-        # Summary row
+        # Summary KPI row
         self.summary_widget = QWidget()
         self.summary_widget.setStyleSheet("background:transparent;")
         self.summary_layout = QHBoxLayout(self.summary_widget)
         self.summary_layout.setContentsMargins(0, 0, 0, 0)
-        self.summary_layout.setSpacing(10)
+        self.summary_layout.setSpacing(12)
         self.cl.addWidget(self.summary_widget)
 
-        # Budget cards area
+        # Budget cards grid
         self.cards_widget = QWidget()
         self.cards_widget.setStyleSheet("background:transparent;")
         self.cards_layout = QGridLayout(self.cards_widget)
@@ -53,16 +74,18 @@ class BudgetFrame(QWidget):
         self.cards_layout.setSpacing(12)
         self.cl.addWidget(self.cards_widget)
 
-        # Tips section
+        # AI Tips section
         self.tips_panel = QFrame()
         self.tips_panel.setStyleSheet(
-            "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
+            f"QFrame {{ background:{CARD_WHITE}; border:1px solid {BORDER_BLUE}; border-radius:12px; }}")
         self.tips_layout = QVBoxLayout(self.tips_panel)
-        self.tips_layout.setContentsMargins(16, 14, 16, 14)
-        self.tips_layout.setSpacing(6)
+        self.tips_layout.setContentsMargins(20, 16, 20, 16)
+        self.tips_layout.setSpacing(10)
+
+        # Section heading — larger, high-contrast
         tips_title = QLabel("Gợi ý từ AI")
-        tips_title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
-        tips_title.setStyleSheet("border:none;")
+        tips_title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        tips_title.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         self.tips_layout.addWidget(tips_title)
         self.cl.addWidget(self.tips_panel)
 
@@ -71,49 +94,72 @@ class BudgetFrame(QWidget):
 
     def _build_toolbar(self):
         bar = QWidget()
-        bar.setFixedHeight(48)
-        bar.setStyleSheet("background:#fff; border-bottom:1px solid #e8e8e8;")
+        bar.setFixedHeight(56)
+        bar.setStyleSheet(f"background:{CARD_WHITE}; border-bottom:1px solid {BORDER_BLUE};")
         layout = QHBoxLayout(bar)
-        layout.setContentsMargins(16, 0, 16, 0)
-        layout.setSpacing(10)
+        layout.setContentsMargins(20, 0, 20, 0)
+        layout.setSpacing(12)
 
+        # Page header — larger, darker
         title = QLabel("Ngân sách")
-        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 22, QFont.Weight.Bold))
+        title.setStyleSheet(f"color:{TEXT_DARK}; border:none;")
         layout.addWidget(title)
         layout.addStretch()
 
+        # Month selector — larger font, high-contrast
         self.cb_month = QComboBox()
-        self.cb_month.setFixedWidth(140)
-        self.cb_month.setStyleSheet(
-            "QComboBox { border:1px solid #ddd; border-radius:5px; padding:4px 8px; font-size:17px; background:#fff; }")
+        self.cb_month.setFixedWidth(155)
+        self.cb_month.setFixedHeight(36)
+        self.cb_month.setStyleSheet(f"""
+            QComboBox {{
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                padding: 5px 10px;
+                font-size: 15px;
+                font-weight: 600;
+                color: {TEXT_DARK};
+                background: {CARD_WHITE};
+            }}
+            QComboBox:hover {{ border-color: {NAVY_MID}; }}
+            QComboBox::drop-down {{ border: none; width: 20px; }}
+        """)
         self._populate_months()
         self.cb_month.currentIndexChanged.connect(self.refresh)
         layout.addWidget(self.cb_month)
 
         btn_add = QPushButton("+ Đặt ngân sách")
-        btn_add.setStyleSheet(
-            "QPushButton { background:#E6F1FB; color:#0C447C; border:1px solid #B5D4F4; border-radius:6px; padding:6px 14px; font-size:17px; font-weight:500; } QPushButton:hover { background:#B5D4F4; }")
+        btn_add.setFixedHeight(36)
+        btn_add.setStyleSheet(f"""
+            QPushButton {{
+                background: {ACCENT_BLUE};
+                color: {NAVY_MID};
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                padding: 0 18px;
+                font-size: 15px;
+                font-weight: 600;
+            }}
+            QPushButton:hover {{ background: {BORDER_BLUE}; color: {NAVY}; }}
+        """)
         btn_add.clicked.connect(self._open_add_dialog)
         layout.addWidget(btn_add)
 
         return bar
 
+    # ── Refresh ────────────────────────────────────────────────────────────────
+
     def refresh(self):
         month = self.cb_month.currentData()
         self._current_month = month
-
-        # Cập nhật chi tiêu thực tế từ transactions
         self._sync_spent_amounts(month)
-
         budgets = self._load_budgets(month)
         summary = self._calc_summary(budgets)
-
         self._render_summary(summary)
         self._render_cards(budgets)
         self._render_tips(budgets, summary)
 
     def _sync_spent_amounts(self, month: str):
-        """Đồng bộ spent_amount với dữ liệu transactions thực tế."""
         BudgetRepo().sync_spent(month)
 
     def _load_budgets(self, month: str) -> list:
@@ -153,42 +199,59 @@ class BudgetFrame(QWidget):
             "warn_count":  warn_count,
         }
 
+    # ── Summary KPI Cards ──────────────────────────────────────────────────────
+
     def _render_summary(self, summary: dict):
-        # Xóa cũ
         while self.summary_layout.count():
             item = self.summary_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
         defs = [
-            ("Tổng ngân sách",    summary["total_limit"], "#333333"),
-            ("Đã chi tiêu",       summary["total_spent"], "#E24B4A"),
-            ("Còn lại",           summary["remaining"],   "#1D9E75"),
-            ("Danh mục vượt ngân sách",
-             summary["over_count"], "#E24B4A" if summary["over_count"] else "#1D9E75"),
+            ("Tổng ngân sách",          summary["total_limit"],  TEXT_DARK,  "#E8F4FD"),
+            ("Đã chi tiêu",              summary["total_spent"],  RED_SOFT,   "#FEF0F0"),
+            ("Còn lại",                  summary["remaining"],    MINT,       "#EAF7F2"),
+            ("Danh mục vượt ngân sách",  summary["over_count"],
+             RED_SOFT if summary["over_count"] else MINT,
+             "#FEF0F0" if summary["over_count"] else "#EAF7F2"),
         ]
-        for label, value, color in defs:
+        for label, value, val_color, bg in defs:
             card = QFrame()
-            card.setStyleSheet(
-                "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background: {bg};
+                    border: 1.5px solid {BORDER_BLUE};
+                    border-radius: 12px;
+                }}
+            """)
+            card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             cl = QVBoxLayout(card)
+            # Tighter margins — remove dead space below title
             cl.setContentsMargins(16, 12, 16, 12)
+            cl.setSpacing(4)
+
+            # Sub-label — readable size and dark enough
             lbl = QLabel(label)
-            lbl.setFont(QFont("Segoe UI", 15))
-            lbl.setStyleSheet("color:#4A6785; border:none;")
+            lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Medium))
+            lbl.setStyleSheet(f"color:{TEXT_MUTED}; border:none; background:transparent;")
+            lbl.setWordWrap(True)
             cl.addWidget(lbl)
+
+            # Value — scaled up, high-contrast
             if isinstance(value, int) and label.startswith("Danh mục"):
                 val_text = str(value)
             else:
-                val_text = f"{value:,.0f} d".replace(",", ".")
+                val_text = f"{value:,.0f} đ".replace(",", ".")
             val = QLabel(val_text)
-            val.setFont(QFont("Segoe UI", 21, QFont.Weight.Bold))
-            val.setStyleSheet(f"color:{color}; border:none;")
+            val.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
+            val.setStyleSheet(f"color:{val_color}; border:none; background:transparent;")
             cl.addWidget(val)
+
             self.summary_layout.addWidget(card)
 
+    # ── Budget Category Cards ──────────────────────────────────────────────────
+
     def _render_cards(self, budgets: list):
-        # Xóa cũ
         while self.cards_layout.count():
             item = self.cards_layout.takeAt(0)
             if item.widget():
@@ -197,8 +260,8 @@ class BudgetFrame(QWidget):
         if not budgets:
             empty = QLabel("Chưa có ngân sách nào. Nhấn '+ Đặt ngân sách' để bắt đầu.")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            empty.setStyleSheet(
-                "color:#4A6785; font-size:19px; padding:40px; border:none;")
+            empty.setFont(QFont("Segoe UI", 16))
+            empty.setStyleSheet(f"color:{TEXT_MUTED}; padding:40px; border:none;")
             self.cards_layout.addWidget(empty, 0, 0, 1, 2)
             return
 
@@ -209,85 +272,79 @@ class BudgetFrame(QWidget):
     def _make_budget_card(self, b: dict) -> QFrame:
         status = b["status"]
         if status == "over":
-            border_color = "#E24B4A"
-            bg_color     = "#fff"
-            prog_color   = "#E24B4A"
+            border_color = RED_SOFT
+            prog_color   = RED_SOFT
         elif status == "warning":
-            border_color = "#BA7517"
-            bg_color     = "#fff"
-            prog_color   = "#BA7517"
+            border_color = ORANGE
+            prog_color   = ORANGE
         else:
-            border_color = "#e8e8e8"
-            bg_color     = "#fff"
-            prog_color   = "#1D9E75"
+            border_color = BORDER_BLUE
+            prog_color   = MINT
 
         card = QFrame()
-        card.setStyleSheet(
-            f"QFrame {{ background:{bg_color}; border:1px solid {border_color}; border-radius:10px; }}")
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_WHITE};
+                border: 1.5px solid {border_color};
+                border-radius: 12px;
+            }}
+        """)
         card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QVBoxLayout(card)
         layout.setContentsMargins(16, 14, 16, 14)
-        layout.setSpacing(8)
+        layout.setSpacing(10)
 
-        # Header: tên + badge trạng thái + nút sửa/xóa
-        header = QHBoxLayout()
+        # ── Row 1: Category name + badge ──────────────────────────────────────
+        # Keep name and badge on one sub-row, action buttons on a separate row
+        # to prevent any overlap with amount text below.
+        name_row = QHBoxLayout()
+        name_row.setSpacing(8)
+
+        cat_color = b.get("color") or NAVY_MID
         name_label = QLabel(b["cat_name"])
         name_label.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        name_label.setStyleSheet(f"color:{b.get('color','#333')}; border:none;")
-        header.addWidget(name_label)
-        header.addStretch()
+        name_label.setStyleSheet(f"color:{cat_color}; border:none; background:transparent;")
+        name_row.addWidget(name_label)
+        name_row.addStretch()
 
-        # Badge
         if status == "over":
-            badge_text = "Vượt ngân sách"
-            badge_style = "background:#FCEBEB; color:#A32D2D;"
+            badge_text  = "Vượt ngân sách"
+            badge_style = f"background:#FCEBEB; color:#A32D2D;"
         elif status == "warning":
-            badge_text = "Sắp hết"
-            badge_style = "background:#FAEEDA; color:#633806;"
+            badge_text  = "Sắp hết"
+            badge_style = f"background:#FAEEDA; color:#633806;"
         else:
-            badge_text = "Bình thường"
-            badge_style = "background:#EAF3DE; color:#3B6D11;"
+            badge_text  = "Bình thường"
+            badge_style = f"background:#EAF3DE; color:#3B6D11;"
 
         badge = QLabel(badge_text)
-        badge.setFont(QFont("Segoe UI", 15))
+        badge.setFont(QFont("Segoe UI", 13, QFont.Weight.Medium))
         badge.setStyleSheet(
-            f"QLabel {{ {badge_style} border:none; border-radius:10px; padding:2px 10px; }}")
-        header.addWidget(badge)
+            f"QLabel {{ {badge_style} border:none; border-radius:10px; "
+            f"padding:3px 10px; background:{badge_style.split(':')[1].split(';')[0]}; }}")
+        name_row.addWidget(badge)
+        layout.addLayout(name_row)
 
-        # Action buttons
-        btn_edit = QPushButton("Sửa")
-        btn_edit.setFixedSize(40, 24)
-        btn_edit.setStyleSheet(
-            "QPushButton { background:transparent; color:#4A6785; border:1px solid #ddd; border-radius:4px; font-size:15px; } QPushButton:hover { background:#f5f5f5; }")
-        btn_edit.clicked.connect(lambda _, bid=b["id"]: self._open_edit_dialog(bid))
-        header.addWidget(btn_edit)
-
-        btn_del = QPushButton("Xóa")
-        btn_del.setFixedSize(40, 24)
-        btn_del.setStyleSheet(
-            "QPushButton { background:transparent; color:#E24B4A; border:1px solid #E24B4A; border-radius:4px; font-size:15px; } QPushButton:hover { background:#FCEBEB; }")
-        btn_del.clicked.connect(lambda _, bid=b["id"]: self._delete_budget(bid))
-        header.addWidget(btn_del)
-
-        layout.addLayout(header)
-
-        # Số tiền hàng
+        # ── Row 2: Spending amounts (no buttons in this row) ──────────────────
         amounts = QHBoxLayout()
-        spent_lbl = QLabel(
-            f'Chi: <b>{self._fmt(b["spent_amount"] or 0)}</b>')
-        spent_lbl.setFont(QFont("Segoe UI", 16))
-        spent_lbl.setStyleSheet("color:#E24B4A; border:none;")
+        amounts.setSpacing(0)
+
+        spent_lbl = QLabel(f'Chi: <b>{self._fmt(b["spent_amount"] or 0)}</b>')
+        spent_lbl.setFont(QFont("Segoe UI", 15))
+        spent_lbl.setStyleSheet(f"color:{RED_SOFT}; border:none; background:transparent;")
         amounts.addWidget(spent_lbl)
+
         amounts.addStretch()
-        limit_lbl = QLabel(
-            f'Ngân sách: <b>{self._fmt(b["limit_amount"])}</b>')
-        limit_lbl.setFont(QFont("Segoe UI", 16))
-        limit_lbl.setStyleSheet("color:#2C4A6A; border:none;")
+
+        limit_lbl = QLabel(f'Ngân sách: <b>{self._fmt(b["limit_amount"])}</b>')
+        limit_lbl.setFont(QFont("Segoe UI", 15))
+        limit_lbl.setStyleSheet(f"color:{TEXT_MID}; border:none; background:transparent;")
         amounts.addWidget(limit_lbl)
+
         layout.addLayout(amounts)
 
-        # Progress bar
+        # ── Row 3: Progress bar ────────────────────────────────────────────────
         prog = QProgressBar()
         prog.setRange(0, 100)
         prog.setValue(b["pct"])
@@ -295,38 +352,89 @@ class BudgetFrame(QWidget):
         prog.setTextVisible(False)
         prog.setStyleSheet(f"""
             QProgressBar {{
-                background:#f0f0f0; border-radius:4px; border:none;
+                background: #F0F4F8;
+                border-radius: 4px;
+                border: none;
             }}
             QProgressBar::chunk {{
-                background:{prog_color}; border-radius:4px;
+                background: {prog_color};
+                border-radius: 4px;
             }}
         """)
         layout.addWidget(prog)
 
-        # Percent + remaining
+        # ── Row 4: Percent + remaining/over ───────────────────────────────────
         info_row = QHBoxLayout()
+        info_row.setSpacing(0)
+
         pct_lbl = QLabel(f"{b['pct']}%")
-        pct_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        pct_lbl.setStyleSheet(f"color:{prog_color}; border:none;")
+        pct_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        pct_lbl.setStyleSheet(f"color:{prog_color}; border:none; background:transparent;")
         info_row.addWidget(pct_lbl)
         info_row.addStretch()
 
         if status == "over":
-            rem_text = f"Vượt: {self._fmt(b['over'])}"
-            rem_color = "#E24B4A"
+            rem_text  = f"Vượt: {self._fmt(b['over'])}"
+            rem_color = RED_SOFT
         else:
-            rem_text = f"Còn lại: {self._fmt(b['remaining'])}"
-            rem_color = "#1D9E75"
+            rem_text  = f"Còn lại: {self._fmt(b['remaining'])}"
+            rem_color = MINT
         rem_lbl = QLabel(rem_text)
-        rem_lbl.setFont(QFont("Segoe UI", 16))
-        rem_lbl.setStyleSheet(f"color:{rem_color}; border:none;")
+        rem_lbl.setFont(QFont("Segoe UI", 15))
+        rem_lbl.setStyleSheet(f"color:{rem_color}; border:none; background:transparent;")
         info_row.addWidget(rem_lbl)
         layout.addLayout(info_row)
 
+        # ── Row 5: Action buttons on their own dedicated row ──────────────────
+        # Isolated from amount text — eliminates all overlap.
+        action_row = QHBoxLayout()
+        action_row.setSpacing(8)
+        action_row.addStretch()
+
+        btn_edit = QPushButton("✏ Sửa")
+        btn_edit.setFixedHeight(28)
+        btn_edit.setMinimumWidth(60)
+        btn_edit.setStyleSheet(f"""
+            QPushButton {{
+                background: {ACCENT_BLUE};
+                color: {NAVY_MID};
+                border: 1px solid {BORDER_BLUE};
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                padding: 0 10px;
+            }}
+            QPushButton:hover {{ background: {BORDER_BLUE}; color: {NAVY}; }}
+        """)
+        btn_edit.clicked.connect(lambda _, bid=b["id"]: self._open_edit_dialog(bid))
+        action_row.addWidget(btn_edit)
+
+        btn_del = QPushButton("🗑 Xóa")
+        btn_del.setFixedHeight(28)
+        btn_del.setMinimumWidth(60)
+        btn_del.setStyleSheet(f"""
+            QPushButton {{
+                background: #FEF0F0;
+                color: {RED_SOFT};
+                border: 1px solid #F5C6CB;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                padding: 0 10px;
+            }}
+            QPushButton:hover {{ background: #FCEBEB; color: #A32D2D; }}
+        """)
+        btn_del.clicked.connect(lambda _, bid=b["id"]: self._delete_budget(bid))
+        action_row.addWidget(btn_del)
+
+        layout.addLayout(action_row)
+
         return card
 
+    # ── AI Tips ────────────────────────────────────────────────────────────────
+
     def _render_tips(self, budgets: list, summary: dict):
-        # Xóa cũ (giữ title)
+        # Keep title widget (index 0), remove rest
         while self.tips_layout.count() > 1:
             item = self.tips_layout.takeAt(1)
             if item.widget():
@@ -334,25 +442,32 @@ class BudgetFrame(QWidget):
 
         tips = self._generate_tips(budgets, summary)
         if not tips:
-            lbl = QLabel("Ngân sách đang được kiểm soát tốt!")
-            lbl.setStyleSheet("color:#1D9E75; font-size:17px; border:none;")
+            lbl = QLabel("Ngân sách đang được kiểm soát tốt! 🎉")
+            lbl.setFont(QFont("Segoe UI", 16))
+            lbl.setStyleSheet(f"color:{MINT}; border:none; background:transparent;")
             self.tips_layout.addWidget(lbl)
             return
 
         for icon, tip in tips:
-            row = QHBoxLayout()
-            icon_lbl = QLabel(icon)
-            icon_lbl.setFixedWidth(20)
-            icon_lbl.setStyleSheet("border:none; font-size:19px;")
-            tip_lbl = QLabel(tip)
-            tip_lbl.setFont(QFont("Segoe UI", 16))
-            tip_lbl.setStyleSheet("color:#444; border:none;")
-            tip_lbl.setWordWrap(True)
-            row.addWidget(icon_lbl)
-            row.addWidget(tip_lbl)
             row_w = QWidget()
             row_w.setStyleSheet("background:transparent;")
-            row_w.setLayout(row)
+            row = QHBoxLayout(row_w)
+            row.setContentsMargins(0, 2, 0, 2)
+            row.setSpacing(10)
+
+            icon_lbl = QLabel(icon)
+            icon_lbl.setFixedWidth(22)
+            icon_lbl.setFont(QFont("Segoe UI", 17))
+            icon_lbl.setStyleSheet("border:none; background:transparent;")
+            row.addWidget(icon_lbl)
+
+            # AI tip text — scaled up for comfortable reading
+            tip_lbl = QLabel(tip)
+            tip_lbl.setFont(QFont("Segoe UI", 15))
+            tip_lbl.setStyleSheet(f"color:{TEXT_DARK}; border:none; background:transparent;")
+            tip_lbl.setWordWrap(True)
+            row.addWidget(tip_lbl)
+
             self.tips_layout.addWidget(row_w)
 
     def _generate_tips(self, budgets: list, summary: dict) -> list:
@@ -362,24 +477,25 @@ class BudgetFrame(QWidget):
         ok    = [b for b in budgets if b["status"] == "ok"]
 
         for b in over:
-            tips.append(("!", f"Danh mục '{b['cat_name']}' đã vượt ngân sách "
-                              f"{self._fmt(b['over'])} — cần điều chỉnh chi tiêu."))
+            tips.append(("⚠", f"Danh mục '{b['cat_name']}' đã vượt ngân sách "
+                               f"{self._fmt(b['over'])} — cần điều chỉnh chi tiêu."))
         for b in warn:
             pct = b["pct"]
-            tips.append(("~", f"Danh mục '{b['cat_name']}' đã dùng {pct}% ngân sách — "
-                              f"còn {self._fmt(b['remaining'])} cho phần còn lại của tháng."))
+            tips.append(("〜", f"Danh mục '{b['cat_name']}' đã dùng {pct}% ngân sách — "
+                               f"còn {self._fmt(b['remaining'])} cho phần còn lại của tháng."))
         if not budgets:
-            tips.append(("i", "Hãy đặt ngân sách cho từng danh mục để theo dõi chi tiêu hiệu quả."))
+            tips.append(("ℹ", "Hãy đặt ngân sách cho từng danh mục để theo dõi chi tiêu hiệu quả."))
         elif len(ok) == len(budgets) and budgets:
-            tips.append(("v", "Tuyệt vời! Tất cả danh mục đang trong ngưỡng ngân sách."))
+            tips.append(("✓", "Tuyệt vời! Tất cả danh mục đang trong ngưỡng ngân sách."))
         if summary["total_spent"] > 0 and summary["total_limit"] > 0:
             overall_pct = summary["total_spent"] / summary["total_limit"] * 100
             if overall_pct > 90:
-                tips.append(("!", f"Đã chi {overall_pct:.0f}% tổng ngân sách — "
-                                  f"còn {self._fmt(summary['remaining'])} cho tháng này."))
+                tips.append(("⚠", f"Đã chi {overall_pct:.0f}% tổng ngân sách — "
+                                   f"còn {self._fmt(summary['remaining'])} cho tháng này."))
         return tips
 
-    # ── Dialogs ───────────────────────────────────────────────
+    # ── Dialogs ────────────────────────────────────────────────────────────────
+
     def _open_add_dialog(self):
         dialog = BudgetDialog(parent=self, month=self._current_month)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -395,15 +511,14 @@ class BudgetFrame(QWidget):
         conn.close()
         if not b:
             return
-        dialog = BudgetDialog(parent=self, month=self._current_month,
-                              budget=dict(b))
+        dialog = BudgetDialog(parent=self, month=self._current_month, budget=dict(b))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
             conn = get_connection()
-            conn.execute("""
-                UPDATE budgets SET limit_amount=?, alert_threshold=?
-                WHERE id=?
-            """, (data["limit_amount"], data["alert_threshold"], budget_id))
+            conn.execute(
+                "UPDATE budgets SET limit_amount=?, alert_threshold=? WHERE id=?",
+                (data["limit_amount"], data["alert_threshold"], budget_id)
+            )
             conn.commit()
             conn.close()
             self.refresh()
@@ -421,26 +536,27 @@ class BudgetFrame(QWidget):
 
     def _save_budget(self, data: dict):
         conn = get_connection()
-        existing = conn.execute("""
-            SELECT id FROM budgets WHERE category_id=? AND month=?
-        """, (data["category_id"], data["month"])).fetchone()
+        existing = conn.execute(
+            "SELECT id FROM budgets WHERE category_id=? AND month=?",
+            (data["category_id"], data["month"])
+        ).fetchone()
         if existing:
-            conn.execute("""
-                UPDATE budgets SET limit_amount=?, alert_threshold=?
-                WHERE id=?
-            """, (data["limit_amount"], data["alert_threshold"], existing["id"]))
+            conn.execute(
+                "UPDATE budgets SET limit_amount=?, alert_threshold=? WHERE id=?",
+                (data["limit_amount"], data["alert_threshold"], existing["id"])
+            )
         else:
-            conn.execute("""
-                INSERT INTO budgets (category_id, limit_amount, spent_amount, month, alert_threshold)
-                VALUES (?, ?, 0, ?, ?)
-            """, (data["category_id"], data["limit_amount"],
-                  data["month"], data["alert_threshold"]))
+            conn.execute(
+                "INSERT INTO budgets (category_id, limit_amount, spent_amount, month, alert_threshold) "
+                "VALUES (?, ?, 0, ?, ?)",
+                (data["category_id"], data["limit_amount"], data["month"], data["alert_threshold"])
+            )
         conn.commit()
         conn.close()
 
     def _populate_months(self):
         now = datetime.now()
-        for i in range(5, -3, -1):  # 5 tháng trước đến 3 tháng sau
+        for i in range(5, -3, -1):
             m = now.month + i
             y = now.year
             while m > 12:
@@ -448,7 +564,6 @@ class BudgetFrame(QWidget):
             while m <= 0:
                 m += 12; y -= 1
             self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
-        # Set current month
         current = datetime.now().strftime("%Y-%m")
         for i in range(self.cb_month.count()):
             if self.cb_month.itemData(i) == current:
@@ -457,8 +572,10 @@ class BudgetFrame(QWidget):
 
     @staticmethod
     def _fmt(v: float) -> str:
-        return f"{v:,.0f} d".replace(",", ".")
+        return f"{v:,.0f} đ".replace(",", ".")
 
+
+# ── BudgetDialog ───────────────────────────────────────────────────────────────
 
 class BudgetDialog(QDialog):
     def __init__(self, parent=None, month: str = "", budget: dict = None):
@@ -467,14 +584,19 @@ class BudgetDialog(QDialog):
         self.budget = budget
         is_edit = budget is not None
         self.setWindowTitle("Sửa ngân sách" if is_edit else "Đặt ngân sách")
-        self.setFixedSize(380, 300)
-        self.setStyleSheet("""
-            QDialog { background:#fff; }
-            QLabel  { font-size:17px; color:#444; }
-            QDoubleSpinBox, QComboBox {
-                border:1px solid #ddd; border-radius:6px;
-                padding:6px 10px; font-size:18px; background:#fff; color:#222;
-            }
+        self.setFixedSize(400, 310)
+        self.setStyleSheet(f"""
+            QDialog {{ background: {CARD_WHITE}; }}
+            QLabel  {{ font-size: 15px; color: {TEXT_DARK}; }}
+            QDoubleSpinBox, QComboBox {{
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                padding: 7px 12px;
+                font-size: 15px;
+                background: {CARD_WHITE};
+                color: {TEXT_DARK};
+            }}
+            QDoubleSpinBox:focus, QComboBox:focus {{ border-color: {NAVY_MID}; }}
         """)
         self._build(is_edit)
         if is_edit:
@@ -482,12 +604,12 @@ class BudgetDialog(QDialog):
 
     def _build(self, is_edit: bool):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(28, 22, 28, 22)
+        layout.setSpacing(14)
         form = QFormLayout()
-        form.setSpacing(10)
+        form.setSpacing(12)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
-        # Danh mục
         self.cb_cat = QComboBox()
         conn = get_connection()
         cats = conn.execute(
@@ -500,15 +622,13 @@ class BudgetDialog(QDialog):
             self.cb_cat.setEnabled(False)
         form.addRow("Danh mục:", self.cb_cat)
 
-        # Ngân sách
         self.spin_limit = QDoubleSpinBox()
         self.spin_limit.setRange(0, 999_999_999)
         self.spin_limit.setSingleStep(100_000)
         self.spin_limit.setDecimals(0)
-        self.spin_limit.setSuffix(" d")
+        self.spin_limit.setSuffix(" đ")
         form.addRow("Ngân sách:", self.spin_limit)
 
-        # Ngưỡng cảnh báo
         self.spin_alert = QDoubleSpinBox()
         self.spin_alert.setRange(10, 100)
         self.spin_alert.setSingleStep(5)
@@ -520,19 +640,44 @@ class BudgetDialog(QDialog):
         layout.addLayout(form)
 
         note = QLabel("* Cảnh báo hiện khi chi tiêu vượt % ngân sách đặt ra")
-        note.setStyleSheet("color:#4A6785; font-size:15px;")
+        note.setStyleSheet(f"color:{TEXT_MUTED}; font-size:13px;")
         layout.addWidget(note)
 
         layout.addStretch()
+
         btn_l = QHBoxLayout()
+        btn_l.setSpacing(10)
         btn_cancel = QPushButton("Hủy")
-        btn_cancel.setStyleSheet(
-            "QPushButton { background:#fff; color:#4A6785; border:1px solid #ddd; border-radius:6px; padding:6px 12px; font-size:17px; }")
+        btn_cancel.setFixedHeight(38)
+        btn_cancel.setStyleSheet(f"""
+            QPushButton {{
+                background: {CARD_WHITE};
+                color: {TEXT_MUTED};
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                font-size: 15px;
+                padding: 0 16px;
+            }}
+            QPushButton:hover {{ background: {BG_PAGE}; }}
+        """)
         btn_cancel.clicked.connect(self.reject)
+
         btn_save = QPushButton("Lưu" if is_edit else "Đặt ngân sách")
-        btn_save.setStyleSheet(
-            "QPushButton { background:#E6F1FB; color:#0C447C; border:1px solid #B5D4F4; border-radius:6px; padding:6px 14px; font-size:17px; font-weight:500; } QPushButton:hover { background:#B5D4F4; }")
+        btn_save.setFixedHeight(38)
+        btn_save.setStyleSheet(f"""
+            QPushButton {{
+                background: {ACCENT_BLUE};
+                color: {NAVY_MID};
+                border: 1.5px solid {BORDER_BLUE};
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 600;
+                padding: 0 18px;
+            }}
+            QPushButton:hover {{ background: {BORDER_BLUE}; color: {NAVY}; }}
+        """)
         btn_save.clicked.connect(self.accept)
+
         btn_l.addWidget(btn_cancel)
         btn_l.addWidget(btn_save)
         layout.addLayout(btn_l)

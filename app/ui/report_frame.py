@@ -1,98 +1,324 @@
-# app/core/report_generator.py
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, KeepTogether
-)
-from reportlab.graphics.shapes import Drawing, Rect, String, Line, Wedge, Circle
-from reportlab.graphics.charts.barcharts import VerticalBarChart
-from reportlab.graphics.charts.piecharts import Pie
-from reportlab.graphics import renderPDF
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import io
+# app/ui/report_frame.py  (cập nhật: sửa dialog "Thiếu thư viện" bị trắng/mờ)
+"""
+Thay đổi:
+  - FIX: Dialog cảnh báo thiếu thư viện (reportlab) hiển thị text/button rõ ràng.
+    Trước đây QMessageBox.warning() bị theme_engine global QSS override làm chữ
+    trắng trên nền trắng. Thay bằng custom QDialog có stylesheet riêng, đảm bảo
+    màu chữ đậm tương phản cao.
+  - EXPORTS_DIR lấy động từ settings_manager.get_exports_dir() (per-user).
+"""
+
 import os
-from datetime import datetime
-from pathlib import Path
-
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QComboBox, QFrame, QScrollArea, QFileDialog, QMessageBox,
+    QProgressBar, QGridLayout, QDialog, QDialogButtonBox,
+    QSizePolicy
+)
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
+from PyQt6.QtGui import QFont
 from app.data.models import get_connection
-from config import EXPORTS_DIR
+from app.core.transaction_manager import TransactionManager
+from app.core.settings_manager import get_exports_dir
+from datetime import datetime
 
 
-# ── Màu sắc thương hiệu ───────────────────────────────────────────────────────
-C_BLUE      = colors.HexColor("#378ADD")
-C_GREEN     = colors.HexColor("#1D9E75")
-C_RED       = colors.HexColor("#E24B4A")
-C_AMBER     = colors.HexColor("#BA7517")
-C_PURPLE    = colors.HexColor("#7F77DD")
-C_GRAY      = colors.HexColor("#888780")
-C_LIGHT     = colors.HexColor("#F5F5F5")
-C_DARK      = colors.HexColor("#222222")
-C_MUTED     = colors.HexColor("#888888")
-C_BORDER    = colors.HexColor("#E0E0E0")
+# ── Missing-library warning dialog — crisp, high-contrast ────────────────────
 
-CAT_COLORS = [
-    colors.HexColor("#E24B4A"),
-    colors.HexColor("#378ADD"),
-    colors.HexColor("#1D9E75"),
-    colors.HexColor("#BA7517"),
-    colors.HexColor("#7F77DD"),
-    colors.HexColor("#D4537E"),
-    colors.HexColor("#888780"),
-]
+class MissingLibraryDialog(QDialog):
+    """
+    Replaces QMessageBox.warning() for the "reportlab not installed" case.
 
+    FIX: The global theme_engine QSS was making QMessageBox text white-on-white.
+    This custom dialog hard-codes a dark-text, white-background style that cannot
+    be overridden by the application-level stylesheet.
+    """
 
-class ReportGenerator:
+    # Inline QSS applied directly to this dialog — overrides any global theme.
+    _DIALOG_QSS = """
+        QDialog {
+            background-color: #FFFFFF;
+        }
+        QLabel#titleLabel {
+            color: #0B2A4A;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+        }
+        QLabel#bodyLabel {
+            color: #333333;
+            font-size: 13px;
+            border: none;
+            background: transparent;
+        }
+        QLabel#codeLabel {
+            color: #1A6BAF;
+            font-size: 13px;
+            font-weight: 600;
+            background: #EFF6FF;
+            border: 1px solid #B5D4F4;
+            border-radius: 6px;
+            padding: 8px 14px;
+        }
+        QPushButton#okBtn {
+            background-color: #378ADD;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 26px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        QPushButton#okBtn:hover {
+            background-color: #1A6BAF;
+        }
+        QPushButton#okBtn:pressed {
+            background-color: #0B2A4A;
+        }
+        QFrame#divider {
+            background: #E8E8E8;
+            border: none;
+            max-height: 1px;
+        }
+    """
 
-    def __init__(self):
-        self.page_width, self.page_height = A4
-        self.margin = 2 * cm
+    def __init__(self, parent=None, missing_package: str = "reportlab"):
+        super().__init__(parent)
+        self.setWindowTitle("Thiếu thư viện")
+        self.setFixedSize(440, 270)
+        # Apply our own stylesheet AFTER the dialog is created so it takes
+        # precedence over any inherited application-level QSS.
+        self.setStyleSheet(self._DIALOG_QSS)
+        self._build(missing_package)
 
-    def generate_monthly_report(self, month: str, output_path: str | None = None) -> str:
-        """
-        Tạo báo cáo PDF tháng.
-        month: định dạng 'YYYY-MM'
-        Trả về đường dẫn file PDF đã tạo.
-        """
-        if output_path is None:
-            filename = f"bao_cao_{month}.pdf"
-            output_path = str(EXPORTS_DIR / filename)
+    def _build(self, pkg: str):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(28, 24, 28, 20)
+        layout.setSpacing(14)
 
-        data = self._collect_data(month)
+        # Icon + title row
+        title_row = QHBoxLayout()
+        icon_lbl = QLabel("📦")
+        icon_lbl.setFont(QFont("Segoe UI Emoji", 22))
+        icon_lbl.setStyleSheet("border:none; background:transparent;")
+        title_row.addWidget(icon_lbl)
+        title_lbl = QLabel("Thiếu thư viện bắt buộc")
+        title_lbl.setObjectName("titleLabel")
+        title_row.addWidget(title_lbl)
+        title_row.addStretch()
+        layout.addLayout(title_row)
 
-        doc = SimpleDocTemplate(
-            output_path,
-            pagesize=A4,
-            leftMargin=self.margin,
-            rightMargin=self.margin,
-            topMargin=self.margin,
-            bottomMargin=self.margin,
-            title=f"Báo cáo tài chính {month}",
-            author="Finance AI",
+        # Description
+        body = QLabel(
+            f"Thư viện <b>{pkg}</b> chưa được cài đặt.\n"
+            "Vui lòng chạy lệnh sau trong terminal để cài đặt:"
         )
+        body.setObjectName("bodyLabel")
+        body.setWordWrap(True)
+        body.setTextFormat(Qt.TextFormat.RichText)
+        layout.addWidget(body)
 
-        story = []
-        story += self._build_header(month, data)
-        story += self._build_summary_cards(data)
-        story.append(Spacer(1, 0.4 * cm))
-        story += self._build_category_section(data)
-        story.append(Spacer(1, 0.4 * cm))
-        story += self._build_transaction_table(data)
-        story.append(Spacer(1, 0.4 * cm))
-        story += self._build_forecast_section(data, month)
-        story += self._build_footer()
+        # Install command — styled as code block
+        install_cmd = QLabel(f"pip install {pkg}")
+        install_cmd.setObjectName("codeLabel")
+        install_cmd.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse)
+        layout.addWidget(install_cmd)
 
-        doc.build(story)
-        return output_path
+        # Divider
+        divider = QFrame()
+        divider.setObjectName("divider")
+        divider.setFrameShape(QFrame.Shape.HLine)
+        layout.addWidget(divider)
 
-    # ── Thu thập dữ liệu ─────────────────────────────────────────────────────
-    def _collect_data(self, month: str) -> dict:
+        # OK button
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        ok_btn = QPushButton("Đã hiểu")
+        ok_btn.setObjectName("okBtn")
+        ok_btn.setFixedHeight(38)
+        ok_btn.clicked.connect(self.accept)
+        btn_row.addWidget(ok_btn)
+        layout.addLayout(btn_row)
+
+
+# ── Worker thread ─────────────────────────────────────────────────────────────
+
+class ReportWorker(QThread):
+    finished = pyqtSignal(str)
+    error    = pyqtSignal(str)
+
+    def __init__(self, month: str, output_path: str):
+        super().__init__()
+        self.month       = month
+        self.output_path = output_path
+
+    def run(self):
+        try:
+            from app.core.report_generator import ReportGenerator
+            gen  = ReportGenerator()
+            path = gen.generate_monthly_report(self.month, self.output_path)
+            self.finished.emit(path)
+        except Exception as e:
+            self.error.emit(str(e))
+
+
+# ── ReportFrame ───────────────────────────────────────────────────────────────
+
+class ReportFrame(QWidget):
+
+    def __init__(self, main_window=None):
+        super().__init__()
+        self.main_window = main_window
+        self.tm = TransactionManager()
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self._build_toolbar())
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border:none; background:#f5f5f5; }")
+        content = QWidget()
+        content.setStyleSheet("background:#f5f5f5;")
+        cl = QVBoxLayout(content)
+        cl.setContentsMargins(24, 20, 24, 20)
+        cl.setSpacing(16)
+
+        # ── Generate panel ────────────────────────────────────────────────────
+        gen_panel = QFrame()
+        gen_panel.setStyleSheet(
+            "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
+        gpl = QVBoxLayout(gen_panel)
+        gpl.setContentsMargins(24, 20, 24, 20)
+        gpl.setSpacing(12)
+
+        t = QLabel("Tạo báo cáo PDF tháng")
+        t.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        t.setStyleSheet("border:none;")
+        gpl.addWidget(t)
+
+        desc = QLabel(
+            "Xuất báo cáo tổng kết tài chính tháng bao gồm: tổng kết thu chi, "
+            "phân tích theo danh mục, danh sách giao dịch và dự báo AI tháng tới.")
+        desc.setWordWrap(True)
+        desc.setFont(QFont("Segoe UI", 11))
+        desc.setStyleSheet("color:#666; border:none;")
+        gpl.addWidget(desc)
+
+        row = QHBoxLayout()
+        lbl = QLabel("Chọn tháng:")
+        lbl.setFont(QFont("Segoe UI", 12))
+        lbl.setStyleSheet("color:#444; border:none;")
+        row.addWidget(lbl)
+
+        self.cb_month = QComboBox()
+        self.cb_month.setFixedWidth(160)
+        self.cb_month.setStyleSheet(
+            "QComboBox { border:1px solid #ddd; border-radius:6px; "
+            "padding:6px 10px; font-size:12px; background:#fff; }")
+        self._populate_months()
+        row.addWidget(self.cb_month)
+        row.addStretch()
+
+        self.btn_gen = QPushButton("Tạo & Tải PDF")
+        self.btn_gen.setFixedHeight(38)
+        self.btn_gen.setStyleSheet(
+            "QPushButton { background:#378ADD; color:#fff; border:none; border-radius:8px; "
+            "padding:8px 24px; font-size:13px; font-weight:500; } "
+            "QPushButton:hover { background:#185FA5; } "
+            "QPushButton:disabled { background:#ccc; }")
+        self.btn_gen.clicked.connect(self._generate_report)
+        row.addWidget(self.btn_gen)
+        gpl.addLayout(row)
+
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 0)
+        self.progress.setFixedHeight(4)
+        self.progress.hide()
+        self.progress.setStyleSheet(
+            "QProgressBar { border:none; border-radius:2px; background:#e8e8e8; } "
+            "QProgressBar::chunk { background:#378ADD; border-radius:2px; }")
+        gpl.addWidget(self.progress)
+
+        self.status_lbl = QLabel("")
+        self.status_lbl.setFont(QFont("Segoe UI", 11))
+        self.status_lbl.setStyleSheet("color:#1D9E75; border:none;")
+        gpl.addWidget(self.status_lbl)
+
+        cl.addWidget(gen_panel)
+
+        # ── Preview panel ─────────────────────────────────────────────────────
+        self.preview_panel = QFrame()
+        self.preview_panel.setStyleSheet(
+            "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
+        self.preview_layout = QVBoxLayout(self.preview_panel)
+        self.preview_layout.setContentsMargins(24, 20, 24, 20)
+        self.preview_layout.setSpacing(10)
+        preview_title = QLabel("Xem trước nội dung báo cáo")
+        preview_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        preview_title.setStyleSheet("border:none;")
+        self.preview_layout.addWidget(preview_title)
+        self.stats_grid = QGridLayout()
+        self.stats_grid.setSpacing(10)
+        self.preview_layout.addLayout(self.stats_grid)
+        cl.addWidget(self.preview_panel)
+
+        # ── History panel ─────────────────────────────────────────────────────
+        hist_panel = QFrame()
+        hist_panel.setStyleSheet(
+            "QFrame { background:#fff; border:1px solid #e8e8e8; border-radius:10px; }")
+        hist_l = QVBoxLayout(hist_panel)
+        hist_l.setContentsMargins(24, 20, 24, 20)
+        hist_l.setSpacing(8)
+        hist_title = QLabel("File báo cáo đã tạo")
+        hist_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        hist_title.setStyleSheet("border:none;")
+        hist_l.addWidget(hist_title)
+        self.hist_layout = QVBoxLayout()
+        hist_l.addLayout(self.hist_layout)
+        cl.addWidget(hist_panel)
+
+        cl.addStretch()
+        scroll.setWidget(content)
+        layout.addWidget(scroll)
+
+        self.cb_month.currentIndexChanged.connect(
+            lambda: QTimer.singleShot(100, self._update_preview))
+        QTimer.singleShot(200, self._update_preview)
+        QTimer.singleShot(200, self._load_history)
+
+    def _build_toolbar(self):
+        bar = QWidget()
+        bar.setFixedHeight(48)
+        bar.setStyleSheet("background:#fff; border-bottom:1px solid #e8e8e8;")
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(16, 0, 16, 0)
+        title = QLabel("Báo cáo")
+        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        layout.addWidget(title)
+        layout.addStretch()
+        return bar
+
+    def refresh(self):
+        self._update_preview()
+        self._load_history()
+
+    def _update_preview(self):
+        month = self.cb_month.currentData()
+        if not month:
+            return
+
+        while self.stats_grid.count():
+            item = self.stats_grid.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
         conn = get_connection()
-
         summary = conn.execute("""
             SELECT
                 COALESCE(SUM(CASE WHEN type='income'  THEN amount ELSE 0 END),0) as income,
@@ -100,446 +326,238 @@ class ReportGenerator:
                 COUNT(*) as count
             FROM transactions WHERE strftime('%Y-%m', date)=?
         """, (month,)).fetchone()
-
-        cat_expense = conn.execute("""
-            SELECT c.name, c.color, SUM(t.amount) as total
-            FROM transactions t JOIN categories c ON t.category_id=c.id
-            WHERE t.type='expense' AND strftime('%Y-%m',t.date)=?
-            GROUP BY c.id ORDER BY total DESC
-        """, (month,)).fetchall()
-
-        cat_income = conn.execute("""
+        top_cat = conn.execute("""
             SELECT c.name, SUM(t.amount) as total
             FROM transactions t JOIN categories c ON t.category_id=c.id
-            WHERE t.type='income' AND strftime('%Y-%m',t.date)=?
-            GROUP BY c.id ORDER BY total DESC
-        """, (month,)).fetchall()
-
-        transactions = conn.execute("""
-            SELECT t.date, t.description, t.amount, t.type,
-                   t.is_anomaly, c.name as cat_name, a.name as acc_name
-            FROM transactions t
-            LEFT JOIN categories c ON t.category_id=c.id
-            LEFT JOIN accounts   a ON t.account_id=a.id
-            WHERE strftime('%Y-%m', t.date)=?
-            ORDER BY t.date DESC
-        """, (month,)).fetchall()
-
-        anomalies = [t for t in transactions if t["is_anomaly"]]
-
-        balance = conn.execute(
-            "SELECT COALESCE(SUM(balance),0) as b FROM accounts"
+            WHERE t.type='expense' AND strftime('%Y-%m',t.date)=?
+            GROUP BY c.id ORDER BY total DESC LIMIT 1
+        """, (month,)).fetchone()
+        anomaly_count = conn.execute("""
+            SELECT COUNT(*) as n FROM transactions
+            WHERE is_anomaly=1 AND strftime('%Y-%m',date)=?
+        """, (month,)).fetchone()
+        forecast_count = conn.execute(
+            "SELECT COUNT(*) as n FROM ai_predictions WHERE month=?",
+            (month,)
         ).fetchone()
-
-        forecast = conn.execute("""
-            SELECT c.name, p.predicted_amount, p.confidence
-            FROM ai_predictions p JOIN categories c ON p.category_id=c.id
-            WHERE p.month=?
-            ORDER BY p.predicted_amount DESC LIMIT 5
-        """, (month,)).fetchall()
-
-        history = conn.execute("""
-            SELECT strftime('%Y-%m', date) as month,
-                   SUM(CASE WHEN type='income'  THEN amount ELSE 0 END) as income,
-                   SUM(CASE WHEN type='expense' THEN amount ELSE 0 END) as expense
-            FROM transactions
-            GROUP BY month ORDER BY month DESC LIMIT 6
-        """).fetchall()
-
         conn.close()
-        return {
-            "summary":     dict(summary),
-            "cat_expense": [dict(r) for r in cat_expense],
-            "cat_income":  [dict(r) for r in cat_income],
-            "transactions":[dict(r) for r in transactions],
-            "anomalies":   [dict(r) for r in anomalies],
-            "balance":     balance["b"],
-            "forecast":    [dict(r) for r in forecast],
-            "history":     [dict(r) for r in reversed(history)],
-        }
 
-    # ── Sections ─────────────────────────────────────────────────────────────
-    def _build_header(self, month: str, data: dict) -> list:
-        styles = self._styles()
-        try:
-            dt = datetime.strptime(month, "%Y-%m")
-            month_label = f"Tháng {dt.month}/{dt.year}"
-        except Exception:
-            month_label = month
-
-        elements = []
-
-        header_data = [[
-            Paragraph(f"<b>BÁO CÁO TÀI CHÍNH</b>", styles["title"]),
-            Paragraph(f"{month_label}", styles["title_right"]),
-        ]]
-        header_table = Table(header_data, colWidths=[10 * cm, 7 * cm])
-        header_table.setStyle(TableStyle([
-            ("BACKGROUND",  (0, 0), (-1, -1), C_BLUE),
-            ("TEXTCOLOR",   (0, 0), (-1, -1), colors.white),
-            ("PADDING",     (0, 0), (-1, -1), 14),
-            ("ROUNDEDCORNERS", [6]),
-        ]))
-        elements.append(header_table)
-        elements.append(Spacer(1, 0.3 * cm))
-
-        generated = datetime.now().strftime("%d/%m/%Y %H:%M")
-        sub = Paragraph(
-            f'<font color="#888888" size="9">Tạo lúc {generated} · Finance AI v1.0 · '
-            f'Tổng {data["summary"]["count"]} giao dịch</font>',
-            styles["normal"]
-        )
-        elements.append(sub)
-        elements.append(Spacer(1, 0.5 * cm))
-        return elements
-
-    def _build_summary_cards(self, data: dict) -> list:
-        s = data["summary"]
-        income  = s["income"]
-        expense = s["expense"]
+        income  = summary["income"]
+        expense = summary["expense"]
         saving  = income - expense
-        balance = data["balance"]
 
-        styles = self._styles()
-        card_data = [
-            [
-                self._metric_cell("THU NHẬP",    income,  C_GREEN, styles),
-                self._metric_cell("CHI TIÊU",    expense, C_RED,   styles),
-                self._metric_cell("TIẾT KIỆM",   saving,
-                                  C_BLUE if saving >= 0 else C_RED, styles),
-                self._metric_cell("SỐ DƯ TỔNG",  balance, C_AMBER, styles),
-            ]
+        stats = [
+            ("Thu nhập",           self._fmt(income),       "#1D9E75"),
+            ("Chi tiêu",           self._fmt(expense),      "#E24B4A"),
+            ("Tiết kiệm",          self._fmt(saving),       "#378ADD" if saving >= 0 else "#E24B4A"),
+            ("Số giao dịch",       str(summary["count"]),   "#333"),
+            ("Danh mục chi nhiều", top_cat["name"] if top_cat else "—", "#BA7517"),
+            ("Bất thường phát hiện", str(anomaly_count["n"]),
+             "#E24B4A" if anomaly_count["n"] else "#1D9E75"),
+            ("Danh mục dự báo AI", str(forecast_count["n"]), "#7F77DD"),
         ]
-        card_table = Table(card_data, colWidths=[4.25 * cm] * 4,
-                           rowHeights=[2.5 * cm])
-        card_table.setStyle(TableStyle([
-            ("BACKGROUND",  (0, 0), (0, 0), colors.HexColor("#E8F5EE")),
-            ("BACKGROUND",  (1, 0), (1, 0), colors.HexColor("#FEF0F0")),
-            ("BACKGROUND",  (2, 0), (2, 0), colors.HexColor("#EAF3FB")),
-            ("BACKGROUND",  (3, 0), (3, 0), colors.HexColor("#FEF3E0")),
-            ("BOX",    (0, 0), (0, 0), 0.5, C_GREEN),
-            ("BOX",    (1, 0), (1, 0), 0.5, C_RED),
-            ("BOX",    (2, 0), (2, 0), 0.5, C_BLUE),
-            ("BOX",    (3, 0), (3, 0), 0.5, C_AMBER),
-            ("LEFTPADDING",  (0, 0), (-1, -1), 10),
-            ("TOPPADDING",   (0, 0), (-1, -1), 10),
-            ("COLPADDING",   (0, 0), (-1, -1), 6),
-            ("ROUNDEDCORNERS", [4]),
-        ]))
-        return [card_table]
+        for i, (label, value, color) in enumerate(stats):
+            row, col = divmod(i, 2)
+            card = QFrame()
+            card.setStyleSheet(
+                "QFrame { background:#f7f7f7; border-radius:8px; border:none; }")
+            cl = QVBoxLayout(card)
+            cl.setContentsMargins(12, 10, 12, 10)
+            lbl = QLabel(label)
+            lbl.setFont(QFont("Segoe UI", 10))
+            lbl.setStyleSheet("color:#888; border:none;")
+            cl.addWidget(lbl)
+            val = QLabel(value)
+            val.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+            val.setStyleSheet(f"color:{color}; border:none;")
+            cl.addWidget(val)
+            self.stats_grid.addWidget(card, row, col)
 
-    def _metric_cell(self, label: str, value: float,
-                     color, styles: dict) -> list:
-        lbl = Paragraph(f'<font size="8" color="#888888"><b>{label}</b></font>',
-                        styles["normal"])
-        try:
-            hex_c = "#{:02X}{:02X}{:02X}".format(
-                int(color.red * 255),
-                int(color.green * 255),
-                int(color.blue * 255),
-            )
-        except Exception:
-            hex_c = "#333333"
-        val = Paragraph(
-            f'<font size="14" color="{hex_c}"><b>{self._fmt(value)}</b></font>',
-            styles["normal"]
+    def _generate_report(self):
+        month = self.cb_month.currentData()
+        if not month:
+            return
+
+        exports_dir = get_exports_dir()
+        exports_dir.mkdir(parents=True, exist_ok=True)
+        default_name = f"bao_cao_{month}.pdf"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Lưu báo cáo PDF",
+            str(exports_dir / default_name),
+            "PDF Files (*.pdf)"
         )
-        return [lbl, val]
+        if not path:
+            return
 
-    def _build_category_section(self, data: dict) -> list:
-        styles = self._styles()
-        elements = [
-            Paragraph("<b>CHI TIÊU THEO DANH MỤC</b>", styles["section"]),
-            Spacer(1, 0.2 * cm),
-        ]
+        self.btn_gen.setEnabled(False)
+        self.progress.show()
+        self.status_lbl.setText("Đang tạo báo cáo...")
+        self.status_lbl.setStyleSheet("color:#378ADD; border:none;")
 
-        cats = data["cat_expense"]
-        if not cats:
-            elements.append(Paragraph("Chưa có dữ liệu chi tiêu.", styles["normal"]))
-            return elements
+        self.worker = ReportWorker(month, path)
+        self.worker.finished.connect(self._on_done)
+        self.worker.error.connect(self._on_error)
+        self.worker.start()
 
-        total_expense = sum(c["total"] for c in cats)
+    def _on_done(self, path: str):
+        self.progress.hide()
+        self.btn_gen.setEnabled(True)
+        self.status_lbl.setText(f"Đã tạo: {os.path.basename(path)}")
+        self.status_lbl.setStyleSheet("color:#1D9E75; border:none;")
+        self._load_history()
 
-        rows = [
-            [
-                Paragraph("<b>Danh mục</b>", styles["th"]),
-                Paragraph("<b>Số tiền</b>", styles["th_right"]),
-                Paragraph("<b>Tỷ lệ</b>", styles["th_right"]),
-                Paragraph("<b>Biểu đồ</b>", styles["th"]),
-            ]
-        ]
-        for i, cat in enumerate(cats[:8]):
-            pct = (cat["total"] / total_expense * 100) if total_expense > 0 else 0
-            bar_color = CAT_COLORS[i % len(CAT_COLORS)]
-            bar_w = max(4, int(pct * 1.2))
-            d = Drawing(120, 10)
-            d.add(Rect(0, 2, 120, 6, fillColor=colors.HexColor("#F0F0F0"),
-                       strokeColor=None))
-            d.add(Rect(0, 2, bar_w, 6, fillColor=bar_color, strokeColor=None))
+        reply = QMessageBox.question(
+            self, "Thành công",
+            f"Báo cáo đã được tạo!\n{path}\n\nMở file ngay?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            self._open_file(path)
 
-            rows.append([
-                Paragraph(cat["name"], styles["td"]),
-                Paragraph(self._fmt(cat["total"]), styles["td_right"]),
-                Paragraph(f"{pct:.1f}%", styles["td_right"]),
-                d,
-            ])
+    def _on_error(self, msg: str):
+        self.progress.hide()
+        self.btn_gen.setEnabled(True)
+        self.status_lbl.setText(f"Lỗi: {msg}")
+        self.status_lbl.setStyleSheet("color:#E24B4A; border:none;")
 
-        rows.append([
-            Paragraph("<b>Tổng chi tiêu</b>", styles["td_bold"]),
-            Paragraph(f"<b>{self._fmt(total_expense)}</b>", styles["td_right_bold"]),
-            Paragraph("<b>100%</b>", styles["td_right_bold"]),
-            "",
-        ])
-
-        t = Table(rows, colWidths=[5 * cm, 3.5 * cm, 2 * cm, 6.5 * cm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND",   (0, 0), (-1, 0),  C_LIGHT),
-            ("TEXTCOLOR",    (0, 0), (-1, 0),  C_MUTED),
-            ("LINEBELOW",    (0, 0), (-1, 0),  0.5, C_BORDER),
-            ("LINEBELOW",    (0, 1), (-1, -2), 0.3, C_BORDER),
-            ("BACKGROUND",   (0, -1), (-1, -1), C_LIGHT),
-            ("LINEABOVE",    (0, -1), (-1, -1), 0.5, C_BORDER),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -2),
-             [colors.white, colors.HexColor("#FAFAFA")]),
-            ("LEFTPADDING",  (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING",   (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING",(0, 0), (-1, -1), 6),
-            ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
-        ]))
-        elements.append(t)
-        return elements
-
-    def _build_transaction_table(self, data: dict) -> list:
-        styles = self._styles()
-        txs = data["transactions"]
-        elements = [
-            Spacer(1, 0.2 * cm),
-            Paragraph(
-                f"<b>DANH SÁCH GIAO DỊCH</b>"
-                f' <font size="9" color="#888888">({len(txs)} giao dịch)</font>',
-                styles["section"]
-            ),
-            Spacer(1, 0.2 * cm),
-        ]
-
-        if not txs:
-            elements.append(Paragraph("Chưa có giao dịch.", styles["normal"]))
-            return elements
-
-        rows = [[
-            Paragraph("<b>Ngày</b>",      styles["th"]),
-            Paragraph("<b>Mô tả</b>",     styles["th"]),
-            Paragraph("<b>Danh mục</b>",  styles["th"]),
-            Paragraph("<b>Tài khoản</b>", styles["th"]),
-            Paragraph("<b>Số tiền</b>",   styles["th_right"]),
-        ]]
-
-        for tx in txs[:50]:
-            try:
-                d = datetime.strptime(tx["date"], "%Y-%m-%d").strftime("%d/%m")
-            except Exception:
-                d = tx["date"]
-
-            sign  = "+" if tx["type"] == "income" else "-"
-            color = "#1D9E75" if tx["type"] == "income" else "#E24B4A"
-            desc  = tx.get("description") or ""
-            if tx.get("is_anomaly"):
-                desc += " ⚠"
-
-            rows.append([
-                Paragraph(d, styles["td_small"]),
-                Paragraph(desc[:35], styles["td_small"]),
-                Paragraph(tx.get("cat_name") or "—", styles["td_small"]),
-                Paragraph(tx.get("acc_name") or "—", styles["td_small"]),
-                Paragraph(
-                    f'<font color="{color}"><b>{sign}{self._fmt(tx["amount"])}</b></font>',
-                    styles["td_right_small"]
-                ),
-            ])
-
-        if len(txs) > 50:
-            rows.append([
-                Paragraph(
-                    f'<font color="#888888"><i>... và {len(txs)-50} giao dịch khác</i></font>',
-                    styles["td_small"]
-                ),
-                "", "", "", ""
-            ])
-
-        t = Table(rows, colWidths=[1.5 * cm, 5.5 * cm, 3 * cm, 2.5 * cm, 4.5 * cm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND",   (0, 0), (-1, 0),  C_LIGHT),
-            ("LINEBELOW",    (0, 0), (-1, 0),  0.5, C_BORDER),
-            ("LINEBELOW",    (0, 1), (-1, -1), 0.2, C_BORDER),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1),
-             [colors.white, colors.HexColor("#FAFAFA")]),
-            ("LEFTPADDING",  (0, 0), (-1, -1), 6),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-            ("TOPPADDING",   (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING",(0, 0), (-1, -1), 4),
-            ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
-            ("SPAN",         (0, -1), (-1, -1)) if len(txs) > 50 else ("NOP", (0,0),(0,0), None),
-        ]))
-        elements.append(t)
-
-        anomalies = data["anomalies"]
-        if anomalies:
-            elements.append(Spacer(1, 0.3 * cm))
-            elements.append(
-                Paragraph(
-                    f'<b>⚠ CẢNH BÁO: {len(anomalies)} giao dịch bất thường</b>',
-                    styles["warning"]
-                )
-            )
-            for tx in anomalies[:5]:
+        # ── FIX: Use custom dialog instead of QMessageBox.warning() ──────────
+        # QMessageBox.warning() inherits the app-level QSS which sets all
+        # QLabel/QPushButton text to near-white, making the dialog unreadable.
+        # MissingLibraryDialog has its own hard-coded dark-text stylesheet.
+        if "reportlab" in msg.lower() or "no module" in msg.lower():
+            pkg = "reportlab"
+            if "no module named" in msg.lower():
+                # Try to extract the actual package name from the error
                 try:
-                    d = datetime.strptime(tx["date"], "%Y-%m-%d").strftime("%d/%m/%Y")
+                    pkg = msg.lower().split("no module named")[1].strip().strip("'\"")
                 except Exception:
-                    d = tx["date"]
-                elements.append(Paragraph(
-                    f'• {d} — {tx.get("description","")} — '
-                    f'<font color="#E24B4A"><b>{self._fmt(tx["amount"])}</b></font>',
-                    styles["normal"]
-                ))
+                    pkg = "reportlab"
+            dlg = MissingLibraryDialog(self, missing_package=pkg)
+            dlg.exec()
+        else:
+            # Generic error — use a styled QMessageBox with explicit palette
+            mb = QMessageBox(self)
+            mb.setWindowTitle("Lỗi tạo báo cáo")
+            mb.setText(msg)
+            mb.setIcon(QMessageBox.Icon.Critical)
+            # Force dark text so it stays legible regardless of global QSS
+            mb.setStyleSheet("""
+                QMessageBox {
+                    background-color: #FFFFFF;
+                }
+                QMessageBox QLabel {
+                    color: #222222;
+                    font-size: 13px;
+                    background: transparent;
+                    border: none;
+                }
+                QMessageBox QPushButton {
+                    color: #0B2A4A;
+                    background: #E6F1FB;
+                    border: 1px solid #B5D4F4;
+                    border-radius: 6px;
+                    padding: 5px 18px;
+                    font-size: 12px;
+                    min-width: 70px;
+                }
+                QMessageBox QPushButton:hover {
+                    background: #B5D4F4;
+                }
+            """)
+            mb.exec()
 
-        return elements
+    def _load_history(self):
+        while self.hist_layout.count():
+            item = self.hist_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
 
-    def _build_forecast_section(self, data: dict, month: str) -> list:
-        styles = self._styles()
-        forecast = data["forecast"]
-        elements = [
-            Spacer(1, 0.2 * cm),
-            Paragraph("<b>DỰ BÁO THÁNG TỚI (AI)</b>", styles["section"]),
-            Spacer(1, 0.2 * cm),
-        ]
+        try:
+            exports_dir = get_exports_dir()
+            files = sorted(exports_dir.glob("bao_cao_*.pdf"), reverse=True)
+        except Exception:
+            files = []
 
-        if not forecast:
-            elements.append(
-                Paragraph(
-                    'Chưa có dữ liệu dự báo. Vào tab "Dự báo" và nhấn "Chạy dự báo AI".',
-                    styles["normal"]
-                )
-            )
-            return elements
+        if not files:
+            lbl = QLabel("Chưa có báo cáo nào được tạo.")
+            lbl.setStyleSheet("color:#bbb; font-size:12px; border:none;")
+            self.hist_layout.addWidget(lbl)
+            return
 
-        total_fc = sum(r["predicted_amount"] or 0 for r in forecast)
-        elements.append(
-            Paragraph(
-                f'Tổng chi tiêu dự báo: '
-                f'<font color="#378ADD"><b>{self._fmt(total_fc)}</b></font>',
-                styles["normal"]
-            )
-        )
-        elements.append(Spacer(1, 0.2 * cm))
+        for f in files[:10]:
+            row = QWidget()
+            row.setStyleSheet("background:transparent;")
+            rl = QHBoxLayout(row)
+            rl.setContentsMargins(0, 4, 0, 4)
+            rl.setSpacing(12)
 
-        rows = [[
-            Paragraph("<b>Danh mục</b>",    styles["th"]),
-            Paragraph("<b>Dự báo</b>",      styles["th_right"]),
-            Paragraph("<b>Độ tin cậy</b>",  styles["th_right"]),
-        ]]
-        for r in forecast:
-            conf = r.get("confidence") or 0
-            rows.append([
-                Paragraph(r["name"], styles["td"]),
-                Paragraph(self._fmt(r["predicted_amount"] or 0), styles["td_right"]),
-                Paragraph(f"{conf*100:.0f}%", styles["td_right"]),
-            ])
+            name_lbl = QLabel(f.name)
+            name_lbl.setFont(QFont("Segoe UI", 12))
+            name_lbl.setStyleSheet("color:#333; border:none;")
+            rl.addWidget(name_lbl)
 
-        t = Table(rows, colWidths=[8 * cm, 5 * cm, 4 * cm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND",  (0, 0), (-1, 0), C_LIGHT),
-            ("LINEBELOW",   (0, 0), (-1, 0), 0.5, C_BORDER),
-            ("LINEBELOW",   (0, 1), (-1, -1), 0.3, C_BORDER),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1),
-             [colors.white, colors.HexColor("#FAFAFA")]),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING",  (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING",(0,0), (-1, -1), 5),
-            ("VALIGN",      (0, 0), (-1, -1), "MIDDLE"),
-        ]))
-        elements.append(t)
-        return elements
+            size_kb = f.stat().st_size // 1024
+            size_lbl = QLabel(f"{size_kb} KB")
+            size_lbl.setFont(QFont("Segoe UI", 10))
+            size_lbl.setStyleSheet("color:#aaa; border:none;")
+            rl.addWidget(size_lbl)
+            rl.addStretch()
 
-    def _build_footer(self) -> list:
-        styles = self._styles()
-        return [
-            Spacer(1, 0.5 * cm),
-            HRFlowable(width="100%", thickness=0.5, color=C_BORDER),
-            Spacer(1, 0.2 * cm),
-            Paragraph(
-                f'<font size="8" color="#AAAAAA">'
-                f'Finance AI · Báo cáo được tạo tự động · '
-                f'{datetime.now().strftime("%d/%m/%Y %H:%M")}'
-                f'</font>',
-                styles["center"]
-            ),
-        ]
+            btn_open = QPushButton("Mở")
+            btn_open.setFixedSize(50, 26)
+            btn_open.setStyleSheet(
+                "QPushButton { background:#E6F1FB; color:#0C447C; border:none; "
+                "border-radius:5px; font-size:11px; font-weight:500; } "
+                "QPushButton:hover { background:#B5D4F4; }")
+            btn_open.clicked.connect(lambda _, p=str(f): self._open_file(p))
+            rl.addWidget(btn_open)
 
-    # ── Styles ────────────────────────────────────────────────────────────────
-    def _styles(self) -> dict:
-        """
-        FIX: Each ParagraphStyle is created with the base font via `fontName`
-        positional kwarg ONE time only.  Previously `fontName` appeared both as
-        an explicit kwarg and as a duplicate positional arg inside some styles,
-        causing:
-            TypeError: ParagraphStyle() got multiple values for keyword argument 'fontName'
+            self.hist_layout.addWidget(row)
 
-        Resolution: pass font name exclusively through the `fontName` kwarg and
-        never via the positional `name` + a separate `fontName=` duplication.
-        """
-        # Base fonts — referenced by name only in each style definition below.
-        FONT_NORMAL = "Helvetica"
-        FONT_BOLD   = "Helvetica-Bold"
+            div = QFrame()
+            div.setFrameShape(QFrame.Shape.HLine)
+            div.setStyleSheet("background:#f0f0f0; border:none; max-height:1px;")
+            self.hist_layout.addWidget(div)
 
-        def ps(name: str, font: str = FONT_NORMAL, **kwargs) -> ParagraphStyle:
-            """Helper that creates a ParagraphStyle without duplicating fontName."""
-            return ParagraphStyle(name, fontName=font, **kwargs)
+    def _open_file(self, path: str):
+        import subprocess, sys
+        try:
+            if sys.platform == "win32":
+                os.startfile(path)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", path])
+            else:
+                subprocess.call(["xdg-open", path])
+        except Exception as e:
+            # Show a legible error dialog
+            mb = QMessageBox(self)
+            mb.setWindowTitle("Lỗi")
+            mb.setText(f"Không mở được file:\n{e}")
+            mb.setIcon(QMessageBox.Icon.Warning)
+            mb.setStyleSheet("""
+                QMessageBox { background-color: #FFFFFF; }
+                QMessageBox QLabel {
+                    color: #222222; font-size: 13px;
+                    background: transparent; border: none;
+                }
+                QMessageBox QPushButton {
+                    color: #0B2A4A; background: #E6F1FB;
+                    border: 1px solid #B5D4F4; border-radius: 6px;
+                    padding: 5px 18px; font-size: 12px; min-width: 60px;
+                }
+                QMessageBox QPushButton:hover { background: #B5D4F4; }
+            """)
+            mb.exec()
 
-        return {
-            # Title styles — bold font passed via `font` arg (becomes fontName once)
-            "title":       ps("title",       FONT_BOLD,
-                              fontSize=16, textColor=colors.white,
-                              leading=20),
-            "title_right": ps("title_right", FONT_BOLD,
-                              fontSize=14, textColor=colors.white,
-                              alignment=TA_RIGHT, leading=20),
-
-            # Section / body styles
-            "section":     ps("section",     FONT_BOLD,
-                              fontSize=11, textColor=C_DARK,
-                              spaceBefore=4, leading=16, borderPad=4),
-            "normal":      ps("normal",      FONT_NORMAL,
-                              fontSize=9, textColor=C_DARK, leading=14),
-            "center":      ps("center",      FONT_NORMAL,
-                              fontSize=9, textColor=C_MUTED,
-                              alignment=TA_CENTER, leading=14),
-            "warning":     ps("warning",     FONT_BOLD,
-                              fontSize=10, textColor=C_RED, leading=14),
-
-            # Table header / data styles
-            "th":          ps("th",          FONT_BOLD,
-                              fontSize=8, textColor=C_MUTED, leading=12),
-            "th_right":    ps("th_right",    FONT_BOLD,
-                              fontSize=8, textColor=C_MUTED,
-                              alignment=TA_RIGHT, leading=12),
-            "td":          ps("td",          FONT_NORMAL,
-                              fontSize=9, textColor=C_DARK, leading=13),
-            "td_small":    ps("td_small",    FONT_NORMAL,
-                              fontSize=8, textColor=C_DARK, leading=11),
-            "td_bold":     ps("td_bold",     FONT_BOLD,
-                              fontSize=9, textColor=C_DARK, leading=13),
-            "td_right":    ps("td_right",    FONT_NORMAL,
-                              fontSize=9, textColor=C_DARK,
-                              alignment=TA_RIGHT, leading=13),
-            "td_right_small": ps("td_right_small", FONT_NORMAL,
-                                  fontSize=8, textColor=C_DARK,
-                                  alignment=TA_RIGHT, leading=11),
-            "td_right_bold":  ps("td_right_bold",  FONT_BOLD,
-                                  fontSize=9, textColor=C_DARK,
-                                  alignment=TA_RIGHT, leading=13),
-        }
+    def _populate_months(self):
+        now = datetime.now()
+        for i in range(11, -1, -1):
+            m = now.month - i
+            y = now.year
+            while m <= 0:
+                m += 12; y -= 1
+            self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
+        self.cb_month.setCurrentIndex(self.cb_month.count() - 1)
 
     @staticmethod
-    def _fmt(value: float) -> str:
-        return f"{value:,.0f} d".replace(",", ".")
+    def _fmt(v: float) -> str:
+        return f"{v:,.0f} d".replace(",", ".")

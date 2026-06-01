@@ -927,3 +927,34 @@ Traceback (most recent call last):
   File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
     from app.ui.report_frame import ReportFrame
 ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+2026-06-01 09:50:42 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 09:50:42
+2026-06-01 09:55:13 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 09:55:13
+2026-06-01 09:56:58 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 09:56:58
+
+============================================================
+Timestamp : 2026-06-01 09:57:07
+User: nhu_quynh (user)
+Exception : ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
+    from app.ui.report_frame import ReportFrame
+ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+2026-06-01 09:57:07 [finance_ai] ERROR: Unhandled exception: ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
+    from app.ui.report_frame import ReportFrame
+ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+2026-06-01 10:10:44 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 10:10:44
+2026-06-01 10:12:47 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 10:12:47
+2026-06-01 10:16:17 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 10:16:17
+2026-06-01 10:38:30 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 10:38:30
+2026-06-01 10:48:55 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 10:48:55
+2026-06-01 14:21:17 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 14:21:17
+2026-06-01 14:34:34 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 14:34:34
