@@ -905,3 +905,25 @@ Traceback (most recent call last):
   File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
     from app.ui.report_frame import ReportFrame
 ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+2026-06-01 09:46:53 [finance_ai] INFO: Finance AI khoi dong - 2026-06-01 09:46:53
+
+============================================================
+Timestamp : 2026-06-01 09:47:16
+User: nhu_quynh (user)
+Exception : ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+============================================================
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
+    from app.ui.report_frame import ReportFrame
+ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+2026-06-01 09:47:16 [finance_ai] ERROR: Unhandled exception: ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
+Traceback (most recent call last):
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 566, in _do_create
+    widget = self._create_page(page)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\dacs1\finance_ai_app\app\ui\main_window.py", line 609, in _create_page
+    from app.ui.report_frame import ReportFrame
+ImportError: cannot import name 'ReportFrame' from 'app.ui.report_frame' (D:\dacs1\finance_ai_app\app\ui\report_frame.py)
