@@ -245,7 +245,7 @@ class Sidebar(QWidget):
         sections = {
             "CHÍNH": ["Dashboard", "Chi tiêu", "Giao dịch", "Ngân sách"],
             "AI":    ["Dự báo", "Chatbot AI"],
-            "NHÓM":  ["Gia đình"],
+            "NHÓM":  ["Quỹ"],
             "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt"],
         }
         icons = {
@@ -255,7 +255,7 @@ class Sidebar(QWidget):
             "Ngân sách":  "💰",
             "Dự báo":     "📈",
             "Chatbot AI": "🤖",
-            "Gia đình":   "👨‍👩‍👧",
+            "Quỹ":        "👥",
             "Hồ sơ":      "👤",
             "Báo cáo":    "📄",
             "Cài đặt":    "⚙️",
@@ -599,9 +599,9 @@ class MainWindow(QMainWindow):
         if page == "Chatbot AI":
             from app.ui.chatbot_frame import ChatbotFrame
             return ChatbotFrame(main_window=self)
-        if page == "Gia đình":
-            from app.ui.family_frame import FamilyFrame
-            return FamilyFrame(main_window=self)
+        if page == "Quỹ":
+            from app.ui.fund_frame import FundFrame
+            return FundFrame(main_window=self)
         if page == "Hồ sơ":
             from app.ui.profile_frame import ProfileFrame
             return ProfileFrame(main_window=self)

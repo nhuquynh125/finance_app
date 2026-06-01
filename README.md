@@ -75,10 +75,9 @@
 - Quick prompts gợi ý câu hỏi phổ biến
 - Typing indicator animation khi đang xử lý
 
-### 👨‍👩‍👧 Gia đình
-- Tạo nhóm gia đình với mã mời 6 ký tự
-- Tham gia nhóm bằng mã mời
-- Xem danh sách thành viên và vai trò
+### 👥 Quỹ
+- Tạo nhóm quỹ với mã mời 6 ký tự
+- Quản lý các khoản đóng góp và theo dõi số dư quỹ sách thành viên và vai trò
 - Rời/Giải tán nhóm
 - Mỗi thành viên giữ database riêng tư, nhóm chỉ chia sẻ thống kê
 
@@ -127,7 +126,7 @@ Finance AI
 │   │   ├── transaction_manager.py   # CRUD giao dịch + cập nhật số dư
 │   │   ├── report_generator.py      # Xuất PDF (ReportLab)
 │   │   ├── csv_importer.py          # Nhập CSV ngân hàng
-│   │   ├── family_manager.py        # Quản lý nhóm gia đình
+│   │   ├── fund_manager.py        # Quản lý quỹ chung
 │   │   ├── goal_tracker.py          # Mục tiêu tiết kiệm (version cải tiến)
 │   │   ├── settings_manager.py      # Cài đặt per-user
 │   │   ├── sync_manager.py          # Cloud sync (Supabase)
@@ -151,7 +150,7 @@ Finance AI
 │       ├── budget_frame.py          # Ngân sách
 │       ├── forecast_frame.py        # Dự báo AI
 │       ├── chatbot_frame.py         # Chatbot AI
-│       ├── family_frame.py          # Gia đình
+│       ├── fund_frame.py          # Quỹ
 │       ├── report_frame.py          # Báo cáo PDF
 │       ├── profile_frame.py         # Hồ sơ cá nhân
 │       ├── settings_frame.py        # Cài đặt
@@ -408,8 +407,8 @@ Kiến trúc 4 lớp:
 | `budgets` | Ngân sách theo danh mục và tháng |
 | `ai_predictions` | Dự báo chi tiêu AI theo tháng |
 | `savings_goals` | Mục tiêu tiết kiệm |
-| `family_groups` | Nhóm gia đình |
-| `group_members` | Thành viên nhóm |
+| `family_groups` | Quỹ chung |
+| `group_members` | Thành viên quỹ |
 | `chat_history` | Lịch sử hội thoại chatbot |
 | `user_profiles` | Hồ sơ người dùng (màu accent, bio) |
 

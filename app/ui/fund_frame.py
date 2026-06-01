@@ -1,28 +1,72 @@
-# app/ui/family_frame.py  (viết lại hoàn chỉnh — dùng FamilyManager thực sự)
+# app/ui/fund_frame.py
 """
-Thay đổi so với phiên bản cũ:
-  - Tạo/tham gia nhóm lưu dữ liệu vào DB thực sự qua FamilyManager
-  - Hiển thị danh sách thành viên sau khi tạo/tham gia
-  - Nút "Rời nhóm" và "Giải tán nhóm" có chức năng thật
-  - Tự động load trạng thái nhóm khi mở trang
+Quản lý Quỹ
 """
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QFrame, QScrollArea, QGridLayout,
-    QInputDialog, QMessageBox, QDialog, QLineEdit,
-    QFormLayout, QSizePolicy
+    QInputDialog, QMessageBox, QDialog, QTableWidget,
+    QTableWidgetItem, QHeaderView, QSizePolicy
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
-from app.core.family_manager import FamilyManager
+from app.core.fund_manager import FundManager
 
 
-class FamilyFrame(QWidget):
+class TransactionHistoryDialog(QDialog):
+    def __init__(self, username, parent=None):
+        super().__init__(parent)
+        self.username = username
+        self.fm = FundManager()
+        self.setWindowTitle(f"Lịch sử góp quỹ - {username}")
+        self.resize(600, 400)
+        self.setStyleSheet("background:#fff;")
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        title = QLabel(f"Lịch sử góp quỹ của {self.username}")
+        title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        layout.addWidget(title)
+        
+        self.table = QTableWidget()
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["Ngày", "Số tiền", "Ghi chú"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.table)
+        
+        self._load_data()
+        
+        btn_close = QPushButton("Đóng")
+        btn_close.clicked.connect(self.accept)
+        btn_close.setStyleSheet(
+            "QPushButton { background:#f0f0f0; border:1px solid #ddd; border-radius:6px; padding:8px 16px; }"
+            "QPushButton:hover { background:#e0e0e0; }"
+        )
+        layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
+
+    def _load_data(self):
+        transactions = self.fm.get_member_transactions(self.username)
+        self.table.setRowCount(len(transactions))
+        for i, tx in enumerate(transactions):
+            date_item = QTableWidgetItem(tx["date"])
+            amount_item = QTableWidgetItem(f"{tx['amount']:,.0f} đ")
+            note_item = QTableWidgetItem(tx["description"] or "")
+            
+            self.table.setItem(i, 0, date_item)
+            self.table.setItem(i, 1, amount_item)
+            self.table.setItem(i, 2, note_item)
+
+
+class FundFrame(QWidget):
     def __init__(self, main_window=None):
         super().__init__()
         self.main_window = main_window
-        self.fm = FamilyManager()
+        self.fm = FundManager()
+        self.selected_group = None
         self._build()
         QTimer.singleShot(100, self.refresh)
 
@@ -58,7 +102,7 @@ class FamilyFrame(QWidget):
         bar.setStyleSheet("background:#fff; border-bottom:1px solid #e8e8e8;")
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(16, 0, 16, 0)
-        title = QLabel("Quản lý quỹ")
+        title = QLabel("Quản lý Quỹ")
         title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         layout.addWidget(title)
         layout.addStretch()
@@ -71,12 +115,11 @@ class FamilyFrame(QWidget):
     # ── Refresh — quyết định hiển thị gì ────────────────────────────────────
 
     def refresh(self):
-        """Kiểm tra user có nhóm chưa → hiển thị UI tương ứng."""
-        group = self.fm.get_my_group()
-        self._replace_state_widget(
-            self._build_group_view(group) if group
-            else self._build_no_group_view()
-        )
+        """Hiển thị UI tùy thuộc vào việc có chọn nhóm cụ thể hay không."""
+        if self.selected_group:
+            self._replace_state_widget(self._build_group_view(self.selected_group))
+        else:
+            self._replace_state_widget(self._build_dashboard_view())
 
     def _replace_state_widget(self, new_widget: QWidget):
         """Thay thế widget trạng thái hiện tại."""
@@ -86,53 +129,24 @@ class FamilyFrame(QWidget):
         # Chèn trước stretch (index cuối - 1)
         self.cl.insertWidget(0, self.state_widget)
 
-    # ── View: chưa có nhóm ───────────────────────────────────────────────────
+    # ── View: Danh sách Quỹ (Dashboard) ──────────────────────────────────────
 
-    def _build_no_group_view(self) -> QWidget:
+    def _build_dashboard_view(self) -> QWidget:
         container = QWidget()
         container.setStyleSheet("background:transparent;")
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(16)
+        layout.setSpacing(20)
 
-        # Intro card
-        intro = QFrame()
-        intro.setStyleSheet(
-            "QFrame { background:#fff; border-radius:12px; border:1px solid #e8e8e8; }")
-        il = QVBoxLayout(intro)
-        il.setContentsMargins(20, 16, 20, 16)
-
-        icon = QLabel("👨‍👩‍👧‍👦")
-        icon.setFont(QFont("Segoe UI Emoji", 37))
-        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon.setStyleSheet("border:none;")
-        il.addWidget(icon)
-
-        title = QLabel("Quản lý tài chính gia đình")
-        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("color:#1A2B45; border:none;")
-        il.addWidget(title)
-
-        desc = QLabel(
-            "Tạo nhóm quỹ để cùng nhau góp quỹ,chia sẻ và theo dõi tài chính chung.\n"
-            "Mỗi thành viên giữ database riêng, nhóm chỉ chia sẻ thống kê tổng hợp."
-        )
-        desc.setWordWrap(True)
-        desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        desc.setStyleSheet("color:#7a7872; border:none; font-size:17px;")
-        il.addWidget(desc)
-        layout.addWidget(intro)
-
-        # Hai card hành động
+        # Hai card hành động (Tạo quỹ & Tham gia)
         grid = QGridLayout()
-        grid.setSpacing(12)
+        grid.setSpacing(16)
 
         card_create = self._action_card(
             icon="➕",
-            title="Tạo nhóm mới",
-            desc="Bắt đầu nhóm quỹ và nhận mã mời để chia sẻ.",
-            btn_text="Tạo nhóm",
+            title="Tạo nhóm quỹ mới",
+            desc="Bắt đầu quỹ chung và nhận mã mời để chia sẻ với mọi người.",
+            btn_text="Tạo quỹ",
             btn_primary=True,
             callback=self._on_create_group
         )
@@ -140,8 +154,8 @@ class FamilyFrame(QWidget):
 
         card_join = self._action_card(
             icon="🔑",
-            title="Tham gia nhóm",
-            desc="Nhập mã mời 6 ký tự từ thành viên cùng tham gia quỹ.",
+            title="Tham gia nhóm quỹ",
+            desc="Nhập mã mời 6 ký tự để tham gia vào quỹ đã có sẵn.",
             btn_text="Tham gia",
             btn_primary=False,
             callback=self._on_join_group
@@ -149,9 +163,64 @@ class FamilyFrame(QWidget):
         grid.addWidget(card_join, 0, 1)
         layout.addLayout(grid)
 
+        # Danh sách các quỹ đang tham gia
+        groups = self.fm.get_my_groups()
+        
+        list_card = QFrame()
+        list_card.setStyleSheet(
+            "QFrame { background:#fff; border-radius:12px; border:1px solid #e8e8e8; }")
+        ll = QVBoxLayout(list_card)
+        ll.setContentsMargins(20, 16, 20, 16)
+        ll.setSpacing(12)
+        
+        list_title = QLabel(f"Các quỹ đang tham gia ({len(groups)})")
+        list_title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        list_title.setStyleSheet("color:#1A2B45; border:none;")
+        ll.addWidget(list_title)
+        
+        if not groups:
+            empty_lbl = QLabel("Bạn chưa tham gia quỹ nào. Hãy tạo hoặc tham gia quỹ mới ở trên.")
+            empty_lbl.setStyleSheet("color:#7a7872; font-style:italic; border:none;")
+            ll.addWidget(empty_lbl)
+        else:
+            for g in groups:
+                btn_group = QPushButton()
+                btn_group.setStyleSheet("""
+                    QPushButton { 
+                        background:#f9f9f9; border:1px solid #e8e8e8; 
+                        border-radius:8px; padding:12px; text-align:left; 
+                    }
+                    QPushButton:hover { background:#f0f7ff; border:1px solid #bbd6f2; }
+                """)
+                # Layout nội bộ cho nút nhóm
+                btn_layout = QHBoxLayout(btn_group)
+                btn_layout.setContentsMargins(10, 5, 10, 5)
+                
+                name_lbl = QLabel(f"📋 {g['name']}")
+                name_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+                name_lbl.setStyleSheet("color:#1A2B45; border:none; background:transparent;")
+                
+                info_lbl = QLabel(f"Thành viên: {g['member_count']} | Quyền: {'Chủ quỹ' if g['my_role']=='owner' else 'Thành viên'}")
+                info_lbl.setStyleSheet("color:#666; border:none; background:transparent;")
+                
+                v_box = QVBoxLayout()
+                v_box.addWidget(name_lbl)
+                v_box.addWidget(info_lbl)
+                btn_layout.addLayout(v_box)
+                btn_layout.addStretch()
+                
+                arrow = QLabel("➔")
+                arrow.setFont(QFont("Segoe UI", 16))
+                arrow.setStyleSheet("color:#bbb; border:none; background:transparent;")
+                btn_layout.addWidget(arrow)
+                
+                btn_group.clicked.connect(lambda checked, grp=g: self._on_select_group(grp))
+                ll.addWidget(btn_group)
+                
+        layout.addWidget(list_card)
         return container
 
-    # ── View: đã có nhóm ─────────────────────────────────────────────────────
+    # ── View: Chi tiết Quỹ ───────────────────────────────────────────────────
 
     def _build_group_view(self, group: dict) -> QWidget:
         container = QWidget()
@@ -159,6 +228,19 @@ class FamilyFrame(QWidget):
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
+
+        # Nút Quay lại
+        btn_back = QPushButton("← Quay lại danh sách quỹ")
+        btn_back.setStyleSheet(
+            "QPushButton { background:transparent; color:#378ADD; font-size:15px; font-weight:bold; "
+            "border:none; text-align:left; padding:0; } QPushButton:hover { color:#185FA5; text-decoration:underline; }")
+        btn_back.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_back.clicked.connect(self._on_back_to_dashboard)
+        
+        back_layout = QHBoxLayout()
+        back_layout.addWidget(btn_back)
+        back_layout.addStretch()
+        layout.addLayout(back_layout)
 
         # Header card — thông tin nhóm
         header = QFrame()
@@ -175,7 +257,7 @@ class FamilyFrame(QWidget):
         top_row.addWidget(name_lbl)
         top_row.addStretch()
 
-        role_text  = "Chủ nhóm" if group["my_role"] == "owner" else "Thành viên"
+        role_text  = "Chủ quỹ" if group["my_role"] == "owner" else "Thành viên"
         role_color = "#0C447C" if group["my_role"] == "owner" else "#3B6D11"
         role_bg    = "#E6F1FB" if group["my_role"] == "owner" else "#EAF3DE"
         role_badge = QLabel(role_text)
@@ -192,19 +274,18 @@ class FamilyFrame(QWidget):
         member_lbl.setStyleSheet("color:#555; font-size:17px; border:none;")
         info_row.addWidget(member_lbl)
 
-        # Hiển thị mã mời nếu là owner
-        if group["my_role"] == "owner":
-            from app.data.models import get_connection
-            with get_connection() as conn:
-                row = conn.execute(
-                    "SELECT invite_code FROM family_groups WHERE id=?",
-                    (group["id"],)
-                ).fetchone()
-            if row:
-                code_lbl = QLabel(f"🔑  Mã mời: {row['invite_code']}")
-                code_lbl.setStyleSheet(
-                    "color:#0C447C; font-size:17px; font-weight:bold; border:none;")
-                info_row.addWidget(code_lbl)
+        # Hiển thị mã mời
+        from app.data.models import get_connection
+        with get_connection() as conn:
+            row = conn.execute(
+                "SELECT invite_code FROM family_groups WHERE id=?",
+                (group["id"],)
+            ).fetchone()
+        if row:
+            code_lbl = QLabel(f"🔑  Mã mời: {row['invite_code']}")
+            code_lbl.setStyleSheet(
+                "color:#0C447C; font-size:17px; font-weight:bold; border:none;")
+            info_row.addWidget(code_lbl)
 
         info_row.addStretch()
         hl.addLayout(info_row)
@@ -218,10 +299,12 @@ class FamilyFrame(QWidget):
         ml.setContentsMargins(20, 16, 20, 16)
         ml.setSpacing(8)
 
-        members_title = QLabel("Thành viên")
+        members_title = QLabel("Thành viên & Đóng góp")
         members_title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         members_title.setStyleSheet("border:none; color:#1A2B45;")
         ml.addWidget(members_title)
+        
+        ml.addWidget(QLabel("Bấm vào tên thành viên để xem chi tiết lịch sử đóng góp."))
 
         members = self.fm.get_members(group["id"])
         if members:
@@ -238,14 +321,14 @@ class FamilyFrame(QWidget):
         btn_row.setSpacing(10)
 
         if group["my_role"] == "owner":
-            btn_disband = QPushButton("Giải tán nhóm")
+            btn_disband = QPushButton("Giải tán quỹ")
             btn_disband.setStyleSheet(self._btn_danger())
-            btn_disband.clicked.connect(self._on_disband_group)
+            btn_disband.clicked.connect(lambda: self._on_disband_group(group["id"]))
             btn_row.addWidget(btn_disband)
         else:
-            btn_leave = QPushButton("Rời nhóm")
+            btn_leave = QPushButton("Rời quỹ")
             btn_leave.setStyleSheet(self._btn_danger())
-            btn_leave.clicked.connect(self._on_leave_group)
+            btn_leave.clicked.connect(lambda: self._on_leave_group(group["id"]))
             btn_row.addWidget(btn_leave)
 
         btn_row.addStretch()
@@ -293,21 +376,29 @@ class FamilyFrame(QWidget):
         return card
 
     def _member_row(self, member: dict) -> QWidget:
-        row = QWidget()
-        row.setStyleSheet("background:transparent;")
+        # Sử dụng QPushButton giả lập thành card để click được
+        row = QPushButton()
+        row.setCursor(Qt.CursorShape.PointingHandCursor)
+        row.setStyleSheet("""
+            QPushButton { 
+                background:#fcfcfc; border:1px solid #f0f0f0; border-radius:8px; text-align:left;
+            }
+            QPushButton:hover { background:#f5f5f5; border:1px solid #e0e0e0; }
+        """)
+        
         rl = QHBoxLayout(row)
-        rl.setContentsMargins(0, 4, 0, 4)
+        rl.setContentsMargins(10, 8, 10, 8)
         rl.setSpacing(12)
 
         # Avatar chữ cái đầu
         initial = (member["username"][0] if member["username"] else "?").upper()
         avatar = QLabel(initial)
-        avatar.setFixedSize(34, 34)
+        avatar.setFixedSize(38, 38)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         avatar.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         color = "#378ADD" if member["role"] == "owner" else "#888"
         avatar.setStyleSheet(
-            f"background:{color}; color:white; border-radius:17px; border:none;")
+            f"background:{color}; color:white; border-radius:19px; border:none;")
         rl.addWidget(avatar)
 
         name_col = QWidget()
@@ -322,24 +413,26 @@ class FamilyFrame(QWidget):
         nc.addWidget(name_lbl)
 
         role_lbl = QLabel(member["role_display"])
-        role_lbl.setFont(QFont("Segoe UI", 15))
+        role_lbl.setFont(QFont("Segoe UI", 14))
         role_lbl.setStyleSheet("color:#8FA8C4; border:none;")
         nc.addWidget(role_lbl)
 
         rl.addWidget(name_col)
         rl.addStretch()
 
-        joined = member.get("joined_at", "")
-        if joined:
-            try:
-                from datetime import datetime
-                dt = datetime.strptime(joined[:10], "%Y-%m-%d")
-                joined_str = dt.strftime("Tham gia %d/%m/%Y")
-            except Exception:
-                joined_str = joined[:10]
-            joined_lbl = QLabel(joined_str)
-            joined_lbl.setStyleSheet("color:#aaa; font-size:15px; border:none;")
-            rl.addWidget(joined_lbl)
+        # Hiển thị số tiền đóng góp
+        contrib_val = member.get("total_contribution", 0)
+        contrib_lbl = QLabel(f"Đã góp: <b style='color:#1D9E75;'>{contrib_val:,.0f} đ</b>")
+        contrib_lbl.setFont(QFont("Segoe UI", 15))
+        contrib_lbl.setStyleSheet("border:none;")
+        rl.addWidget(contrib_lbl)
+        
+        arrow = QLabel(" › ")
+        arrow.setStyleSheet("color:#999; font-size:24px; border:none;")
+        rl.addWidget(arrow)
+        
+        # Bấm vào row -> Mở popup lịch sử giao dịch
+        row.clicked.connect(lambda: self._on_view_member_history(member["username"]))
 
         return row
 
@@ -347,7 +440,7 @@ class FamilyFrame(QWidget):
 
     def _on_create_group(self):
         name, ok = QInputDialog.getText(
-            self, "Tạo nhóm quỹ", "Tên nhóm:")
+            self, "Tạo nhóm quỹ", "Tên quỹ:")
         if not ok or not name.strip():
             return
 
@@ -356,16 +449,16 @@ class FamilyFrame(QWidget):
             QMessageBox.information(
                 self, "Thành công",
                 f"✅ {result['message']}\n\n"
-                f"Mã mời của nhóm: {result['invite_code']}\n\n"
+                f"Mã mời của quỹ: {result['invite_code']}\n\n"
                 "Hãy chia sẻ mã này để mời thành viên tham gia."
             )
             self.refresh()
         else:
-            QMessageBox.warning(self, "Không thể tạo nhóm", result["message"])
+            QMessageBox.warning(self, "Không thể tạo quỹ", result["message"])
 
     def _on_join_group(self):
         code, ok = QInputDialog.getText(
-            self, "Tham gia nhóm", "Nhập mã mời (6 ký tự):")
+            self, "Tham gia quỹ", "Nhập mã mời (6 ký tự):")
         if not ok or not code.strip():
             return
 
@@ -374,9 +467,9 @@ class FamilyFrame(QWidget):
         if preview:
             reply = QMessageBox.question(
                 self, "Xác nhận tham gia",
-                f"Bạn muốn tham gia nhóm:\n\n"
-                f"Tên nhóm : {preview['name']}\n"
-                f"Chủ nhóm : {preview['owner_username']}\n"
+                f"Bạn muốn tham gia quỹ:\n\n"
+                f"Tên quỹ : {preview['name']}\n"
+                f"Chủ quỹ : {preview['owner_username']}\n"
                 f"Thành viên: {preview['member_count']} người\n\n"
                 "Tiếp tục?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
@@ -390,37 +483,50 @@ class FamilyFrame(QWidget):
             self.refresh()
         else:
             QMessageBox.warning(self, "Không thể tham gia", result["message"])
+            
+    def _on_select_group(self, group: dict):
+        self.selected_group = group
+        self.refresh()
+        
+    def _on_back_to_dashboard(self):
+        self.selected_group = None
+        self.refresh()
+        
+    def _on_view_member_history(self, username: str):
+        dlg = TransactionHistoryDialog(username, self)
+        dlg.exec()
 
-    def _on_leave_group(self):
+    def _on_leave_group(self, group_id: int):
         reply = QMessageBox.question(
-            self, "Rời nhóm",
-            "Bạn có chắc muốn rời nhóm này không?",
+            self, "Rời quỹ",
+            "Bạn có chắc muốn rời quỹ này không?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        result = self.fm.leave_group()
+        result = self.fm.leave_group(group_id)
         if result["success"]:
-            QMessageBox.information(self, "Đã rời nhóm", result["message"])
+            QMessageBox.information(self, "Đã rời quỹ", result["message"])
+            self.selected_group = None
             self.refresh()
         else:
             QMessageBox.warning(self, "Lỗi", result["message"])
 
-    def _on_disband_group(self):
+    def _on_disband_group(self, group_id: int):
         reply = QMessageBox.warning(
-            self, "Giải tán nhóm",
-            "Hành động này sẽ xóa nhóm và xóa tất cả thành viên.\n"
-            "Dữ liệu tài chính cá nhân của từng người KHÔNG bị ảnh hưởng.\n\n"
-            "Bạn có chắc chắn muốn giải tán nhóm?",
+            self, "Giải tán quỹ",
+            "Hành động này sẽ xóa quỹ và xóa tất cả thành viên.\n"
+            "Bạn có chắc chắn muốn giải tán quỹ?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        result = self.fm.disband_group()
+        result = self.fm.disband_group(group_id)
         if result["success"]:
             QMessageBox.information(self, "Đã giải tán", result["message"])
+            self.selected_group = None
             self.refresh()
         else:
             QMessageBox.warning(self, "Lỗi", result["message"])
@@ -452,3 +558,4 @@ class FamilyFrame(QWidget):
             "padding:8px 16px; font-size:17px; } "
             "QPushButton:hover { background:#FCEBEB; }"
         )
+
