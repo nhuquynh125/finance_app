@@ -1,238 +1,311 @@
-# Finance AI 💰
+# 💰 Finance AI - Quản Lý Tài Chính Thông Minh
 
-Ứng dụng quản lý tài chính cá nhân thông minh, xây dựng bằng **Python + PyQt6**, tích hợp AI phân loại giao dịch, dự báo chi tiêu, phát hiện giao dịch bất thường và chatbot tư vấn tài chính hỗ trợ đa nền tảng (Hoạt động Offline, Gemini API, Ollama).
+<div align="center">
+
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)
+![PyQt6](https://img.shields.io/badge/PyQt-6-green?logo=qt)
+![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Scikit--Learn%20%7C%20Prophet-orange)
+![AI Chatbot](https://img.shields.io/badge/AI-Gemini%20%7C%20Ollama-purple)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+**Ứng dụng quản lý tài chính cá nhân đa nền tảng, tích hợp Trí tuệ Nhân tạo (AI) giúp bạn theo dõi, phân loại và dự báo chi tiêu một cách tự động và thông minh.**
+
+</div>
 
 ---
 
 ## 📑 Mục lục
 
-- [Tính năng chính](#-tính-năng-chính)
+- [Giới thiệu](#-giới-thiệu)
+- [Tính năng nổi bật](#-tính-năng-nổi-bật)
+- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
 - [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
 - [Cơ sở dữ liệu & Đa người dùng](#-cơ-sở-dữ-liệu--đa-người-dùng)
 - [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt](#-cài-đặt)
-- [Cấu hình AI (Gemini / Ollama)](#-cấu-hình-ai-gemini--ollama)
-- [Hướng dẫn sử dụng](#-hướng-dẫn-sử-dụng)
-- [Phím tắt](#-phím-tắt)
+- [Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
+- [Cấu hình AI (Gemini & Ollama)](#-cấu-hình-ai-gemini--ollama)
+- [Hướng dẫn sử dụng chi tiết](#-hướng-dẫn-sử-dụng-chi-tiết)
+- [Phím tắt (Hotkeys)](#-phím-tắt-hotkeys)
 - [Phát triển & Đóng góp](#-phát-triển--đóng-góp)
+- [Roadmap (Định hướng tương lai)](#-roadmap-định-hướng-tương-lai)
 - [Thông tin nhóm](#-thông-tin-nhóm)
 
 ---
 
-## 🌟 Tính năng chính
+## 🚀 Giới thiệu
 
-### 📊 Dashboard Cực Kỳ Trực Quan
-- **Tổng quan thu chi:** 4 KPI card (Thu nhập, Chi tiêu, Tiết kiệm, Dự báo AI).
-- **Biểu đồ đa dạng:** Biểu đồ thu chi 6 tháng gần nhất (bar chart) và biểu đồ phân bổ danh mục (pie chart/donut chart thuần PyQt).
-- **Lịch sử & Bất thường:** Danh sách giao dịch gần đây với hiệu ứng highlight (cảnh báo đỏ) cho các giao dịch bất thường.
+**Finance AI** không chỉ là một ứng dụng ghi chép thu chi thông thường. Bằng cách kết hợp sức mạnh của **Giao diện trực quan (PyQt6)** và **Machine Learning / LLM**, hệ thống giúp tự động hoá tối đa quy trình quản lý tài chính của bạn: từ việc tự động nhận diện danh mục giao dịch qua file sao kê ngân hàng, phát hiện các khoản chi tiêu bất thường, cho đến việc tư vấn tài chính trực tiếp qua Chatbot AI.
 
-### 💳 Quản lý Giao dịch Thông Minh
-- **Quản lý toàn diện:** Thêm/Sửa/Xóa giao dịch (loại, mô tả, số tiền, ngày, danh mục, tài khoản, ghi chú).
-- **Import hàng loạt từ CSV:** Hỗ trợ đọc sao kê từ các ngân hàng lớn tại Việt Nam (Vietcombank, BIDV, Techcombank, MB Bank, VPBank). AI tự động nhận diện định dạng và phân loại danh mục.
-- **Phân trang & Lọc:** Bộ lọc đa chiều (tháng, loại, danh mục, tìm kiếm text), tự động phân trang (100 giao dịch/trang) cho bộ dữ liệu lớn.
+Ứng dụng được thiết kế tối ưu cho trải nghiệm người dùng với tốc độ phản hồi nhanh, giao diện thân thiện, hỗ trợ Dark Mode và bảo mật dữ liệu tuyệt đối với cơ sở dữ liệu lưu trữ cục bộ cho từng người dùng.
 
-### 💰 Quản lý Ngân sách & Mục tiêu
-- **Ngân sách:** Đặt hạn mức theo danh mục/tháng với thanh Progress bar trực quan (Badge: Bình thường / Sắp hết / Vượt ngân sách).
-- **Mục tiêu tiết kiệm:** Theo dõi tiến độ mục tiêu tài chính dài hạn.
+---
 
-### 📈 AI: Dự báo & Phát hiện Bất thường
-- **Dự báo chi tiêu (Forecaster):** Sử dụng **Facebook Prophet** hoặc **Trung bình trượt (Moving Average)** để dự báo chi tiêu tháng tới, kèm biểu đồ khoảng tin cậy.
-- **Phát hiện bất thường (Anomaly Detection):** Ứng dụng **Isolation Forest** (scikit-learn) phân tích thói quen để đánh dấu giao dịch bất thường (cảnh báo mức Low/Medium/High với giải thích chi tiết).
-- **Phân loại tự động (Classifier):** Dùng **TF-IDF + Random Forest** tự động gắn thẻ danh mục cho các giao dịch mới nhập, mô hình học hỏi thói quen của người dùng theo thời gian.
+## 🌟 Tính năng nổi bật
 
-### 🤖 Chatbot AI Đa Nền Tảng
-Hệ thống Chatbot tích hợp 3 Engine khác nhau:
-1. **Local Engine (Offline 100%):** Hoạt động không cần internet, sử dụng Regex Pattern Matching (14 intents) để truy vấn CSDL, chấm điểm sức khoẻ tài chính, và đưa ra lời khuyên.
-2. **Gemini API:** Kết nối API Google Gemini để tư vấn tự nhiên, thông minh và phân tích sâu sắc hơn.
-3. **Ollama Offline:** Tích hợp với các model LLM cục bộ (ví dụ: Llama3, Mistral) cho người dùng muốn bảo mật 100% dữ liệu nhưng vẫn cần sức mạnh LLM.
+### 📊 1. Dashboard & Báo Cáo Trực Quan
+- **Tổng quan theo thời gian thực:** 4 thẻ KPI động (Thu nhập, Chi tiêu, Tiết kiệm, Dự báo xu hướng).
+- **Phân tích đa chiều:**
+  - Biểu đồ cột (Bar Chart) thể hiện biến động thu/chi trong 6 tháng gần nhất.
+  - Biểu đồ tròn/donut (Pie/Donut Chart) phân bổ tỷ trọng chi tiêu theo từng danh mục.
+- **Theo dõi dòng tiền:** Bảng danh sách giao dịch gần đây được cập nhật realtime, với hiệu ứng làm nổi bật (highlight) đỏ đối với các khoản chi tiêu bất thường.
 
-### 👥 Quản lý Quỹ Chung
-- Tạo và tham gia Quỹ (nhóm) thông qua mã mời 6 ký tự.
-- Theo dõi số dư quỹ, các khoản đóng góp của từng thành viên. Dữ liệu cá nhân hoàn toàn tách biệt, nhóm chỉ chia sẻ thống kê quỹ.
+### 💳 2. Quản lý Giao dịch & Nhập liệu Thông Minh
+- **Quản lý CRUD:** Thêm, Sửa, Xóa giao dịch dễ dàng với form nhập liệu tối ưu.
+- **Smart Import (Nhập từ CSV):** Tự động nhận diện cấu trúc file sao kê từ các ngân hàng phổ biến (Vietcombank, BIDV, Techcombank, MB Bank, VPBank).
+- **Phân loại AI (Auto Categorization):** Sử dụng mô hình **TF-IDF kết hợp Random Forest** học hỏi từ thói quen của người dùng để tự động gán nhãn danh mục cho các giao dịch mới.
+- **Bộ lọc mạnh mẽ:** Lọc theo tháng, năm, loại giao dịch (Thu/Chi), danh mục, hoặc tìm kiếm toàn văn bản. Phân trang tự động giúp xử lý hàng vạn giao dịch mượt mà.
 
-### 📄 Báo Cáo PDF & Excel
-- Xuất báo cáo tài chính hàng tháng ra file PDF chuyên nghiệp (ReportLab) với đầy đủ bảng biểu, biểu đồ inline và cảnh báo rủi ro.
-- Xuất toàn bộ dữ liệu hệ thống ra file Excel để backup/phân tích ngoại tuyến.
+### 💰 3. Quản lý Ngân sách & Mục tiêu Tiết Kiệm
+- **Ngân sách thông minh:** Thiết lập hạn mức chi tiêu cho từng danh mục theo tháng. Thanh Progress bar trực quan hiển thị các trạng thái: *Bình thường*, *Sắp hết*, và cảnh báo đỏ khi *Vượt ngân sách*.
+- **Mục tiêu tài chính:** Theo dõi tiến trình các quỹ tiết kiệm dài hạn (Mua xe, Du lịch, Quỹ khẩn cấp,...).
 
-### 🎨 Giao diện (UI/UX) & Cài đặt
-- **Giao diện hiện đại:** Hỗ trợ Dark Mode, Light Mode, Auto (theo hệ thống), 6 màu Accent Colors để cá nhân hoá.
-- **Collapsible Sidebar:** Thanh menu bên trái có thể thu gọn mượt mà (50-60px), tối ưu không gian làm việc.
-- **Command Palette (`Ctrl+K`):** Tìm kiếm và điều hướng siêu tốc trên toàn ứng dụng.
+### 📈 4. Trí Tuệ Nhân Tạo (AI) Chuyên Sâu
+- **Dự báo chi tiêu (Forecasting):** 
+  - Tích hợp **Facebook Prophet** cho phân tích chuỗi thời gian chuyên sâu.
+  - Hỗ trợ mô hình **Moving Average** làm phương án dự phòng, giúp vẽ ra biểu đồ dự báo chi tiêu trong 1-3 tháng tới cùng khoảng tin cậy.
+- **Phát hiện bất thường (Anomaly Detection):** 
+  - Ứng dụng thuật toán **Isolation Forest** (Scikit-learn) tự động quét và đánh dấu các giao dịch có dấu hiệu bất thường về số tiền so với lịch sử chi tiêu.
+  - Phân loại mức độ rủi ro (Low, Medium, High).
+
+### 🤖 5. Chatbot Tư Vấn Tài Chính Đa Nền Tảng
+Hệ thống Chatbot tích hợp 3 engine linh hoạt, đáp ứng mọi nhu cầu:
+1. **Local Rule-based Engine (Offline 100%):** Truy vấn CSDL nhanh chóng bằng Regex Pattern Matching (hơn 14 intents). Đánh giá điểm sức khoẻ tài chính cục bộ.
+2. **Gemini API:** Tích hợp mô hình ngôn ngữ lớn từ Google, cho phép hỏi đáp tự nhiên, phân tích sâu về thói quen chi tiêu và đưa ra lời khuyên cá nhân hoá.
+3. **Ollama LLM (Offline):** Chạy các mô hình như Llama3, Mistral trực tiếp trên máy tính của bạn. Bảo mật dữ liệu tuyệt đối mà vẫn giữ được sự thông minh của AI.
+
+### 📄 6. Trích Xuất Báo Cáo
+- **Xuất file PDF:** Tạo báo cáo tài chính chuyên nghiệp (sử dụng ReportLab), đi kèm bảng biểu, hình ảnh biểu đồ và các cảnh báo rủi ro.
+- **Xuất Excel/CSV:** Backup toàn bộ dữ liệu ra file `.xlsx` hoặc `.csv` để lưu trữ hoặc phân tích trên các công cụ khác.
+
+### 🎨 7. Giao diện (UI/UX) Tối Ưu
+- **Giao diện tương thích (Responsive):** Các thành phần giao diện tự động co giãn theo kích thước cửa sổ.
+- **Chủ đề (Themes):** Hỗ trợ Dark Mode, Light Mode và 6 màu sắc chủ đạo (Accent Colors).
+- **Sidebar thông minh:** Thanh menu bên trái có khả năng thu gọn mở rộng (Collapsible Sidebar) với hiệu ứng animation mượt mà.
+- **Command Palette (`Ctrl+K`):** Tích hợp thanh tìm kiếm nhanh (tương tự VS Code) giúp điều hướng mọi tính năng trong chớp mắt.
+
+---
+
+## 🛠 Công nghệ sử dụng
+
+| Lớp (Layer) | Công nghệ / Thư viện |
+| :--- | :--- |
+| **Giao diện (Frontend)** | Python, PyQt6, PyQt6-Charts |
+| **Backend & Logic** | Python 3.10+ |
+| **Cơ sở dữ liệu** | SQLite3 (Tối ưu hóa WAL mode) |
+| **Machine Learning (AI)** | Scikit-learn, Pandas, Numpy, Facebook Prophet |
+| **LLM & Chatbot** | Google Generative AI (Gemini), Ollama Python Client, Regex |
+| **Báo cáo & Xuất File** | ReportLab (PDF), OpenPyXL (Excel) |
 
 ---
 
 ## 🏗 Kiến trúc hệ thống
 
-Dự án áp dụng mô hình phân lớp rõ ràng (Layered Architecture):
+Ứng dụng tuân thủ mô hình **Phân lớp (Layered Architecture)** kết hợp với **Event-Driven Architecture**:
 
 ```text
 finance-ai/
-├── main.py                          # Entry point
-├── config.py                        # Cấu hình hằng số, đường dẫn
-├── user_session.py                  # Quản lý phiên đăng nhập (Singleton)
+├── main.py                          # Điểm khởi chạy ứng dụng
+├── config.py                        # Quản lý hằng số, đường dẫn
+├── user_session.py                  # Quản lý phiên đăng nhập (Singleton Pattern)
 ├── app/
-│   ├── ai/                          # Module AI Logic
-│   │   ├── classifier.py            # TF-IDF + Random Forest
-│   │   ├── anomaly_detector.py      # Isolation Forest
-│   │   ├── forecaster.py            # Prophet / Moving Average
-│   │   ├── local_chatbot_engine.py  # Regex/Pattern Matching
-│   │   └── ...                      
-│   ├── core/                        # Business Logic & Managers
-│   │   ├── transaction_manager.py
-│   │   ├── settings_manager.py
-│   │   ├── event_bus.py             # Event-driven system (PyQt Signals)
-│   │   └── sync_manager.py          # Cloud Sync (Supabase)
-│   ├── data/                        # Data Access Layer
-│   │   ├── models.py                # SQLite Database Manager
-│   │   └── auth_manager.py
-│   └── ui/                          # Presentation Layer (PyQt6)
-│       ├── main_window.py
-│       ├── dashboard_frame.py
-│       ├── chatbot_frame.py
-│       ├── command_palette.py
-│       └── ...
-└── data/                            # Thư mục chứa CSDL & Settings (Tự động sinh)
+│   ├── ai/                          # Lớp Trí tuệ nhân tạo
+│   │   ├── anomaly_detector.py      # Tìm điểm dị thường: Isolation Forest
+│   │   ├── classifier.py            # Phân loại danh mục: TF-IDF + Random Forest
+│   │   ├── fine_tuner.py            # Huấn luyện mô hình cá nhân hoá
+│   │   ├── forecaster.py            # Dự báo: Prophet / Moving Average
+│   │   ├── goal_tracker.py          # AI theo dõi tiến độ mục tiêu
+│   │   ├── local_chatbot_engine.py  # Xử lý ngôn ngữ tự nhiên offline
+│   │   └── nlp_parser.py            # Phân tích cú pháp NLP
+│   ├── core/                        # Lớp Logic nghiệp vụ (Business Layer)
+│   │   ├── csv_importer.py          # Import dữ liệu sao kê
+│   │   ├── error_handler.py         # Xử lý lỗi tập trung
+│   │   ├── event_bus.py             # Hệ thống Pub/Sub bằng PyQt Signals
+│   │   ├── fund_manager.py          # Quản lý quỹ chung (Groups)
+│   │   ├── goal_tracker.py          # Logic nghiệp vụ mục tiêu
+│   │   ├── logger.py                # Ghi log hệ thống
+│   │   ├── report_generator.py      # Sinh báo cáo PDF/Excel
+│   │   ├── settings_manager.py      # Quản lý cấu hình người dùng
+│   │   ├── sync_manager.py          # Đồng bộ dữ liệu
+│   │   ├── theme_engine.py          # Quản lý giao diện Sáng/Tối
+│   │   └── transaction_manager.py   # Quản lý CRUD giao dịch
+│   ├── data/                        # Lớp Truy cập dữ liệu (Data Access Layer)
+│   │   ├── auth_manager.py          # Quản lý xác thực
+│   │   ├── models.py                # Giao tiếp SQLite Database
+│   │   └── repositories.py          # Các repository xử lý query
+│   └── ui/                          # Lớp Hiển thị (Presentation Layer - PyQt6)
+│       ├── budget_frame.py          # Giao diện ngân sách
+│       ├── chatbot_frame.py         # Giao diện Chatbot
+│       ├── command_palette.py       # Tính năng tìm kiếm siêu tốc
+│       ├── dashboard_frame.py       # Giao diện Tổng quan
+│       ├── forecast_frame.py        # Giao diện Dự báo
+│       ├── fund_frame.py            # Giao diện Quỹ chung
+│       ├── login_window.py          # Cửa sổ đăng nhập/đăng ký
+│       ├── main_window.py           # Window chính điều phối các Frame
+│       ├── notification.py          # UI thông báo (Toast/Popup)
+│       ├── profile_frame.py         # Giao diện hồ sơ cá nhân
+│       ├── report_frame.py          # Giao diện báo cáo
+│       ├── settings_frame.py        # Giao diện cài đặt
+│       ├── spending_frame.py        # Giao diện chi tiêu
+│       └── transaction_frame.py     # Giao diện giao dịch
+└── data/                            # Thư mục chứa CSDL & Cấu hình (Tự động sinh)
 ```
+
+**Ưu điểm kiến trúc:**
+- **Decoupled:** Giao diện không gọi trực tiếp database mà thông qua Core Managers.
+- **Event Bus:** Khi một giao dịch được thêm, Event Bus phát tín hiệu để Dashboard, Budget, và Forecaster tự động làm mới dữ liệu mà không cần tải lại toàn bộ trang.
 
 ---
 
 ## 🗄 Cơ sở dữ liệu & Đa người dùng
 
-Ứng dụng hỗ trợ đa người dùng (Multi-user) với tính năng bảo mật cao:
-- **Cơ sở dữ liệu chia tách:** 
-  - `data/shared/auth.db`: Chứa thông tin đăng nhập (mật khẩu hash bằng SHA-256 + salt).
-  - `data/users/{username}/finance.db`: CSDL SQLite riêng tư 100% của từng người dùng.
-- **Settings & AI Models Per-User:** Mỗi tài khoản có file cấu hình (`settings.json`) và model AI (`classifier_model.pkl`) được cá nhân hóa và huấn luyện riêng biệt trên dữ liệu của người đó.
-- **Tối ưu SQLite:** Bật các Pragma tối ưu tốc độ `WAL`, `MEMORY` temp store, và thiết lập Indexes cho các trường thường truy vấn.
+Tính năng Đa người dùng (Multi-user) được thiết kế ưu tiên sự riêng tư:
+- **`data/shared/auth.db`**: Chứa thông tin tài khoản chung. Mật khẩu được mã hóa an toàn bằng thuật toán SHA-256 kèm theo cơ chế Salt.
+- **`data/users/{username}/finance.db`**: Mỗi người dùng có một tệp SQLite độc lập. Dữ liệu tài chính không bao giờ bị trộn lẫn.
+- **Cấu hình & Model AI Cá nhân hóa:** Mô hình AI phân loại giao dịch (`classifier_model.pkl`) và file cài đặt (`settings.json`) được huấn luyện và lưu riêng cho từng người dùng dựa trên thói quen của chính họ.
+- **Hiệu suất SQLite:** Áp dụng các Pragmas như `PRAGMA journal_mode=WAL;`, `PRAGMA temp_store=MEMORY;` để đảm bảo thao tác đọc ghi siêu tốc.
 
 ---
 
 ## 💻 Yêu cầu hệ thống
 
-- **Hệ điều hành:** Windows 10/11, macOS 12+, Linux.
-- **Python:** Phiên bản 3.10 trở lên.
-- **Phần cứng:** Tối thiểu 2GB RAM. Khuyến nghị 4GB+ nếu sử dụng thư viện Prophet dự báo hoặc Ollama LLM.
+- **Hệ điều hành:** Windows 10/11, macOS 12+, hoặc các bản phân phối Linux phổ biến.
+- **Python:** Khuyến nghị **Python 3.10** đến **3.12**.
+- **Phần cứng:** 
+  - Tối thiểu: CPU 2 nhân, 2GB RAM.
+  - Khuyến nghị: 4GB+ RAM (Rất cần thiết nếu bạn muốn chạy thư viện Prophet hoặc triển khai Ollama LLM tại máy local).
 
 ---
 
-## 🚀 Cài đặt
+## 🚀 Hướng dẫn cài đặt
 
-### 1. Tải mã nguồn
+### Bước 1: Tải mã nguồn
+Clone dự án từ repository về máy tính:
 ```bash
-git clone https://github.com/your-repo/finance-ai.git
-cd finance-ai
+git clone https://github.com/your-username/finance-ai-app.git
+cd finance-ai-app
 ```
 
-### 2. Thiết lập môi trường ảo (Khuyến nghị)
+### Bước 2: Thiết lập Môi trường ảo (Virtual Environment)
+Việc sử dụng môi trường ảo giúp tránh xung đột thư viện:
 ```bash
-python -m venv .venv
-# Trên Windows:
-.venv\Scripts\activate
-# Trên macOS/Linux:
-source .venv/bin/activate
+python -m venv venv
+
+# Kích hoạt trên Windows:
+venv\Scripts\activate
+
+# Kích hoạt trên macOS / Linux:
+source venv/bin/activate
 ```
 
-### 3. Cài đặt các thư viện
+### Bước 3: Cài đặt các thư viện cần thiết
 ```bash
 pip install -r requirements.txt
 ```
-*Các gói cơ bản:* `PyQt6`, `pandas`, `scikit-learn`, `reportlab`, `openpyxl`.
+*Lưu ý: Quá trình cài đặt có thể mất vài phút tuỳ thuộc vào tốc độ mạng của bạn.*
 
-**(Tùy chọn) Cài đặt Prophet cho tính năng dự báo chuyên sâu:**
+*(Tùy chọn) Cài đặt thư viện Prophet nếu bạn muốn tính năng dự báo chính xác cao:*
 ```bash
 pip install prophet
 ```
 
-### 4. Khởi chạy ứng dụng
+### Bước 4: Khởi chạy ứng dụng
 ```bash
 python main.py
 ```
-*(Lần chạy đầu tiên hệ thống sẽ tự động tạo cấu trúc thư mục CSDL trong `data/`).*
+*Trong lần chạy đầu tiên, hệ thống sẽ tự động khởi tạo cấu trúc thư mục `data/` và các tệp cơ sở dữ liệu cần thiết.*
 
 ---
 
-## ⚙️ Cấu hình AI (Gemini / Ollama)
+## ⚙️ Cấu hình AI (Gemini & Ollama)
 
-Ứng dụng hỗ trợ các Engine AI bên ngoài, cấu hình thông qua Giao diện (`Cài đặt -> AI`) hoặc file `.env`:
+Ứng dụng cho phép thay đổi linh hoạt "Bộ não" của Chatbot.
 
-**1. Gemini API:**
-Lấy API Key tại [Google AI Studio](https://aistudio.google.com/). Tạo file `.env` ở thư mục gốc:
+### 1. Sử dụng Google Gemini API (Khuyên dùng)
+Mang lại trải nghiệm thông minh nhất với khả năng hiểu ngôn ngữ tự nhiên xuất sắc.
+- Truy cập [Google AI Studio](https://aistudio.google.com/) để lấy API Key miễn phí.
+- Bạn có thể cấu hình thông qua giao diện UI của ứng dụng (`Cài đặt` -> `Cấu hình AI`) hoặc tạo tệp `.env` tại thư mục gốc:
 ```env
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=điền_api_key_của_bạn_vào_đây
 ```
 
-**2. Ollama Offline:**
-- Cài đặt [Ollama](https://ollama.com/) trên máy.
-- Tải mô hình: `ollama run mistral` (hoặc llama3, qwen,...).
-- Chọn Engine **"Ollama"** trong phần Cài đặt ứng dụng của Finance AI.
+### 2. Sử dụng Ollama (Offline hoàn toàn)
+Dành cho người dùng đề cao sự riêng tư, không muốn dữ liệu tài chính đi ra ngoài internet.
+- Tải và cài đặt [Ollama](https://ollama.com/) vào hệ điều hành.
+- Mở Terminal/CMD và tải một mô hình (ví dụ: Qwen, Mistral hoặc Llama3): 
+  `ollama run qwen2.5:3b`
+- Trong ứng dụng Finance AI, vào phần Cài đặt, chọn Engine là **Ollama** và điền tên mô hình tương ứng.
 
 ---
 
-## 📖 Hướng dẫn sử dụng
+## 📖 Hướng dẫn sử dụng chi tiết
 
-### 1. Đăng ký & Đăng nhập
-- Mở ứng dụng, chọn **Đăng ký ngay** để tạo tài khoản cá nhân.
-- Mỗi người dùng có một vùng dữ liệu tách biệt an toàn.
-
-### 2. Nhập giao dịch hàng loạt (CSV)
-- Vào tab **Giao dịch**, chọn **Nhập CSV**.
-- Tải lên file sao kê từ ngân hàng (Vietcombank, Techcombank, MB, v.v.). AI sẽ tự động phân loại chi tiêu dựa vào mô tả giao dịch.
-
-### 3. Tương tác AI
-- **Dự báo:** Chuyển qua tab **Dự báo**, nhấn *Chạy dự báo* để xem ước tính chi tiêu tháng sau dựa trên lịch sử dữ liệu.
-- **Chatbot:** Vào tab **Chatbot AI**, bạn có thể gõ câu hỏi bằng tiếng Việt như: *"Tháng này tôi tiêu bao nhiêu tiền ăn uống?"*, *"Cho tôi lời khuyên tiết kiệm"*, *"Phân tích thu chi tháng 10"*. 
+1. **Đăng nhập / Đăng ký:** Tạo một tài khoản để hệ thống thiết lập phân vùng dữ liệu riêng cho bạn.
+2. **Quản lý Giao dịch:** 
+   - Truy cập màn hình `Giao dịch`.
+   - Nhấn **+ Thêm Mới** hoặc dùng phím tắt `Ctrl+N` để ghi nhận khoản thu chi mới.
+   - Hoặc chọn **Nhập từ CSV** để import hàng trăm giao dịch từ file sao kê. Hãy để mô hình AI của ứng dụng tự động phân loại danh mục cho bạn.
+3. **Thiết lập Ngân sách:** Sang tab `Ngân sách`, thiết lập hạn mức cho các danh mục (VD: Ăn uống 3.000.000đ). Trở lại Dashboard để xem thanh tiến độ cảnh báo.
+4. **Phân tích Dự báo:** Vào `Dự báo AI`, nhấn nút *Chạy phân tích*. Đợi vài giây để hệ thống tính toán và vẽ đồ thị dự kiến dòng tiền tháng tới.
+5. **Chat với AI:** Gõ các câu lệnh tiếng Việt tự nhiên vào `Chatbot AI`:
+   - *"Tháng này tôi tiêu bao nhiêu tiền ăn uống rồi?"*
+   - *"Phân tích các khoản chi tiêu bất thường của tôi trong tháng trước"*
+   - *"Làm sao để tiết kiệm tiền mua laptop mới?"*
+6. **Command Palette:** Nhấn `Ctrl+K` bất kỳ lúc nào để mở thanh công cụ tìm kiếm, gõ "Báo cáo" để đi tới trang xuất PDF, hoặc "Cài đặt" để đổi giao diện sáng/tối.
 
 ---
 
 ## ⌨️ Phím tắt (Hotkeys)
 
-Để tối ưu hóa trải nghiệm người dùng, ứng dụng hỗ trợ các phím tắt sau:
+Nhằm tối ưu hoá trải nghiệm, Finance AI hỗ trợ hệ thống phím tắt chuyên nghiệp:
 
-| Phím Tắt | Chức năng |
-|:---|:---|
-| `Ctrl+K` | Mở Command Palette (Tìm kiếm & Điều hướng nhanh) |
-| `Ctrl+N` | Mở cửa sổ Thêm giao dịch mới |
-| `Ctrl+1` | Chuyển đến Dashboard |
-| `Ctrl+2` | Chuyển đến Giao dịch |
-| `Ctrl+3` | Chuyển đến Ngân sách |
-| `Ctrl+4` | Chuyển đến Dự báo AI |
-| `Ctrl+5` | Chuyển đến Chatbot AI |
-| `Ctrl+6` | Chuyển đến Báo cáo |
-| `Ctrl+,` | Mở Cài đặt |
-| `F5` | Làm mới (Refresh) giao diện hiện tại |
+| Phím Tắt | Chức năng | Phân hệ |
+|:---:|:---|:---|
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> | Mở Command Palette (Tìm kiếm nhanh) | Global |
+| <kbd>Ctrl</kbd> + <kbd>N</kbd> | Mở cửa sổ Thêm giao dịch mới | Global |
+| <kbd>Ctrl</kbd> + <kbd>1</kbd> | Mở màn hình Dashboard | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>2</kbd> | Mở màn hình Quản lý Giao dịch | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>3</kbd> | Mở màn hình Ngân sách | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>4</kbd> | Mở màn hình Phân tích & Dự báo | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>5</kbd> | Mở Chatbot Trí tuệ Nhân tạo | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>6</kbd> | Mở trang Báo cáo & Xuất dữ liệu | Điều hướng |
+| <kbd>Ctrl</kbd> + <kbd>,</kbd> | Mở Cài đặt hệ thống | Global |
+| <kbd>F5</kbd> | Làm mới (Refresh) toàn bộ dữ liệu | Global |
+| <kbd>Esc</kbd> | Đóng các hộp thoại (Dialog/Popup) | Dialog |
 
 ---
 
 ## 🛠 Phát triển & Đóng góp
 
-### Kiến trúc Sự Kiện (Event Bus)
-Ứng dụng sử dụng mô hình Event-driven bằng PyQt Signals giúp decouple các module.
-```python
-from app.core.event_bus import bus
+Chúng tôi luôn hoan nghênh các đóng góp từ cộng đồng (Pull Requests, Bug Reports, Feature Requests). 
 
-# Phát sự kiện
-bus.transaction_added.emit()
-bus.notify_success.emit("Thành công", "Đã lưu dữ liệu")
+### Luồng Phát triển (Development Workflow):
+1. **Fork** repository này về tài khoản của bạn.
+2. Tạo một branch mới cho tính năng (`git checkout -b feature/your-amazing-feature`).
+3. Thực hiện thay đổi, đảm bảo code tuân thủ quy tắc PEP8.
+4. **Commit** thay đổi (`git commit -m 'Thêm tính năng XYZ'`).
+5. **Push** lên branch (`git push origin feature/your-amazing-feature`).
+6. Tạo một **Pull Request** trên Github để chúng tôi có thể review.
 
-# Lắng nghe (Trong __init__ của các Frame)
-bus.transaction_added.connect(self.refresh_data)
-```
-
-### Script Tiện Ích
-Nếu bạn có phiên bản CSDL cũ, có thể chạy migration script để chuyển sang mô hình đa người dùng:
-```bash
-python migrate_to_per_user_db.py
-```
-
----
-
-## 👥 Thông tin nhóm
-
-| Thành viên | Mã sinh viên |
-|:---|:---|
-| Như Quỳnh | 25AI043 |
-| Hưng Phú | 25AI034 |
+### Scripts tiện ích cho Nhà phát triển:
+- Nếu bạn cần chuyển đổi CSDL từ bản v0.9 (Cũ) sang v1.0 (Đa người dùng):
+  ```bash
+  python scripts/migrate_to_per_user_db.py
+  ```
+- Chạy hệ thống unit test:
+  ```bash
+  python -m unittest discover tests/
+  ```
 
 ---
 
-*Finance AI v1.0 — Ứng dụng quản lý tài chính xây dựng bằng Python, PyQt6 và AI.*
+## 👥 Thông tin nhóm phát triển
+
+| Tên Sinh Viên | Mã Sinh Viên | Vai Trò |
+|:---|:---|:---|
+| **Như Quỳnh** | 25AI043 | AI Model, Backend Logic, Data Processing |
+| **Hưng Phú** | 25AI034 | UI/UX Design (PyQt6), Cấu trúc Database |
+
+---
+<div align="center">
+<i>Finance AI v1.0 — Được phát triển với 💖 bằng Python.</i>
+</div>
