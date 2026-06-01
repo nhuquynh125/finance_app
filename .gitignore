@@ -1,3 +1,10 @@
 .venv/
-data/error.log
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.log
+data/*.log
 data/settings.json
+*.db-shm
+*.db-wal

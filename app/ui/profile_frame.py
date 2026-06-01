@@ -31,7 +31,7 @@ from typing import Optional
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt6.QtGui import QFont, QColor, QPixmap, QPainter, QPainterPath, QBrush
-from PyQt6.QtWidgets import (
+from PyQt6.QtWidgets import ( QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QComboBox, 
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QScrollArea, QFrame, QGridLayout, QDialog,
     QFormLayout, QFileDialog, QMessageBox, QTextEdit,
@@ -382,6 +382,8 @@ class ProfileFrame(QWidget):
         self._build_stats_row()
         self._build_info_card()
         self._build_security_card()
+        self._build_admin_card()
+        self._build_danger_zone()
         # NOTE: "Thông tin phiên" section intentionally not built — removed.
         self.body.addStretch()
 
@@ -482,29 +484,6 @@ class ProfileFrame(QWidget):
         div.setStyleSheet("background:#f0f0f0; border:none; max-height:1px;")
         hl.addWidget(div)
 
-        # Color accent row
-        color_row = QHBoxLayout()
-        color_row.setSpacing(8)
-        clr_lbl = QLabel("Màu đại diện:")
-        clr_lbl.setStyleSheet("color:#0B2A4A; font-size:17px; border:none;")  # was #888
-        color_row.addWidget(clr_lbl)
-
-        self._color_btns: dict[str, QPushButton] = {}
-        for hex_c, name in ACCENT_COLORS:
-            btn = QPushButton()
-            btn.setFixedSize(28, 28)
-            btn.setToolTip(name)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setStyleSheet(
-                f"QPushButton {{ background:{hex_c}; border:2px solid transparent; "
-                f"border-radius:14px; }} "
-                f"QPushButton:hover {{ border-color:#fff; }}")
-            btn.clicked.connect(lambda _, c=hex_c: self._set_color(c))
-            color_row.addWidget(btn)
-            self._color_btns[hex_c] = btn
-
-        color_row.addStretch()
-        hl.addLayout(color_row)
         self.body.addWidget(hero)
 
     # ── Stats row ─────────────────────────────────────────────────────────────
@@ -675,6 +654,12 @@ class ProfileFrame(QWidget):
 
             has_avatar = _get_avatar_path() is not None
             self.btn_remove_avatar.setVisible(has_avatar)
+            if session.role == "admin":
+                self.admin_panel.show()
+                self._load_user_table()
+            else:
+                self.admin_panel.hide()
+
 
         except Exception as e:
             print(f"[ProfileFrame] refresh error: {e}")
@@ -702,6 +687,296 @@ class ProfileFrame(QWidget):
             self.stat_goals.set_value(str(goal_count))
         except Exception:
             pass
+
+
+    @staticmethod
+    def _msg_box(title: str, msg: str, kind: str):
+        box = QMessageBox()
+        box.setWindowTitle(title)
+        box.setText(msg)
+        if kind == "critical":
+            box.setIcon(QMessageBox.Icon.Critical)
+        elif kind == "warning":
+            box.setIcon(QMessageBox.Icon.Warning)
+        else:
+            box.setIcon(QMessageBox.Icon.Information)
+        box.exec()
+
+    def _build_admin_card(self):
+        """Panel chi hien voi admin -- quan ly danh sach user."""
+        self.admin_panel = self._panel_frame("Quản lý người dùng (Admin)")
+
+        pl = self.admin_panel.layout()
+
+        header_row = QHBoxLayout()
+        desc = QLabel("Xem và quản lý toàn bộ tài khoản trong hệ thống.")
+        desc.setFont(QFont("Segoe UI", 16))
+        desc.setStyleSheet("color:#4A6785; border:none;")
+        header_row.addWidget(desc)
+        header_row.addStretch()
+        btn_add_user = QPushButton("Thêm user")
+        btn_add_user.setStyleSheet(self._btn_primary())
+        btn_add_user.clicked.connect(self._open_add_user_dialog)
+        header_row.addWidget(btn_add_user)
+        btn_refresh = QPushButton("Refresh")
+        btn_refresh.setFixedWidth(72)
+        btn_refresh.setStyleSheet(self._btn_normal())
+        btn_refresh.clicked.connect(self._load_user_table)
+        header_row.addWidget(btn_refresh)
+        pl.addLayout(header_row)
+
+        self.user_table = QTableWidget()
+        self.user_table.setColumnCount(7)
+        self.user_table.setHorizontalHeaderLabels(
+            ["Username", "Họ tên", "SĐT", "Vai trò", "Trạng thái", "Đăng nhập cuối", ""])
+        self.user_table.setStyleSheet("""
+            QTableWidget {
+                background:#fff; border:1px solid #e8e8e8;
+                border-radius:8px; gridline-color:#f0f0f0; font-size:16px;
+            }
+            QTableWidget::item { padding:6px 10px; color:#0B2A4A; }
+            QTableWidget::item:selected { background:#E6F1FB; color:#0B2A4A; }
+            QHeaderView::section {
+                background:#f7f7f7; color:#4A6785;
+                font-size:14px; font-weight:bold;
+                border:none; border-bottom:1px solid #e8e8e8;
+                padding:5px 10px;
+            }
+        """)
+        self.user_table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.ResizeMode.Stretch)
+        self.user_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows)
+        self.user_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.user_table.verticalHeader().setVisible(False)
+        self.user_table.setFixedHeight(220)
+        pl.addWidget(self.user_table)
+
+        self.body.addWidget(self.admin_panel)
+        self.admin_panel.hide()
+
+    def _build_danger_zone(self):
+        panel = self._panel_frame("Vùng nguy hiểm")
+        panel.setStyleSheet(
+            "QFrame { background:#fff8f8; border:1px solid #fcc; border-radius:10px; }")
+        pl = panel.layout()
+
+        row = QHBoxLayout()
+        col = QVBoxLayout()
+
+        # Larger, bolder "Xóa tài khoản" title
+        title = QLabel("Xóa tài khoản")
+        title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        title.setStyleSheet("color:#A32D2D; border:none;")
+
+        desc = QLabel(
+            "Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu tài chính.\n"
+            "Hành động này KHÔNG THỂ hoàn tác.")
+        desc.setFont(QFont("Segoe UI", 15))
+        desc.setStyleSheet("color:#666; border:none;")
+        desc.setWordWrap(True)
+        col.addWidget(title)
+        col.addWidget(desc)
+        row.addLayout(col)
+        row.addStretch()
+
+        btn_delete = QPushButton("Xóa tài khoản")
+        btn_delete.setStyleSheet(self._btn_danger())
+        btn_delete.clicked.connect(self._delete_own_account)
+        row.addWidget(btn_delete)
+        pl.addLayout(row)
+
+        self.body.addWidget(panel)
+
+    def _load_user_table(self):
+        try:
+            conn = self._auth_conn()
+            rows = conn.execute(
+                "SELECT id, username, full_name, phone, role, is_active, last_login "
+                "FROM users ORDER BY id"
+            ).fetchall()
+            conn.close()
+
+            self.user_table.setRowCount(0)
+            from user_session import session as _sess
+            current_username = _sess.username if _sess.is_logged_in else ""
+
+            for row in rows:
+                r = self.user_table.rowCount()
+                self.user_table.insertRow(r)
+
+                self._tbl_item(r, 0, row["username"])
+                self._tbl_item(r, 1, row["full_name"] or "")
+                self._tbl_item(r, 2, row["phone"] or "--", "#4A6785")
+                role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
+                self._tbl_item(r, 3, role_map.get(row["role"], row["role"]))
+
+                status_item = QTableWidgetItem(
+                    "Hoạt động" if row["is_active"] else "Khóa")
+                status_item.setForeground(
+                    QColor("#1D9E75") if row["is_active"] else QColor("#E24B4A"))
+                self.user_table.setItem(r, 4, status_item)
+
+                ll = (row["last_login"] or "Chưa đăng nhập")[:16]
+                self._tbl_item(r, 5, ll, "#4A6785")
+
+                if row["username"] != current_username:
+                    btn_w = QWidget()
+                    btn_l = QHBoxLayout(btn_w)
+                    btn_l.setContentsMargins(4, 2, 4, 2)
+                    btn_l.setSpacing(4)
+
+                    btn_edit = QPushButton("Sửa")
+                    btn_edit.setFixedSize(44, 24)
+                    btn_edit.setStyleSheet(
+                        "QPushButton { background:#E6F1FB; color:#0B2A4A; "
+                        "border:none; border-radius:4px; font-size:14px; } "
+                        "QPushButton:hover { background:#B5D4F4; }")
+                    btn_edit.clicked.connect(
+                        lambda _, u=dict(row): self._open_edit_user_dialog(u))
+
+                    btn_toggle = QPushButton(
+                        "Khóa" if row["is_active"] else "Mở")
+                    btn_toggle.setFixedSize(44, 24)
+                    btn_toggle.setStyleSheet(
+                        "QPushButton { background:#FAEEDA; color:#633806; "
+                        "border:none; border-radius:4px; font-size:14px; } "
+                        "QPushButton:hover { background:#f5d5a0; }")
+                    btn_toggle.clicked.connect(
+                        lambda _, uid=row["id"], cur=bool(row["is_active"]):
+                            self._toggle_user_active(uid, cur))
+
+                    btn_del = QPushButton("Xóa")
+                    btn_del.setFixedSize(44, 24)
+                    btn_del.setStyleSheet(
+                        "QPushButton { background:#FCEBEB; color:#A32D2D; "
+                        "border:none; border-radius:4px; font-size:14px; } "
+                        "QPushButton:hover { background:#f5c6cb; }")
+                    btn_del.clicked.connect(
+                        lambda _, uname=row["username"]:
+                            self._delete_user(uname))
+
+                    btn_l.addWidget(btn_edit)
+                    btn_l.addWidget(btn_toggle)
+                    btn_l.addWidget(btn_del)
+                    self.user_table.setCellWidget(r, 6, btn_w)
+                else:
+                    me = QLabel("(bạn)")
+                    me.setStyleSheet("color:#aaa; font-size:15px; padding:0 6px;")
+                    self.user_table.setCellWidget(r, 6, me)
+
+            self.user_table.resizeRowsToContents()
+        except Exception as e:
+            print(f"[UserProfileTab] _load_user_table error: {e}")
+
+    # -- Admin actions --
+
+    def _open_add_user_dialog(self):
+        dialog = _AddUserDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self._load_user_table()
+
+    def _open_edit_user_dialog(self, user: dict):
+        dialog = _EditUserDialog(user, self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self._load_user_table()
+
+    def _toggle_user_active(self, user_id: int, current_active: bool):
+        action = "khóa" if current_active else "mở khóa"
+        reply = QMessageBox.question(
+            self, "Xác nhận",
+            f"Bạn muốn {action} tài khoản này?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            conn = self._auth_conn()
+            conn.execute(
+                "UPDATE users SET is_active=? WHERE id=?",
+                (0 if current_active else 1, user_id)
+            )
+            conn.commit()
+            conn.close()
+            self._load_user_table()
+        except Exception as e:
+            self._msg_box("Lỗi", str(e), "critical")
+
+    def _delete_user(self, username: str):
+        reply = QMessageBox.warning(
+            self, "Xóa tài khoản",
+            f"Xóa tài khoản '@{username}'?\n\n"
+            "Dữ liệu tài chính trong thư mục của user vẫn còn trên ổ đĩa.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            conn = self._auth_conn()
+            conn.execute("DELETE FROM users WHERE username=?", (username,))
+            conn.commit()
+            conn.close()
+            self._load_user_table()
+        except Exception as e:
+            self._msg_box("Lỗi", str(e), "critical")
+
+    def _delete_own_account(self):
+        from user_session import session
+
+        reply = QMessageBox.warning(
+            self, "Xóa tài khoản",
+            f"Bạn sắp xóa tài khoản '@{session.username}' và toàn bộ dữ liệu tài chính.\n\n"
+            "Hành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        pw_dialog = _ConfirmPasswordDialog(session.username, self)
+        if pw_dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        try:
+            import shutil
+            conn = self._auth_conn()
+            conn.execute("DELETE FROM users WHERE username=?", (session.username,))
+            conn.commit()
+            conn.close()
+
+            user_dir = session.data_dir
+            if user_dir.exists():
+                shutil.rmtree(str(user_dir), ignore_errors=True)
+
+            QMessageBox.information(self, "Đã xóa", "Tài khoản đã được xóa. App sẽ đóng.")
+
+            from app.data.auth_manager import AuthManager
+            AuthManager().logout()
+
+            from app.ui.login_window import LoginWindow
+            self._login_window = LoginWindow()
+            self._login_window.show()
+            if self.main_window:
+                self.main_window.close()
+
+        except Exception as e:
+            self._msg_box("Lỗi", str(e), "critical")
+
+    @staticmethod
+    def _auth_conn():
+        import sqlite3
+        from user_session import session
+        path = session.auth_db_path
+        conn = sqlite3.connect(str(path), check_same_thread=False, timeout=10)
+        conn.row_factory = sqlite3.Row
+        return conn
+    def _tbl_item(self, row, col, text, color="#0B2A4A"):
+        item = QTableWidgetItem(text)
+        item.setForeground(QColor(color))
+        self.user_table.setItem(row, col, item)
+
 
     # ── Actions ───────────────────────────────────────────────────────────────
 
@@ -975,3 +1250,310 @@ class ProfileFrame(QWidget):
                 "border:1px solid #E24B4A; border-radius:6px; "
                 "padding:7px 12px; font-size:16px; font-weight:500; } "
                 "QPushButton:hover { background:#FCEBEB; }")
+class _ConfirmPasswordDialog(QDialog):
+    def __init__(self, username: str, parent=None):
+        super().__init__(parent)
+        self.username = username
+        self.setWindowTitle("Xác nhận danh tính")
+        self.setFixedSize(380, 210)
+        self.setStyleSheet("QDialog { background:#fff; }")
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(12)
+
+        lbl = QLabel(f"Nhập mật khẩu của @{self.username} để xác nhận xóa:")
+        lbl.setWordWrap(True)
+        lbl.setFont(QFont("Segoe UI", 16))
+        lbl.setStyleSheet("color:#0B2A4A; border:none;")
+        layout.addWidget(lbl)
+
+        self.pw_input = QLineEdit()
+        self.pw_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.pw_input.setPlaceholderText("Mật khẩu...")
+        self.pw_input.setStyleSheet(
+            "QLineEdit { border:1px solid #ddd; border-radius:6px; "
+            "padding:7px 10px; font-size:16px; color:#0B2A4A; }")
+        self.pw_input.returnPressed.connect(self._verify)
+        layout.addWidget(self.pw_input)
+
+        self.err_lbl = QLabel("")
+        self.err_lbl.setFont(QFont("Segoe UI", 15))
+        self.err_lbl.setStyleSheet("color:#E24B4A; border:none;")
+        self.err_lbl.hide()
+        layout.addWidget(self.err_lbl)
+
+        btn_row = QHBoxLayout()
+        btn_cancel = QPushButton("Hủy")
+        btn_cancel.setStyleSheet(
+            "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
+            "border-radius:6px; padding:6px 14px; font-size:15px; }")
+        btn_cancel.clicked.connect(self.reject)
+
+        btn_ok = QPushButton("Xác nhận xóa")
+        btn_ok.setStyleSheet(
+            "QPushButton { background:#E24B4A; color:#fff; border:none; "
+            "border-radius:6px; padding:6px 14px; font-weight:500; font-size:15px; } "
+            "QPushButton:hover { background:#C0392B; }")
+        btn_ok.clicked.connect(self._verify)
+
+        btn_row.addWidget(btn_cancel)
+        btn_row.addWidget(btn_ok)
+        layout.addLayout(btn_row)
+
+    def _verify(self):
+        import hashlib
+        import sqlite3
+        from user_session import session
+        try:
+            path = session.auth_db_path
+            conn = sqlite3.connect(str(path))
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                "SELECT password_hash, salt FROM users WHERE username=?",
+                (self.username,)
+            ).fetchone()
+            conn.close()
+            if not row:
+                self.err_lbl.setText("Tài khoản không tồn tại.")
+                self.err_lbl.show()
+                return
+            expected = hashlib.sha256(
+                (row["salt"] + self.pw_input.text()).encode()).hexdigest()
+            if expected != row["password_hash"]:
+                self.err_lbl.setText("Mật khẩu không đúng.")
+                self.err_lbl.show()
+                return
+            self.accept()
+        except Exception as e:
+            self.err_lbl.setText(str(e))
+            self.err_lbl.show()
+
+
+class _AddUserDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Thêm người dùng mới")
+        self.setFixedSize(420, 320)
+        self.setStyleSheet("QDialog { background:#fff; } "
+                           "QLabel { font-size:16px; color:#0B2A4A; }")
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(10)
+
+        _s = ("QLineEdit,QComboBox { border:1px solid #ddd; border-radius:6px; "
+              "padding:7px 10px; font-size:16px; background:#fff; color:#0B2A4A; }")
+
+        form = QFormLayout()
+        form.setSpacing(10)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.le_fullname = QLineEdit()
+        self.le_fullname.setPlaceholderText("Họ và tên")
+        self.le_fullname.setStyleSheet(_s)
+        form.addRow("Họ tên:", self.le_fullname)
+
+        self.le_username = QLineEdit()
+        self.le_username.setPlaceholderText("3-30 ký tự, không dấu cách")
+        self.le_username.setStyleSheet(_s)
+        form.addRow("Username:", self.le_username)
+
+        self.le_pw = QLineEdit()
+        self.le_pw.setEchoMode(QLineEdit.EchoMode.Password)
+        self.le_pw.setPlaceholderText("Tối thiểu 6 ký tự")
+        self.le_pw.setStyleSheet(_s)
+        form.addRow("Mật khẩu:", self.le_pw)
+
+        self.cb_role = QComboBox()
+        self.cb_role.addItem("Người dùng", "user")
+        self.cb_role.addItem("Quản trị viên", "admin")
+        self.cb_role.setStyleSheet(_s)
+        form.addRow("Vai trò:", self.cb_role)
+
+        layout.addLayout(form)
+
+        self.msg_lbl = QLabel("")
+        self.msg_lbl.setWordWrap(True)
+        self.msg_lbl.hide()
+        layout.addWidget(self.msg_lbl)
+
+        layout.addStretch()
+        btn_row = QHBoxLayout()
+        btn_cancel = QPushButton("Hủy")
+        btn_cancel.setStyleSheet(
+            "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
+            "border-radius:6px; padding:7px 14px; font-size:15px; }")
+        btn_cancel.clicked.connect(self.reject)
+        btn_ok = QPushButton("Thêm user")
+        btn_ok.setStyleSheet(
+            "QPushButton { background:#E6F1FB; color:#0B2A4A; "
+            "border:1px solid #B5D4F4; border-radius:6px; "
+            "padding:7px 16px; font-weight:500; font-size:15px; } "
+            "QPushButton:hover { background:#B5D4F4; }")
+        btn_ok.clicked.connect(self._do_add)
+        btn_row.addWidget(btn_cancel)
+        btn_row.addWidget(btn_ok)
+        layout.addLayout(btn_row)
+
+    def _do_add(self):
+        fullname = self.le_fullname.text().strip()
+        username = self.le_username.text().strip()
+        password = self.le_pw.text()
+        role     = self.cb_role.currentData()
+
+        if not fullname or not username or not password:
+            self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
+            return
+        if len(username) < 3:
+            self._show_msg("Username phải có ít nhất 3 ký tự.", "error")
+            return
+        if len(password) < 6:
+            self._show_msg("Mật khẩu phải có ít nhất 6 ký tự.", "error")
+            return
+
+        from app.data.auth_manager import AuthManager
+        result = AuthManager().register(username, password, fullname)
+        if not result["success"]:
+            self._show_msg(result["message"], "error")
+            return
+
+        if role == "admin":
+            from user_session import session
+            import sqlite3
+            conn = sqlite3.connect(str(session.auth_db_path))
+            conn.execute("UPDATE users SET role='admin' WHERE username=?", (username,))
+            conn.commit()
+            conn.close()
+
+        self.accept()
+
+    def _show_msg(self, msg: str, kind: str):
+        c = ("background:#FEF0F0; color:#C0392B; border:1px solid #F5C6CB;"
+             if kind == "error"
+             else "background:#EAF3DE; color:#2D7D1A; border:1px solid #B8DFAA;")
+        self.msg_lbl.setStyleSheet(
+            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:15px; }}")
+        self.msg_lbl.setText(msg)
+        self.msg_lbl.show()
+
+
+class _EditUserDialog(QDialog):
+    def __init__(self, user: dict, parent=None):
+        super().__init__(parent)
+        self.user = user
+        self.setWindowTitle(f"Sửa thông tin @{user['username']}")
+        self.setFixedSize(420, 280)
+        self.setStyleSheet("QDialog { background:#fff; } "
+                           "QLabel { font-size:16px; color:#0B2A4A; }")
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(10)
+
+        _s = ("QLineEdit,QComboBox { border:1px solid #ddd; border-radius:6px; "
+              "padding:7px 10px; font-size:16px; background:#fff; color:#0B2A4A; }")
+
+        form = QFormLayout()
+        form.setSpacing(10)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.le_fullname = QLineEdit(self.user.get("full_name") or "")
+        self.le_fullname.setStyleSheet(_s)
+        form.addRow("Họ tên:", self.le_fullname)
+
+        un = QLineEdit(self.user.get("username") or "")
+        un.setReadOnly(True)
+        un.setStyleSheet(_s + " background:#f7f7f7; color:#999;")
+        form.addRow("Username:", un)
+
+        self.cb_role = QComboBox()
+        self.cb_role.addItem("Người dùng", "user")
+        self.cb_role.addItem("Quản trị viên", "admin")
+        self.cb_role.setStyleSheet(_s)
+        idx = self.cb_role.findData(self.user.get("role", "user"))
+        if idx >= 0:
+            self.cb_role.setCurrentIndex(idx)
+        form.addRow("Vai trò:", self.cb_role)
+
+        self.le_reset_pw = QLineEdit()
+        self.le_reset_pw.setEchoMode(QLineEdit.EchoMode.Password)
+        self.le_reset_pw.setPlaceholderText("Để trống = không đổi")
+        self.le_reset_pw.setStyleSheet(_s)
+        form.addRow("Đặt lại mật khẩu:", self.le_reset_pw)
+
+        layout.addLayout(form)
+
+        self.msg_lbl = QLabel("")
+        self.msg_lbl.setWordWrap(True)
+        self.msg_lbl.hide()
+        layout.addWidget(self.msg_lbl)
+
+        layout.addStretch()
+        btn_row = QHBoxLayout()
+        btn_cancel = QPushButton("Hủy")
+        btn_cancel.setStyleSheet(
+            "QPushButton { background:#fff; color:#888; border:1px solid #ddd; "
+            "border-radius:6px; padding:7px 14px; font-size:15px; }")
+        btn_cancel.clicked.connect(self.reject)
+        btn_ok = QPushButton("Lưu")
+        btn_ok.setStyleSheet(
+            "QPushButton { background:#E6F1FB; color:#0B2A4A; "
+            "border:1px solid #B5D4F4; border-radius:6px; "
+            "padding:7px 16px; font-weight:500; font-size:15px; } "
+            "QPushButton:hover { background:#B5D4F4; }")
+        btn_ok.clicked.connect(self._do_save)
+        btn_row.addWidget(btn_cancel)
+        btn_row.addWidget(btn_ok)
+        layout.addLayout(btn_row)
+
+    def _do_save(self):
+        fullname = self.le_fullname.text().strip()
+        role     = self.cb_role.currentData()
+        new_pw   = self.le_reset_pw.text()
+
+        if not fullname:
+            self._show_msg("Họ tên không được để trống.", "error")
+            return
+
+        try:
+            import sqlite3, hashlib, secrets as _sec
+            from user_session import session
+            conn = sqlite3.connect(str(session.auth_db_path))
+            conn.execute(
+                "UPDATE users SET full_name=?, role=? WHERE username=?",
+                (fullname, role, self.user["username"])
+            )
+            if new_pw:
+                if len(new_pw) < 6:
+                    self._show_msg("Mật khẩu mới phải có ít nhất 6 ký tự.", "error")
+                    conn.close()
+                    return
+                salt    = _sec.token_hex(16)
+                pw_hash = hashlib.sha256((salt + new_pw).encode()).hexdigest()
+                conn.execute(
+                    "UPDATE users SET password_hash=?, salt=? WHERE username=?",
+                    (pw_hash, salt, self.user["username"])
+                )
+            conn.commit()
+            conn.close()
+            self.accept()
+        except Exception as e:
+            self._show_msg(str(e), "error")
+
+    def _show_msg(self, msg: str, kind: str):
+        c = ("background:#FEF0F0; color:#C0392B; border:1px solid #F5C6CB;"
+             if kind == "error"
+             else "background:#EAF3DE; color:#2D7D1A; border:1px solid #B8DFAA;")
+        self.msg_lbl.setStyleSheet(
+            f"QLabel {{ {c} border-radius:8px; padding:8px 12px; font-size:15px; }}")
+        self.msg_lbl.setText(msg)
+        self.msg_lbl.show()
+
+

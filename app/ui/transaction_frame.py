@@ -371,10 +371,39 @@ class TransactionFrame(QWidget, BusConnectMixin):
     def _on_ai_finished(self, count):
         self.btn_ai.setText("Phân loại AI")
         self.btn_ai.setEnabled(True)
+        
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Hoàn tất")
+        msg.setIcon(QMessageBox.Icon.Information)
         if count > 0:
-            QMessageBox.information(self, "Hoàn tất", f"AI đã tự động phân loại {count} giao dịch mới.")
+            msg.setText(f"AI đã tự động phân loại {count} giao dịch mới.")
         else:
-            QMessageBox.information(self, "Hoàn tất", "Tất cả giao dịch đã có danh mục. AI không có dữ liệu mới để phân loại, nhưng đã kiểm tra các khoản bất thường.")
+            msg.setText("Tất cả giao dịch đã có danh mục. AI không có dữ liệu mới để phân loại,\nnhưng đã kiểm tra các khoản bất thường.")
+        
+        msg.setStyleSheet("""
+            QMessageBox {
+                background-color: #ffffff;
+            }
+            QLabel {
+                font-size: 16px;
+                color: #111111;
+                font-weight: 500;
+                min-height: 40px;
+            }
+            QPushButton {
+                background-color: #E6F1FB;
+                color: #0C447C;
+                border: 1px solid #B5D4F4;
+                border-radius: 6px;
+                padding: 6px 20px;
+                font-size: 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #B5D4F4;
+            }
+        """)
+        msg.exec()
         self.refresh()
 
     def _open_add_dialog(self):

@@ -98,12 +98,13 @@ class FundFrame(QWidget):
 
     def _build_toolbar(self):
         bar = QWidget()
-        bar.setFixedHeight(48)
+        bar.setFixedHeight(60)
         bar.setStyleSheet("background:#fff; border-bottom:1px solid #e8e8e8;")
         layout = QHBoxLayout(bar)
-        layout.setContentsMargins(16, 0, 16, 0)
+        layout.setContentsMargins(20, 0, 20, 0)
         title = QLabel("Quản lý Quỹ")
-        title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
+        title.setStyleSheet("color:#1A2B45; border:none;")
         layout.addWidget(title)
         layout.addStretch()
         btn_refresh = QPushButton("Làm mới")
@@ -174,7 +175,7 @@ class FundFrame(QWidget):
         ll.setSpacing(12)
         
         list_title = QLabel(f"Các quỹ đang tham gia ({len(groups)})")
-        list_title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        list_title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         list_title.setStyleSheet("color:#1A2B45; border:none;")
         ll.addWidget(list_title)
         
@@ -300,11 +301,13 @@ class FundFrame(QWidget):
         ml.setSpacing(8)
 
         members_title = QLabel("Thành viên & Đóng góp")
-        members_title.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
+        members_title.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         members_title.setStyleSheet("border:none; color:#1A2B45;")
         ml.addWidget(members_title)
         
-        ml.addWidget(QLabel("Bấm vào tên thành viên để xem chi tiết lịch sử đóng góp."))
+        desc_lbl = QLabel("Bấm vào tên thành viên để xem chi tiết lịch sử đóng góp.")
+        desc_lbl.setStyleSheet("color:#666; font-size:16px;")
+        ml.addWidget(desc_lbl)
 
         members = self.fm.get_members(group["id"])
         if members:
@@ -355,7 +358,7 @@ class FundFrame(QWidget):
         cl.addWidget(icon_lbl)
 
         t = QLabel(title)
-        t.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        t.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         t.setStyleSheet("color:#1A2B45; border:none;")
         cl.addWidget(t)
 
@@ -387,33 +390,33 @@ class FundFrame(QWidget):
         """)
         
         rl = QHBoxLayout(row)
-        rl.setContentsMargins(10, 8, 10, 8)
-        rl.setSpacing(12)
+        rl.setContentsMargins(14, 12, 14, 12)
+        rl.setSpacing(16)
 
         # Avatar chữ cái đầu
         initial = (member["username"][0] if member["username"] else "?").upper()
         avatar = QLabel(initial)
-        avatar.setFixedSize(38, 38)
+        avatar.setFixedSize(44, 44)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        avatar.setFont(QFont("Segoe UI", 19, QFont.Weight.Bold))
         color = "#378ADD" if member["role"] == "owner" else "#888"
         avatar.setStyleSheet(
-            f"background:{color}; color:white; border-radius:19px; border:none;")
+            f"background:{color}; color:white; border-radius:22px; border:none;")
         rl.addWidget(avatar)
 
         name_col = QWidget()
         name_col.setStyleSheet("background:transparent;")
         nc = QVBoxLayout(name_col)
         nc.setContentsMargins(0, 0, 0, 0)
-        nc.setSpacing(1)
+        nc.setSpacing(2)
 
         name_lbl = QLabel(member["username"])
-        name_lbl.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
+        name_lbl.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
         name_lbl.setStyleSheet("color:#1A2B45; border:none;")
         nc.addWidget(name_lbl)
 
         role_lbl = QLabel(member["role_display"])
-        role_lbl.setFont(QFont("Segoe UI", 14))
+        role_lbl.setFont(QFont("Segoe UI", 15))
         role_lbl.setStyleSheet("color:#8FA8C4; border:none;")
         nc.addWidget(role_lbl)
 
@@ -423,7 +426,7 @@ class FundFrame(QWidget):
         # Hiển thị số tiền đóng góp
         contrib_val = member.get("total_contribution", 0)
         contrib_lbl = QLabel(f"Đã góp: <b style='color:#1D9E75;'>{contrib_val:,.0f} đ</b>")
-        contrib_lbl.setFont(QFont("Segoe UI", 15))
+        contrib_lbl.setFont(QFont("Segoe UI", 17))
         contrib_lbl.setStyleSheet("border:none;")
         rl.addWidget(contrib_lbl)
         

@@ -246,7 +246,7 @@ class Sidebar(QWidget):
             "CHÍNH": ["Dashboard", "Chi tiêu", "Giao dịch", "Ngân sách"],
             "AI":    ["Dự báo", "Chatbot AI"],
             "NHÓM":  ["Quỹ"],
-            "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt"],
+            "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt ứng dụng"],
         }
         icons = {
             "Dashboard":  "📊",
@@ -258,7 +258,7 @@ class Sidebar(QWidget):
             "Quỹ":        "👥",
             "Hồ sơ":      "👤",
             "Báo cáo":    "📄",
-            "Cài đặt":    "⚙️",
+            "Cài đặt ứng dụng": "⚙️",
         }
         for section_name, pages in sections.items():
             sec_lbl = QLabel(section_name)
@@ -355,16 +355,17 @@ class Sidebar(QWidget):
         except Exception:
             color = "#E8921A"
 
-        w = QWidget()
-        w.setStyleSheet("background: transparent;")
+        w = QPushButton()
+        w.setStyleSheet("QPushButton { background: transparent; border: none; text-align: left; } QPushButton:hover { background: rgba(255,255,255,0.05); border-radius: 10px; }")
         w.setCursor(Qt.CursorShape.PointingHandCursor)
+        w.clicked.connect(lambda: self._navigate("Hồ sơ"))
         hl = QHBoxLayout(w)
         hl.setContentsMargins(14, 10, 14, 10)
         hl.setSpacing(10)
 
         initials = (full_name[:2] if full_name else "?").upper()
         self._avatar_btn = _SidebarAvatar(initials, color, size=36)
-        self._avatar_btn.clicked.connect(lambda: self._navigate("Hồ sơ"))
+        self._avatar_btn.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         hl.addWidget(self._avatar_btn)
 
         name_col = QVBoxLayout()
@@ -376,12 +377,14 @@ class Sidebar(QWidget):
         self._full_name_lbl.setStyleSheet(
             "color: #FFFFFF; border: none; background: transparent;"
         )
+        self._full_name_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
         self._role_lbl = QLabel(role_map.get(role, "Người dùng"))
         self._role_lbl.setFont(QFont("Segoe UI", 14))
         self._role_lbl.setStyleSheet(
             "color: rgba(255,255,255,0.55); border: none; background: transparent;"
         )
+        self._role_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         name_col.addWidget(self._full_name_lbl)
         name_col.addWidget(self._role_lbl)
         hl.addLayout(name_col)
@@ -391,8 +394,8 @@ class Sidebar(QWidget):
         arrow.setStyleSheet(
             "color: rgba(255,255,255,0.3); font-size:23px; border:none; background:transparent;"
         )
+        arrow.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         hl.addWidget(arrow)
-        w.mousePressEvent = lambda e: self._navigate("Hồ sơ")
         return w
 
     def _refresh_user_info(self, full_name: str, username: str, role: str):
@@ -608,7 +611,7 @@ class MainWindow(QMainWindow):
         if page == "Báo cáo":
             from app.ui.report_frame import ReportFrame
             return ReportFrame(main_window=self)
-        if page == "Cài đặt":
+        if page == "Cài đặt ứng dụng":
             from app.ui.settings_frame import SettingsFrame
             return SettingsFrame(main_window=self)
         # Trang chưa implement
