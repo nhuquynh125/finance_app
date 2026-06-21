@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QFont, QPixmap, QColor, QPainter, QLinearGradient,
-    QBrush, QRadialGradient, QPainterPath,
+    QBrush, QRadialGradient, QPainterPath, QIcon
 )
 from pathlib import Path
 
@@ -747,6 +747,10 @@ class LoginWindow(QWidget):
         self.auth = AuthManager()
         self.setWindowTitle("Finance AI — Đăng nhập")
         self.setObjectName("loginWindow")
+        
+        logo_path = Path(__file__).resolve().parent.parent.parent / "logo.png"
+        if logo_path.exists():
+            self.setWindowIcon(QIcon(str(logo_path)))
 
         # Đặt kích thước TRƯỚC khi build UI.
         self._configure_size()

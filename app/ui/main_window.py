@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
     QFont, QPainter, QPainterPath, QBrush, QColor,
-    QLinearGradient, QPixmap
+    QLinearGradient, QPixmap, QIcon
 )
 from app.data.models import get_connection
 from app.core.settings_manager import load_settings
@@ -646,6 +646,10 @@ class MainWindow(QMainWindow):
             f"Finance AI — "
             f"{self.current_user.get('full_name', self.current_user.get('username', ''))}"
         )
+        logo_path = Path(__file__).resolve().parent.parent.parent / "logo.png"
+        if logo_path.exists():
+            self.setWindowIcon(QIcon(str(logo_path)))
+        
         self._apply_window_settings()
         self.setStyleSheet("QMainWindow { background: #F0F6FF; }")
 

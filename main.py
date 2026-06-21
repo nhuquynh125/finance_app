@@ -44,8 +44,22 @@ from app.ui.main_window import MainWindow
 from app.core.error_handler import setup_global_handler
 
 
+from PyQt6.QtGui import QIcon
+
 def main():
+    # Fix for Windows taskbar icon
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            myappid = 'financeai.app.1.0'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception:
+            pass
+
     app = QApplication(sys.argv)
+    logo_path = Path(__file__).resolve().parent / "logo.png"
+    if logo_path.exists():
+        app.setWindowIcon(QIcon(str(logo_path)))
     setup_global_handler(app)
 
     init_auth_database()
