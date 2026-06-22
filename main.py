@@ -1,22 +1,9 @@
-# main.py  (cập nhật: per-user database + session management + UTF-8 fix)
-"""
-Entry point của Finance AI.
-
-Thay đổi so với phiên bản cũ:
-  - init_auth_database() khởi tạo DB xác thực dùng chung (data/shared/auth.db)
-  - init_database() per-user được gọi bên trong AuthManager.login()
-  - user_session.session.set_user() được gọi sau đăng nhập thành công
-  - DatabaseManager.reset() được gọi khi đăng xuất
-  - Fix UnicodeEncodeError trên Windows: set stdout/stderr sang UTF-8
-"""
-
 import sys
 import os
 from pathlib import Path
 
 
-# ── Fix UTF-8 encoding cho Windows console (trước mọi import khác) ───────────
-# Ngăn UnicodeEncodeError khi traceback/log chứa emoji hoặc ký tự đặc biệt
+
 if sys.platform == "win32":
     import io
     if hasattr(sys.stdout, "buffer"):
