@@ -1,13 +1,4 @@
-# auth_manager.py  (cập nhật: dùng auth.db riêng, tách khỏi finance.db per-user)
-"""
-Quản lý xác thực người dùng: đăng nhập, đăng ký, đặt lại mật khẩu,
-ghi nhớ phiên đăng nhập.
-
-Thay đổi so với phiên bản cũ:
-  - Dùng auth.db RIÊNG (data/shared/auth.db) thay vì users table trong finance.db
-  - Sau khi đăng nhập, gọi session.set_user() để thiết lập DB path per-user
-  - init_database() được gọi per-user để tạo finance.db của từng người
-"""
+# auth_manager.py
 
 import hashlib
 import json

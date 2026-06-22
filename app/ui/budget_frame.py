@@ -1,6 +1,4 @@
 # app/ui/budget_frame.py
-# Refactored: improved typography contrast, larger fonts, fixed button overlap,
-# tighter summary card margins, scaled-up AI tips text.
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,

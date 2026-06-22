@@ -1,12 +1,4 @@
-# app/data/repositories.py  (cập nhật: validate() chặt hơn)
-"""
-Thay đổi so với phiên bản cũ:
-  - TransactionModel.validate(): thêm kiểm tra amount tối đa,
-    ngày không được trong tương lai quá 1 năm, ngày không quá cũ,
-    description quá dài
-  - BudgetModel.validate(): thêm kiểm tra limit_amount tối đa
-  - Không thay đổi gì khác — toàn bộ logic DB giữ nguyên
-"""
+# app/data/repositories.py
 
 from __future__ import annotations
 

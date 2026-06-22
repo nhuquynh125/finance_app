@@ -1,15 +1,4 @@
-# app/ui/settings_frame.py  (refactored: font sizes, contrast, spacing, removed blocks)
-"""
-Changes in this version:
-  - Tab "Tài khoản": larger section headers, stronger label contrast (#0B2A4A),
-    bigger user meta info, larger form field labels
-  - Tab "Ứng dụng": larger config labels, higher-contrast input text,
-    tighter label/input column ratio (40/60 split)
-  - REMOVED: "Thông tin ứng dụng" block entirely
-  - REMOVED: "Cấu hình API & Cloud" block entirely
-  - Kept: QTabWidget with two tabs, General Settings, AI Settings,
-    Data Tools, Cloud Sync, User Profile, Change Password, Admin panel, Danger Zone
-"""
+# app/ui/settings_frame.py
 
 import os
 from pathlib import Path

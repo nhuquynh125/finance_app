@@ -7,10 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QColor, QLinearGradient, QPainter, QBrush
 
-import matplotlib
-matplotlib.use("QtAgg")
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+
 
 from app.core.transaction_manager import TransactionManager
 from app.data.models import get_connection
@@ -265,6 +262,9 @@ class DashboardFrame(QWidget, BusConnectMixin):
             bar_header.addWidget(lbl)
             bar_header.addSpacing(8)
         bar_l.addLayout(bar_header)
+
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+        from matplotlib.figure import Figure
 
         self.bar_fig = Figure(figsize=(5, 2.4), facecolor="none")
         self.bar_canvas = FigureCanvasQTAgg(self.bar_fig)

@@ -263,15 +263,178 @@ Chúng tôi luôn hoan nghênh các đóng góp từ cộng đồng (Pull Reques
 5. **Push** lên branch (`git push origin feature/your-amazing-feature`).
 6. Tạo một **Pull Request** trên Github để chúng tôi có thể review.
 
-### Scripts tiện ích cho Nhà phát triển:
-- Nếu bạn cần chuyển đổi CSDL từ bản v0.9 (Cũ) sang v1.0 (Đa người dùng):
-  ```bash
-  python scripts/migrate_to_per_user_db.py
-  ```
-- Chạy hệ thống unit test:
-  ```bash
-  python -m unittest discover tests/
-  ```
+---
+
+## Developer Notes & Changelog
+
+### main_window.py
+```
+MainWindow — Finance AI.
+
+Fix: blank-screen khi khởi động do _navigate("Dashboard") block main thread.
+
+Thay đổi so với phiên bản cũ:
+  - __init__ KHÔNG còn gọi _navigate("Dashboard") trực tiếp.
+    Thay vào đó dùng QTimer.singleShot(0, ...) để trả quyền điều khiển
+    về event-loop trước, cho phép cửa sổ paint lần đầu hoàn tất.
+  - _navigate() KHÔNG còn gọi frame.refresh() ngay lập tức.
+    Dùng QTimer.singleShot(50, ...) để refresh sau khi frame đã visible.
+  - Thêm _LoadingPlaceholder làm placeholder trong khi frame nặng đang load.
+  - Thêm trang "Chi tiêu" (SpendingFrame) vào sidebar và _create_page().
+  - Không thay đổi bất kỳ logic nghiệp vụ nào khác.
+```
+
+### report_frame.py
+```
+Thay đổi:
+  - FIX: Dialog cảnh báo thiếu thư viện (reportlab) hiển thị text/button rõ ràng.
+    Trước đây QMessageBox.warning() bị theme_engine global QSS override làm chữ
+    trắng trên nền trắng. Thay bằng custom QDialog có stylesheet riêng, đảm bảo
+    màu chữ đậm tương phản cao.
+  - EXPORTS_DIR lấy động từ settings_manager.get_exports_dir() (per-user).
+```
+
+### profile_frame.py
+```
+Trang Hồ sơ cá nhân (Profile) — trang riêng, không nằm trong Settings.
+
+Tính năng:
+  - Xem / sửa thông tin cá nhân (họ tên, bio, màu avatar)
+  - Upload ảnh đại diện (PNG/JPG/GIF → lưu vào data/users/{username}/avatar.*)
+  - Thống kê nhanh: tổng giao dịch, số dư, danh mục, mục tiêu
+  - Đổi mật khẩu inline
+  - Bus signal: cập nhật Sidebar ngay khi lưu tên/avatar
+
+Changes vs previous version:
+  - Typography: increased font sizes and darkened label colours throughout
+    "Thông tin cá nhân" and "Bảo mật" form sections for legibility.
+  - User identity block (name / handle / role badge): scaled up.
+  - Avatar action buttons and hint text: scaled up.
+  - Section group titles "Thông tin cá nhân" and "Bảo mật": scaled up.
+  - StatCard label + value fonts: scaled up.
+  - "Thông tin phiên" (Session Info) section: COMPLETELY REMOVED — no widget,
+    no layout method, no backend path-resolution logic remains.
+```
+
+### settings_frame.py
+```
+Changes in this version:
+  - Tab "Tài khoản": larger section headers, stronger label contrast (#0B2A4A),
+    bigger user meta info, larger form field labels
+  - Tab "Ứng dụng": larger config labels, higher-contrast input text,
+    tighter label/input column ratio (40/60 split)
+  - REMOVED: "Thông tin ứng dụng" block entirely
+  - REMOVED: "Cấu hình API & Cloud" block entirely
+  - Kept: QTabWidget with two tabs, General Settings, AI Settings,
+    Data Tools, Cloud Sync, User Profile, Change Password, Admin panel, Danger Zone
+```
+
+### spending_frame.py
+```
+Refactored: improved typography contrast, larger fonts, correct tab logic,
+separate donut charts for expense vs income, flat income list (no tabs),
+high-contrast dark navy text throughout.
+```
+
+### repositories.py
+```
+Thay đổi so với phiên bản cũ:
+  - TransactionModel.validate(): thêm kiểm tra amount tối đa,
+    ngày không được trong tương lai quá 1 năm, ngày không quá cũ,
+    description quá dài
+  - BudgetModel.validate(): thêm kiểm tra limit_amount tối đa
+  - Không thay đổi gì khác — toàn bộ logic DB giữ nguyên
+```
+
+### models.py
+```
+DatabaseManager dùng DB path động theo user đang đăng nhập.
+Mỗi user có file SQLite riêng tại: data/users/{username}/finance.db
+
+Thay đổi so với phiên bản cũ:
+  - DB_PATH không còn là hằng số — lấy động từ user_session.session.db_path
+  - DatabaseManager không còn là singleton cứng —
+    tự reset khi user thay đổi (đăng xuất / đăng nhập lại)
+  - init_database() nhận tham số db_path để init đúng DB của user
+```
+
+### auth_manager.py
+```
+Quản lý xác thực người dùng: đăng nhập, đăng ký, đặt lại mật khẩu,
+ghi nhớ phiên đăng nhập.
+
+Thay đổi so với phiên bản cũ:
+  - Dùng auth.db RIÊNG (data/shared/auth.db) thay vì users table trong finance.db
+  - Sau khi đăng nhập, gọi session.set_user() để thiết lập DB path per-user
+  - init_database() được gọi per-user để tạo finance.db của từng người
+```
+
+### settings_manager.py
+```
+Quản lý settings per-user.
+
+Thay đổi so với phiên bản cũ:
+  - SETTINGS_PATH lấy động từ user_session (data/users/{username}/settings.json)
+  - ENV_PATH (.env) vẫn ở thư mục gốc (dùng chung API keys)
+  - backup_database() dùng DB path của user hiện tại
+  - export_database_to_excel() dùng DB path của user hiện tại
+  - Cache settings tách biệt per-user (invalidate khi đổi user)
+```
+
+### Performance Optimizations (main.py)
+```
+Tối ưu thời gian khởi động:
+  - Preload matplotlib, sklearn trong background thread khi LoginWindow đang hiện.
+  - Các thư viện nặng (matplotlib ~4.6s) được import trước trong daemon thread,
+    nhờ đó khi user đăng nhập xong, module đã sẵn trong sys.modules.
+  - Áp dụng QTimer.singleShot(0, ...) trong MainWindow để trả event-loop
+    trước khi điều hướng, tránh blank-screen khi khởi động.
+```
+
+### classifier.py
+```
+AI Classifier phân loại giao dịch.
+
+Thay đổi: MODEL_PATH lấy động từ user_session.session.ai_dir
+mỗi user có classifier_model.pkl riêng, được train từ dữ liệu của họ.
+```
+
+### fine_tuner.py
+```
+Fine-tune DistilGPT2 với dữ liệu Q&A tài chính sinh ra từ database của user.
+
+Thay đổi: MODEL_DIR lấy động từ user_session.session.ai_dir
+```
+
+### error_handler.py
+```
+Global exception handler cho Finance AI.
+
+Thay đổi so với phiên bản cũ:
+  - Thêm _safe_str() để loại bỏ emoji/ký tự không encode được trước khi
+    ghi log và hiển thị QMessageBox — fix UnicodeEncodeError trên Windows
+  - Timestamp dùng datetime.now() thay vì stat().st_mtime
+  - Log file tự động rotate khi > 5MB
+  - Tích hợp với logging module
+```
+
+### goal_tracker.py
+```
+Quản lý mục tiêu tiết kiệm.
+
+Thay đổi so với phiên bản cũ:
+  - Không dùng self.conn (giữ connection mở) — dùng context manager
+  - avg_savings_per_month tính từ dữ liệu THỰC TẾ của user thay vì hardcode
+  - get_prediction() trả về dict có cấu trúc thay vì string
+  - Thêm delete_goal(), get_goal_by_id()
+```
+
+### budget_frame.py
+```
+Refactored: improved typography contrast, larger fonts, fixed button overlap,
+tighter summary card margins, scaled-up AI tips text.
+```
+
 
 ---
 

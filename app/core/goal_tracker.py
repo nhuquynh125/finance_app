@@ -1,13 +1,4 @@
-# app/core/goal_tracker.py  (viết lại hoàn chỉnh)
-"""
-Quản lý mục tiêu tiết kiệm.
-
-Thay đổi so với phiên bản cũ:
-  - Không dùng self.conn (giữ connection mở) — dùng context manager
-  - avg_savings_per_month tính từ dữ liệu THỰC TẾ của user thay vì hardcode
-  - get_prediction() trả về dict có cấu trúc thay vì string
-  - Thêm delete_goal(), get_goal_by_id()
-"""
+# app/core/goal_tracker.py
 
 from __future__ import annotations
 from datetime import datetime

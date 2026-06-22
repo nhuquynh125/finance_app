@@ -1,24 +1,4 @@
 # app/ui/profile_frame.py
-"""
-Trang Hồ sơ cá nhân (Profile) — trang riêng, không nằm trong Settings.
-
-Tính năng:
-  - Xem / sửa thông tin cá nhân (họ tên, bio, màu avatar)
-  - Upload ảnh đại diện (PNG/JPG/GIF → lưu vào data/users/{username}/avatar.*)
-  - Thống kê nhanh: tổng giao dịch, số dư, danh mục, mục tiêu
-  - Đổi mật khẩu inline
-  - Bus signal: cập nhật Sidebar ngay khi lưu tên/avatar
-
-Changes vs previous version:
-  - Typography: increased font sizes and darkened label colours throughout
-    "Thông tin cá nhân" and "Bảo mật" form sections for legibility.
-  - User identity block (name / handle / role badge): scaled up.
-  - Avatar action buttons and hint text: scaled up.
-  - Section group titles "Thông tin cá nhân" and "Bảo mật": scaled up.
-  - StatCard label + value fonts: scaled up.
-  - "Thông tin phiên" (Session Info) section: COMPLETELY REMOVED — no widget,
-    no layout method, no backend path-resolution logic remains.
-"""
 
 from __future__ import annotations
 

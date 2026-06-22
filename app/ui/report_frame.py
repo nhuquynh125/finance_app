@@ -1,12 +1,4 @@
-# app/ui/report_frame.py  (cập nhật: sửa dialog "Thiếu thư viện" bị trắng/mờ)
-"""
-Thay đổi:
-  - FIX: Dialog cảnh báo thiếu thư viện (reportlab) hiển thị text/button rõ ràng.
-    Trước đây QMessageBox.warning() bị theme_engine global QSS override làm chữ
-    trắng trên nền trắng. Thay bằng custom QDialog có stylesheet riêng, đảm bảo
-    màu chữ đậm tương phản cao.
-  - EXPORTS_DIR lấy động từ settings_manager.get_exports_dir() (per-user).
-"""
+# app/ui/report_frame.py
 
 import os
 from PyQt6.QtWidgets import (

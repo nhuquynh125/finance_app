@@ -1,19 +1,4 @@
 # app/ui/main_window.py
-"""
-MainWindow — Finance AI.
-
-Fix: blank-screen khi khởi động do _navigate("Dashboard") block main thread.
-
-Thay đổi so với phiên bản cũ:
-  - __init__ KHÔNG còn gọi _navigate("Dashboard") trực tiếp.
-    Thay vào đó dùng QTimer.singleShot(0, ...) để trả quyền điều khiển
-    về event-loop trước, cho phép cửa sổ paint lần đầu hoàn tất.
-  - _navigate() KHÔNG còn gọi frame.refresh() ngay lập tức.
-    Dùng QTimer.singleShot(50, ...) để refresh sau khi frame đã visible.
-  - Thêm _LoadingPlaceholder làm placeholder trong khi frame nặng đang load.
-  - Thêm trang "Chi tiêu" (SpendingFrame) vào sidebar và _create_page().
-  - Không thay đổi bất kỳ logic nghiệp vụ nào khác.
-"""
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,

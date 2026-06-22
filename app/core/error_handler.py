@@ -1,14 +1,4 @@
-# app/core/error_handler.py  (fix: UnicodeEncodeError trên Windows)
-"""
-Global exception handler cho Finance AI.
-
-Thay đổi so với phiên bản cũ:
-  - Thêm _safe_str() để loại bỏ emoji/ký tự không encode được trước khi
-    ghi log và hiển thị QMessageBox — fix UnicodeEncodeError trên Windows
-  - Timestamp dùng datetime.now() thay vì stat().st_mtime
-  - Log file tự động rotate khi > 5MB
-  - Tích hợp với logging module
-"""
+# app/core/error_handler.py
 
 import sys
 import traceback

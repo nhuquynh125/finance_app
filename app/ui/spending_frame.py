@@ -1,7 +1,4 @@
 # app/ui/spending_frame.py
-# Refactored: improved typography contrast, larger fonts, correct tab logic,
-# separate donut charts for expense vs income, flat income list (no tabs),
-# high-contrast dark navy text throughout.
 
 from __future__ import annotations
 
@@ -20,6 +17,8 @@ from PyQt6.QtGui import (
     QFont, QColor, QPainter, QPainterPath, QBrush, QPen,
     QLinearGradient,
 )
+
+
 
 import matplotlib
 matplotlib.use("QtAgg")

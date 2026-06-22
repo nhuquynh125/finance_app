@@ -1,14 +1,4 @@
-# models.py  (cập nhật: per-user database)
-"""
-DatabaseManager dùng DB path động theo user đang đăng nhập.
-Mỗi user có file SQLite riêng tại: data/users/{username}/finance.db
-
-Thay đổi so với phiên bản cũ:
-  - DB_PATH không còn là hằng số — lấy động từ user_session.session.db_path
-  - DatabaseManager không còn là singleton cứng —
-    tự reset khi user thay đổi (đăng xuất / đăng nhập lại)
-  - init_database() nhận tham số db_path để init đúng DB của user
-"""
+# models.py
 
 import sqlite3
 import threading

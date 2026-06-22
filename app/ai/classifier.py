@@ -1,10 +1,4 @@
-# classifier.py  (cập nhật: per-user model path)
-"""
-AI Classifier phân loại giao dịch.
-
-Thay đổi: MODEL_PATH lấy động từ user_session.session.ai_dir
-mỗi user có classifier_model.pkl riêng, được train từ dữ liệu của họ.
-"""
+# app/ai/classifier.py
 
 import re
 import threading

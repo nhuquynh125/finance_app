@@ -59,6 +59,22 @@ def main():
         window.show()
         app._main_window = window
 
+    def preload_heavy_modules():
+        try:
+            import matplotlib
+            matplotlib.use("QtAgg")
+            import matplotlib.pyplot
+            from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+            from matplotlib.figure import Figure
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.pipeline import Pipeline
+        except ImportError:
+            pass
+
+    import threading
+    threading.Thread(target=preload_heavy_modules, daemon=True).start()
+
     login = LoginWindow()
     login.login_success.connect(on_login_success)
     login.show()

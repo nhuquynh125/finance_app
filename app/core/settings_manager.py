@@ -1,14 +1,4 @@
-# settings_manager.py  (cập nhật: per-user settings)
-"""
-Quản lý settings per-user.
-
-Thay đổi so với phiên bản cũ:
-  - SETTINGS_PATH lấy động từ user_session (data/users/{username}/settings.json)
-  - ENV_PATH (.env) vẫn ở thư mục gốc (dùng chung API keys)
-  - backup_database() dùng DB path của user hiện tại
-  - export_database_to_excel() dùng DB path của user hiện tại
-  - Cache settings tách biệt per-user (invalidate khi đổi user)
-"""
+# settings_manager.py
 
 import json
 import os

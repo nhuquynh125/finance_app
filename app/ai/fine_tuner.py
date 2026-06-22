@@ -1,9 +1,4 @@
-# fine_tuner.py  (cập nhật: lưu model vào thư mục AI per-user)
-"""
-Fine-tune DistilGPT2 với dữ liệu Q&A tài chính sinh ra từ database của user.
-
-Thay đổi: MODEL_DIR lấy động từ user_session.session.ai_dir
-"""
+# app/ai/fine_tuner.py
 
 from pathlib import Path
 from app.data.models import get_connection
