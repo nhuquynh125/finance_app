@@ -12,7 +12,9 @@ from PyQt6.QtGui import QFont, QColor, QLinearGradient, QPainter, QBrush
 from app.core.transaction_manager import TransactionManager
 from app.data.models import get_connection
 from app.core.event_bus import bus, BusConnectMixin
+from app.core.worker import Worker
 from datetime import datetime
+from PyQt6.QtCore import QThreadPool
 
 
 # -- Color palette (tu logo) --
@@ -103,8 +105,14 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self._refresh_timer.setInterval(150)
         self._refresh_timer.timeout.connect(self._do_refresh)
 
+        self.threadpool = QThreadPool.globalInstance()
         self._pie_legend_widgets: list = []
         self._metric_cards: dict[str, MetricCard] = {}
+        
+        self.bar_fig = None
+        self.bar_canvas = None
+        self.pie_fig = None
+        self.pie_canvas = None
 
         self._build()
         self._connect_bus()
@@ -262,14 +270,11 @@ class DashboardFrame(QWidget, BusConnectMixin):
             bar_header.addWidget(lbl)
             bar_header.addSpacing(8)
         bar_l.addLayout(bar_header)
-
-        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-        from matplotlib.figure import Figure
-
-        self.bar_fig = Figure(figsize=(5, 2.4), facecolor="none")
-        self.bar_canvas = FigureCanvasQTAgg(self.bar_fig)
-        self.bar_canvas.setFixedHeight(200)
-        bar_l.addWidget(self.bar_canvas)
+        
+        # Placeholder for lazy loaded canvas
+        self.bar_canvas_container = QVBoxLayout()
+        bar_l.addLayout(self.bar_canvas_container)
+        
         row_l.addWidget(self.bar_panel, stretch=2)
 
         # Pie chart panel
@@ -290,10 +295,9 @@ class DashboardFrame(QWidget, BusConnectMixin):
         t2.setStyleSheet(f"color:{NAVY}; border:none;")
         self.pie_layout.addWidget(t2)
 
-        self.pie_fig = Figure(figsize=(2.4, 2.4), facecolor="none")
-        self.pie_canvas = FigureCanvasQTAgg(self.pie_fig)
-        self.pie_canvas.setFixedHeight(150)
-        self.pie_layout.addWidget(self.pie_canvas)
+        self.pie_canvas_container = QVBoxLayout()
+        self.pie_layout.addLayout(self.pie_canvas_container)
+        
         row_l.addWidget(self.pie_panel, stretch=1)
 
         self.cl.addWidget(row_w)
@@ -344,7 +348,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
         if not month:
             return
         self.current_month = month
+        
+        # Load heavy data in background thread
+        worker = Worker(self._fetch_dashboard_data, month)
+        worker.signals.result.connect(self._on_data_fetched)
+        self.threadpool.start(worker)
 
+    def _fetch_dashboard_data(self, month: str) -> dict:
         now = datetime.now()
         bar_months = []
         for i in range(5, -1, -1):
@@ -355,7 +365,6 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 y -= 1
             bar_months.append(f"{y}-{m:02d}")
 
-        # Tinh prev_month de hien trend
         all_months = list(dict.fromkeys(bar_months + [month]))
         try:
             prev_dt = datetime.strptime(month, "%Y-%m")
@@ -370,7 +379,39 @@ class DashboardFrame(QWidget, BusConnectMixin):
             prev_month = None
 
         summaries = self.tm.get_multi_month_summary(all_months)
-        cur     = summaries.get(month, {"total_income": 0, "total_expense": 0})
+        fc = self._get_forecast(month)
+        
+        conn = get_connection()
+        pie_rows = conn.execute("""
+            SELECT c.name, c.color, SUM(t.amount) as total
+            FROM transactions t JOIN categories c ON t.category_id=c.id
+            WHERE t.type='expense' AND strftime('%Y-%m',t.date)=?
+            GROUP BY c.id ORDER BY total DESC LIMIT 6
+        """, (month,)).fetchall()
+        pie_data = [dict(r) for r in pie_rows]
+        conn.close()
+
+        recent_txs = self.tm.get_transactions(month=month, limit=7)
+
+        return {
+            "month": month,
+            "bar_months": bar_months,
+            "prev_month": prev_month,
+            "summaries": summaries,
+            "fc": fc,
+            "pie_data": pie_data,
+            "recent_txs": recent_txs
+        }
+
+    def _on_data_fetched(self, data: dict):
+        month = data["month"]
+        if month != self.current_month:
+            return  # Stale data
+
+        summaries = data["summaries"]
+        prev_month = data["prev_month"]
+        
+        cur = summaries.get(month, {"total_income": 0, "total_expense": 0})
         income  = cur["total_income"]
         expense = cur["total_expense"]
         saving  = income - expense
@@ -382,21 +423,19 @@ class DashboardFrame(QWidget, BusConnectMixin):
             prev_expense = p["total_expense"]
             prev_saving  = prev_income - prev_expense
 
-        fc = self._get_forecast(month)
-
-        # Cap nhat metric cards -- dung ten khong dau khop voi _build_cards
+        # Cap nhat metric cards
         self._metric_cards["Thu nhap"].set_value(self._fmt(income))
         self._metric_cards["Chi tieu"].set_value(self._fmt(expense))
         self._metric_cards["Tiet kiem"].set_value(self._fmt(saving))
-        self._metric_cards["AI du bao T.sau"].set_value(self._fmt(fc))
+        self._metric_cards["AI du bao T.sau"].set_value(self._fmt(data["fc"]))
 
         self._update_trend("Thu nhap",        income,  prev_income)
         self._update_trend("Chi tieu",         expense, prev_expense)
         self._update_trend("Tiet kiem",        saving,  prev_saving)
 
-        self._draw_bar(bar_months, summaries)
-        self._draw_pie(month)
-        self._draw_recent(month)
+        self._draw_bar(data["bar_months"], summaries)
+        self._draw_pie(data["pie_data"])
+        self._draw_recent(data["recent_txs"])
 
     def _update_trend(self, label: str, current: float, previous):
         card = self._metric_cards.get(label)
@@ -412,7 +451,25 @@ class DashboardFrame(QWidget, BusConnectMixin):
         color = MINT if is_good else RED_SOFT
         card.set_trend(f"{arrow} {abs(pct):.1f}% so voi thang truoc", color)
 
+    def _ensure_matplotlib_initialized(self):
+        if self.bar_fig is not None:
+            return
+        
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+        from matplotlib.figure import Figure
+
+        self.bar_fig = Figure(figsize=(5, 2.4), facecolor="none")
+        self.bar_canvas = FigureCanvasQTAgg(self.bar_fig)
+        self.bar_canvas.setFixedHeight(200)
+        self.bar_canvas_container.addWidget(self.bar_canvas)
+
+        self.pie_fig = Figure(figsize=(2.4, 2.4), facecolor="none")
+        self.pie_canvas = FigureCanvasQTAgg(self.pie_fig)
+        self.pie_canvas.setFixedHeight(150)
+        self.pie_canvas_container.addWidget(self.pie_canvas)
+
     def _draw_bar(self, bar_months: list, summaries: dict):
+        self._ensure_matplotlib_initialized()
         months_data = []
         for ms in bar_months:
             s = summaries.get(ms, {"total_income": 0, "total_expense": 0})
@@ -454,28 +511,21 @@ class DashboardFrame(QWidget, BusConnectMixin):
         ax.tick_params(axis="x", bottom=False)
         self.bar_canvas.draw()
 
-    def _draw_pie(self, month: str):
-        conn = get_connection()
-        rows = conn.execute("""
-            SELECT c.name, c.color, SUM(t.amount) as total
-            FROM transactions t JOIN categories c ON t.category_id=c.id
-            WHERE t.type='expense' AND strftime('%Y-%m',t.date)=?
-            GROUP BY c.id ORDER BY total DESC LIMIT 6
-        """, (month,)).fetchall()
-
+    def _draw_pie(self, pie_data: list):
+        self._ensure_matplotlib_initialized()
         for w in self._pie_legend_widgets:
             self.pie_layout.removeWidget(w)
             w.deleteLater()
         self._pie_legend_widgets.clear()
 
         self.pie_fig.clear()
-        if not rows:
+        if not pie_data:
             self.pie_canvas.draw()
             return
 
-        sizes  = [r["total"] for r in rows]
-        colors = [r["color"] for r in rows]
-        names  = [r["name"]  for r in rows]
+        sizes  = [r["total"] for r in pie_data]
+        colors = [r["color"] for r in pie_data]
+        names  = [r["name"]  for r in pie_data]
 
         ax = self.pie_fig.add_subplot(111)
         ax.set_facecolor("#FFFFFF")
@@ -509,14 +559,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
             self.pie_layout.addWidget(row_w)
             self._pie_legend_widgets.append(row_w)
 
-    def _draw_recent(self, month: str):
+    def _draw_recent(self, txs: list):
         # Xoa row cu (giu header=index-0 va divider=index-1)
         while self.tx_layout.count() > 2:
             item = self.tx_layout.takeAt(2)
             if item.widget():
                 item.widget().deleteLater()
 
-        txs = self.tm.get_transactions(month=month, limit=7)
         if not txs:
             lbl = QLabel("Chua co giao dich trong thang nay")
             lbl.setStyleSheet(

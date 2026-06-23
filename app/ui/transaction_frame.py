@@ -11,8 +11,10 @@ from PyQt6.QtGui import QFont, QColor, QBrush
 from app.core.transaction_manager import TransactionManager
 from app.data.models import get_connection
 from app.core.event_bus import bus, BusConnectMixin
+from app.core.worker import Worker
 from app.data.repositories import BudgetRepo
 from datetime import datetime
+from PyQt6.QtCore import QThreadPool
 import pandas as pd
 
 
@@ -59,6 +61,8 @@ class TransactionFrame(QWidget, BusConnectMixin):
         self._all_transactions = []
         self._filtered_transactions = []
         self._page = 0
+        self._cat_colors_cache = {}
+        self.threadpool = QThreadPool.globalInstance()
         self._build()
         self._connect_bus()
 
@@ -124,7 +128,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
         self.cb_category = QComboBox()
         self.cb_category.setFixedWidth(140)
-        self._populate_categories()
+        self.cb_category.addItem("Tất cả danh mục")
         self.cb_category.currentIndexChanged.connect(self._apply_filters)
         layout.addWidget(self.cb_category)
 
@@ -248,8 +252,34 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
     def refresh(self):
         month = self.cb_month.currentData()
-        self._all_transactions = self.tm.get_transactions(month=month, limit=2000)
-        self._populate_categories()
+        worker = Worker(self._fetch_transactions_worker, month)
+        worker.signals.result.connect(self._on_transactions_fetched)
+        self.threadpool.start(worker)
+
+    def _fetch_transactions_worker(self, month):
+        txs = self.tm.get_transactions(month=month, limit=2000)
+        with get_connection() as conn:
+            cats = conn.execute("SELECT name FROM categories ORDER BY name").fetchall()
+            cats_list = [c["name"] for c in cats]
+            colors = conn.execute("SELECT name, color FROM categories").fetchall()
+            cat_colors = {r["name"]: r["color"] for r in colors}
+        return txs, cats_list, cat_colors
+
+    def _on_transactions_fetched(self, data):
+        txs, cats_list, cat_colors = data
+        self._all_transactions = txs
+        self._cat_colors_cache = cat_colors
+        
+        current_cat = self.cb_category.currentText()
+        self.cb_category.blockSignals(True)
+        self.cb_category.clear()
+        self.cb_category.addItem("Tất cả danh mục")
+        self.cb_category.addItems(cats_list)
+        idx = self.cb_category.findText(current_cat)
+        if idx >= 0:
+            self.cb_category.setCurrentIndex(idx)
+        self.cb_category.blockSignals(False)
+
         self._page = 0
         self._apply_filters()
 
@@ -303,7 +333,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
     def _fill_table(self, transactions: list):
         self.table.setRowCount(0)
-        cat_colors = self._get_cat_colors()
+        cat_colors = self._cat_colors_cache
         for row_idx, tx in enumerate(transactions):
             self.table.insertRow(row_idx)
 
@@ -560,23 +590,15 @@ class TransactionFrame(QWidget, BusConnectMixin):
             self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
         self.cb_month.setCurrentIndex(self.cb_month.count() - 1)
 
-    def _populate_categories(self):
-        current = self.cb_category.currentText()
-        self.cb_category.clear()
-        self.cb_category.addItem("Tất cả danh mục")
-        with get_connection() as conn:
-            for r in conn.execute(
-                "SELECT name FROM categories ORDER BY name"
-            ).fetchall():
-                self.cb_category.addItem(r["name"])
-        idx = self.cb_category.findText(current)
-        if idx >= 0:
-            self.cb_category.setCurrentIndex(idx)
-
-    def _get_cat_colors(self) -> dict:
-        with get_connection() as conn:
-            rows = conn.execute("SELECT name, color FROM categories").fetchall()
-        return {r["name"]: r["color"] for r in rows}
+    def _populate_months(self):
+        now = datetime.now()
+        for i in range(11, -1, -1):
+            m = now.month - i
+            y = now.year
+            while m <= 0:
+                m += 12; y -= 1
+            self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
+        self.cb_month.setCurrentIndex(self.cb_month.count() - 1)
 
     @staticmethod
     def _btn_style(primary: bool = False) -> str:

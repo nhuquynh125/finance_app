@@ -10,7 +10,9 @@ from PyQt6.QtGui import QFont, QColor
 from app.data.models import get_connection
 from app.core.transaction_manager import TransactionManager
 from app.data.repositories import BudgetRepo
+from app.core.worker import Worker
 from datetime import datetime
+from PyQt6.QtCore import QThreadPool
 
 
 # ── Design tokens ─────────────────────────────────────────────────────────────
@@ -36,6 +38,7 @@ class BudgetFrame(QWidget):
         self.main_window = main_window
         self.tm = TransactionManager()
         self._current_month = datetime.now().strftime("%Y-%m")
+        self.threadpool = QThreadPool.globalInstance()
         self._build()
         QTimer.singleShot(100, self.refresh)
 
@@ -150,9 +153,18 @@ class BudgetFrame(QWidget):
     def refresh(self):
         month = self.cb_month.currentData()
         self._current_month = month
+        worker = Worker(self._fetch_budget_data, month)
+        worker.signals.result.connect(self._on_budget_fetched)
+        self.threadpool.start(worker)
+
+    def _fetch_budget_data(self, month: str):
         self._sync_spent_amounts(month)
         budgets = self._load_budgets(month)
         summary = self._calc_summary(budgets)
+        return budgets, summary
+
+    def _on_budget_fetched(self, data):
+        budgets, summary = data
         self._render_summary(summary)
         self._render_cards(budgets)
         self._render_tips(budgets, summary)

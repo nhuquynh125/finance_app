@@ -177,22 +177,7 @@ class SettingsFrame(QWidget):
         )
         self._add_control(grid, 5, "Chủ đề UI", self.theme_combo)
 
-        accent_row = QWidget()
-        accent_row.setStyleSheet("background:transparent;")
-        accent_layout = QHBoxLayout(accent_row)
-        accent_layout.setContentsMargins(0, 0, 0, 0)
-        accent_layout.setSpacing(6)
-        for name, hex_color in theme_engine.ACCENTS.items():
-            btn = QPushButton()
-            btn.setFixedSize(26, 26)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setToolTip(name)
-            btn.setStyleSheet(
-                f"background-color: {hex_color}; border: 1px solid #ccc; border-radius: 13px;")
-            btn.clicked.connect(lambda _, c=hex_color: theme_engine.set_accent(c))
-            accent_layout.addWidget(btn)
-        accent_layout.addStretch()
-        self._add_control(grid, 6, "Màu nhấn (Accent)", accent_row)
+
 
         self.body.addWidget(panel)
 

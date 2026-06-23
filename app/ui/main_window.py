@@ -726,7 +726,7 @@ class MainWindow(QMainWindow):
             if hasattr(widget, "refresh"):
                 QTimer.singleShot(50, widget.refresh)
 
-        QTimer.singleShot(10, _do_create)
+        QTimer.singleShot(30, _do_create)
 
     def _create_page(self, page: str) -> QWidget | None:
         """Factory tạo frame theo tên trang. Import lazy để tránh block startup."""

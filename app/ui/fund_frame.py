@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QFrame, QScrollArea, QGridLayout,
     QInputDialog, QMessageBox, QDialog, QTableWidget,
-    QTableWidgetItem, QHeaderView, QSizePolicy
+    QTableWidgetItem, QHeaderView, QSizePolicy, QLineEdit
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
@@ -59,6 +59,68 @@ class TransactionHistoryDialog(QDialog):
             self.table.setItem(i, 0, date_item)
             self.table.setItem(i, 1, amount_item)
             self.table.setItem(i, 2, note_item)
+
+
+class CustomInputDialog(QDialog):
+    def __init__(self, title, label_text, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.resize(500, 250)
+        self.setStyleSheet("""
+            QDialog { background: #ffffff; }
+            QLabel { color: #1A2B45; font-size: 18px; font-weight: bold; border: none; }
+            QLineEdit { 
+                border: 2px solid #e8e8e8; border-radius: 8px; padding: 12px; 
+                font-size: 18px; color: #1A2B45; background: #f9f9f9;
+            }
+            QLineEdit:focus { border: 2px solid #185FA5; background: #ffffff; }
+        """)
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(20)
+        
+        lbl = QLabel(label_text)
+        layout.addWidget(lbl)
+        
+        self.input_field = QLineEdit()
+        layout.addWidget(self.input_field)
+        
+        layout.addStretch()
+        
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(15)
+        btn_layout.addStretch()
+        
+        btn_cancel = QPushButton("Hủy")
+        btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_cancel.setStyleSheet("""
+            QPushButton { 
+                background: #f0f0f0; color: #555; border: 1px solid #ddd; 
+                border-radius: 8px; padding: 10px 24px; font-size: 16px; font-weight: bold;
+            }
+            QPushButton:hover { background: #e4e4e4; }
+        """)
+        btn_cancel.clicked.connect(self.reject)
+        
+        self.btn_ok = QPushButton("OK")
+        self.btn_ok.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_ok.setStyleSheet("""
+            QPushButton { 
+                background: #185FA5; color: white; border: none; 
+                border-radius: 8px; padding: 10px 24px; font-size: 16px; font-weight: bold;
+            }
+            QPushButton:hover { background: #144f8a; }
+        """)
+        self.btn_ok.clicked.connect(self.accept)
+        
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(self.btn_ok)
+        
+        layout.addLayout(btn_layout)
+
+    def get_text(self):
+        return self.input_field.text()
 
 
 class FundFrame(QWidget):
@@ -379,16 +441,22 @@ class FundFrame(QWidget):
         return card
 
     def _member_row(self, member: dict) -> QWidget:
-        # Sử dụng QPushButton giả lập thành card để click được
-        row = QPushButton()
+        # Sử dụng QFrame giả lập thành card để click được
+        row = QFrame()
         row.setCursor(Qt.CursorShape.PointingHandCursor)
+        row.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         row.setStyleSheet("""
-            QPushButton { 
-                background:#fcfcfc; border:1px solid #f0f0f0; border-radius:8px; text-align:left;
+            QFrame { 
+                background:#fcfcfc; border:1px solid #f0f0f0; border-radius:8px;
             }
-            QPushButton:hover { background:#f5f5f5; border:1px solid #e0e0e0; }
+            QFrame:hover { background:#f5f5f5; border:1px solid #e0e0e0; }
         """)
         
+        # Để click được
+        def on_click(event, u=member["username"]):
+            self._on_view_member_history(u)
+        row.mousePressEvent = on_click
+
         rl = QHBoxLayout(row)
         rl.setContentsMargins(14, 12, 14, 12)
         rl.setSpacing(16)
@@ -427,24 +495,23 @@ class FundFrame(QWidget):
         contrib_val = member.get("total_contribution", 0)
         contrib_lbl = QLabel(f"Đã góp: <b style='color:#1D9E75;'>{contrib_val:,.0f} đ</b>")
         contrib_lbl.setFont(QFont("Segoe UI", 17))
-        contrib_lbl.setStyleSheet("border:none;")
+        contrib_lbl.setStyleSheet("border:none; background:transparent; color:#1A2B45;")
         rl.addWidget(contrib_lbl)
         
         arrow = QLabel(" › ")
-        arrow.setStyleSheet("color:#999; font-size:24px; border:none;")
+        arrow.setStyleSheet("color:#999; font-size:24px; border:none; background:transparent;")
         rl.addWidget(arrow)
-        
-        # Bấm vào row -> Mở popup lịch sử giao dịch
-        row.clicked.connect(lambda: self._on_view_member_history(member["username"]))
 
         return row
 
     # ── Event handlers ────────────────────────────────────────────────────────
 
     def _on_create_group(self):
-        name, ok = QInputDialog.getText(
-            self, "Tạo nhóm quỹ", "Tên quỹ:")
-        if not ok or not name.strip():
+        dlg = CustomInputDialog("Tạo nhóm quỹ", "Tên quỹ:", self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        name = dlg.get_text()
+        if not name.strip():
             return
 
         result = self.fm.create_group(name.strip())
@@ -460,9 +527,11 @@ class FundFrame(QWidget):
             QMessageBox.warning(self, "Không thể tạo quỹ", result["message"])
 
     def _on_join_group(self):
-        code, ok = QInputDialog.getText(
-            self, "Tham gia quỹ", "Nhập mã mời (6 ký tự):")
-        if not ok or not code.strip():
+        dlg = CustomInputDialog("Tham gia quỹ", "Nhập mã mời (6 ký tự):", self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        code = dlg.get_text()
+        if not code.strip():
             return
 
         # Xem trước thông tin nhóm trước khi join
