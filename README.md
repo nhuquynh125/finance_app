@@ -50,7 +50,6 @@
 
 ### 💳 2. Quản lý Giao dịch & Nhập liệu Thông Minh
 - **Quản lý CRUD:** Thêm, Sửa, Xóa giao dịch dễ dàng với form nhập liệu tối ưu.
-- **Smart Import (Nhập từ CSV):** Tự động nhận diện cấu trúc file sao kê từ các ngân hàng phổ biến (Vietcombank, BIDV, Techcombank, MB Bank, VPBank).
 - **Phân loại AI (Auto Categorization):** Sử dụng mô hình **TF-IDF kết hợp Random Forest** học hỏi từ thói quen của người dùng để tự động gán nhãn danh mục cho các giao dịch mới.
 - **Bộ lọc mạnh mẽ:** Lọc theo tháng, năm, loại giao dịch (Thu/Chi), danh mục, hoặc tìm kiếm toàn văn bản. Phân trang tự động giúp xử lý hàng vạn giao dịch mượt mà.
 
@@ -73,7 +72,7 @@ Hệ thống Chatbot sử dụng Engine AI tự huấn luyện (Self-trained Mod
 
 ### 📄 6. Trích Xuất Báo Cáo
 - **Xuất file PDF:** Tạo báo cáo tài chính chuyên nghiệp (sử dụng ReportLab), đi kèm bảng biểu, hình ảnh biểu đồ và các cảnh báo rủi ro.
-- **Xuất Excel/CSV:** Backup toàn bộ dữ liệu ra file `.xlsx` hoặc `.csv` để lưu trữ hoặc phân tích trên các công cụ khác.
+- **Xuất Excel:** Backup toàn bộ dữ liệu ra file `.xlsx` để lưu trữ hoặc phân tích trên các công cụ khác.
 
 ### 🎨 7. Giao diện (UI/UX) Tối Ưu
 - **Giao diện tương thích (Responsive):** Các thành phần giao diện tự động co giãn theo kích thước cửa sổ.
@@ -115,7 +114,6 @@ finance-ai/
 │   │   ├── local_chatbot_engine.py  # Xử lý ngôn ngữ tự nhiên offline
 │   │   └── nlp_parser.py            # Phân tích cú pháp NLP
 │   ├── core/                        # Lớp Logic nghiệp vụ (Business Layer)
-│   │   ├── csv_importer.py          # Import dữ liệu sao kê
 │   │   ├── error_handler.py         # Xử lý lỗi tập trung
 │   │   ├── event_bus.py             # Hệ thống Pub/Sub bằng PyQt Signals
 │   │   ├── fund_manager.py          # Quản lý quỹ chung (Groups)
@@ -214,13 +212,28 @@ python main.py
 
 ---
 
+## 🔑 Thông tin Tài khoản Đăng nhập (Mặc định / Demo)
+
+Sau khi khởi chạy ứng dụng, bạn có thể sử dụng các tài khoản đã được thiết lập sẵn trong hệ thống để đăng nhập và trải nghiệm:
+
+| Họ và Tên | Tên đăng nhập (Username) | Mật khẩu | Vai trò |
+| :--- | :--- | :--- | :--- |
+| **Quản trị viên** | `admin` | `admin123` | Admin |
+| **Hưng Phú** | `hungphu` | *(Mật khẩu cá nhân)* | User |
+| **Như Quỳnh** | `nhuquynh` | *(Mật khẩu cá nhân)* | User |
+
+*Lưu ý:* 
+- Bạn cũng có thể bấm vào nút **Đăng ký** trên màn hình đăng nhập để tạo tài khoản người dùng mới cho riêng mình. Mỗi tài khoản sẽ có một không gian dữ liệu độc lập. Số điện thoại sẽ được dùng làm khóa định danh (Primary Key) kết nối giữa các người dùng với nhau (VD: để mời vào quỹ chung).
+
+
+---
+
 ## 📖 Hướng dẫn sử dụng chi tiết
 
 1. **Đăng nhập / Đăng ký:** Tạo một tài khoản để hệ thống thiết lập phân vùng dữ liệu riêng cho bạn.
 2. **Quản lý Giao dịch:** 
    - Truy cập màn hình `Giao dịch`.
    - Nhấn **+ Thêm Mới** hoặc dùng phím tắt `Ctrl+N` để ghi nhận khoản thu chi mới.
-   - Hoặc chọn **Nhập từ CSV** để import hàng trăm giao dịch từ file sao kê. Hãy để mô hình AI của ứng dụng tự động phân loại danh mục cho bạn.
 3. **Thiết lập Ngân sách:** Sang tab `Ngân sách`, thiết lập hạn mức cho các danh mục (VD: Ăn uống 3.000.000đ). Trở lại Dashboard để xem thanh tiến độ cảnh báo.
 4. **Phân tích Dự báo:** Vào `Dự báo AI`, nhấn nút *Chạy phân tích*. Đợi vài giây để hệ thống tính toán và vẽ đồ thị dự kiến dòng tiền tháng tới.
 5. **Chat với AI:** Gõ các câu lệnh tiếng Việt tự nhiên vào `Chatbot AI`:

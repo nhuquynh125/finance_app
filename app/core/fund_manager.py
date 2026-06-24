@@ -209,6 +209,29 @@ class FundManager:
             
         return {"success": True, "message": f"Đã thêm thành viên '{username}' thành công!"}
 
+    def remove_member(self, group_id: int, target_username: str) -> dict:
+        """Chủ quỹ xóa một thành viên khỏi nhóm."""
+        my_username = session.username
+        
+        with get_connection() as conn:
+            group = conn.execute(
+                "SELECT * FROM family_groups WHERE id=?", (group_id,)
+            ).fetchone()
+            if not group:
+                return {"success": False, "message": "Quỹ không tồn tại."}
+            if group["owner_username"] != my_username:
+                return {"success": False, "message": "Chỉ chủ quỹ mới có quyền xóa thành viên."}
+                
+            if target_username == my_username:
+                return {"success": False, "message": "Không thể tự xóa bản thân. Hãy dùng chức năng Giải tán quỹ."}
+                
+            conn.execute("""
+                DELETE FROM group_members 
+                WHERE group_id=? AND username=?
+            """, (group_id, target_username))
+            
+        return {"success": True, "message": f"Đã xóa thành viên '{target_username}' khỏi nhóm!"}
+
     def get_my_groups(self) -> list[dict]:
         """
         Lấy danh sách các quỹ mà user đang tham gia.

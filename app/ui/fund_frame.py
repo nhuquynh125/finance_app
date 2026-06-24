@@ -14,11 +14,71 @@ from PyQt6.QtGui import QFont
 from app.core.fund_manager import FundManager
 
 
+class FundContributionDialog(QDialog):
+    def __init__(self, tx=None, parent=None):
+        super().__init__(parent)
+        self.tx = tx
+        self.setWindowTitle("Sửa đóng góp" if tx else "Thêm đóng góp")
+        self.resize(400, 300)
+        self.setStyleSheet("""
+            QDialog { background: #ffffff; }
+            QLabel { color: #1A2B45; font-size: 15px; font-weight: bold; }
+            QLineEdit { border: 1px solid #dcdcdc; border-radius: 4px; padding: 8px; font-size: 15px; }
+            QPushButton { background: #185FA5; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 15px; font-weight: bold; }
+            QPushButton:hover { background: #144f8a; }
+            QPushButton#cancel { background: #f0f0f0; color: #555; }
+            QPushButton#cancel:hover { background: #e0e0e0; }
+        """)
+        self._build()
+
+    def _build(self):
+        layout = QVBoxLayout(self)
+        
+        layout.addWidget(QLabel("Ngày (YYYY-MM-DD):"))
+        self.date_input = QLineEdit()
+        from datetime import datetime
+        self.date_input.setText(self.tx["date"] if self.tx else datetime.now().strftime("%Y-%m-%d"))
+        layout.addWidget(self.date_input)
+        
+        layout.addWidget(QLabel("Số tiền:"))
+        self.amount_input = QLineEdit()
+        self.amount_input.setText(str(int(self.tx["amount"])) if self.tx else "")
+        layout.addWidget(self.amount_input)
+        
+        layout.addWidget(QLabel("Ghi chú:"))
+        self.note_input = QLineEdit()
+        self.note_input.setText(self.tx["description"] if self.tx else "")
+        layout.addWidget(self.note_input)
+        
+        layout.addStretch()
+        
+        btn_layout = QHBoxLayout()
+        btn_cancel = QPushButton("Hủy")
+        btn_cancel.setObjectName("cancel")
+        btn_cancel.clicked.connect(self.reject)
+        
+        btn_ok = QPushButton("Lưu")
+        btn_ok.clicked.connect(self.accept)
+        
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(btn_ok)
+        layout.addLayout(btn_layout)
+
+    def get_data(self):
+        return {
+            "date": self.date_input.text().strip(),
+            "amount": float(self.amount_input.text().strip() or 0),
+            "description": self.note_input.text().strip()
+        }
+
+
 class TransactionHistoryDialog(QDialog):
     def __init__(self, username, parent=None):
         super().__init__(parent)
         self.username = username
         self.fm = FundManager()
+        self.transactions = []
         self.setWindowTitle(f"Lịch sử góp quỹ - {username}")
         self.resize(650, 450)
         self.setStyleSheet("QDialog { background:#fff; }")
@@ -63,29 +123,127 @@ class TransactionHistoryDialog(QDialog):
             }
         """)
         self.table.setAlternatingRowColors(True)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         layout.addWidget(self.table)
         
         self._load_data()
         
+        btn_layout = QHBoxLayout()
+        
+        btn_add = QPushButton("Thêm")
+        btn_edit = QPushButton("Sửa")
+        btn_delete = QPushButton("Xóa")
         btn_close = QPushButton("Đóng")
+        
+        for btn in (btn_add, btn_edit, btn_delete, btn_close):
+            btn.setStyleSheet(
+                "QPushButton { background:#f0f0f0; color: #333; border:1px solid #ddd; border-radius:6px; padding:8px 16px; font-weight: bold; }"
+                "QPushButton:hover { background:#e0e0e0; }"
+            )
+            
+        btn_add.clicked.connect(self._on_add)
+        btn_edit.clicked.connect(self._on_edit)
+        btn_delete.clicked.connect(self._on_delete)
         btn_close.clicked.connect(self.accept)
-        btn_close.setStyleSheet(
-            "QPushButton { background:#f0f0f0; border:1px solid #ddd; border-radius:6px; padding:8px 16px; }"
-            "QPushButton:hover { background:#e0e0e0; }"
-        )
-        layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
+        
+        btn_layout.addWidget(btn_add)
+        btn_layout.addWidget(btn_edit)
+        btn_layout.addWidget(btn_delete)
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_close)
+        
+        layout.addLayout(btn_layout)
 
     def _load_data(self):
-        transactions = self.fm.get_member_transactions(self.username)
-        self.table.setRowCount(len(transactions))
-        for i, tx in enumerate(transactions):
+        self.transactions = self.fm.get_member_transactions(self.username)
+        self.table.setRowCount(len(self.transactions))
+        for i, tx in enumerate(self.transactions):
             date_item = QTableWidgetItem(tx["date"])
+            date_item.setData(Qt.ItemDataRole.UserRole, tx["id"])
             amount_item = QTableWidgetItem(f"{tx['amount']:,.0f} đ")
             note_item = QTableWidgetItem(tx["description"] or "")
             
             self.table.setItem(i, 0, date_item)
             self.table.setItem(i, 1, amount_item)
             self.table.setItem(i, 2, note_item)
+
+    def _on_add(self):
+        dlg = FundContributionDialog(parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            if data["amount"] <= 0:
+                QMessageBox.warning(self, "Lỗi", "Số tiền phải lớn hơn 0")
+                return
+            
+            from app.core.transaction_manager import TransactionManager
+            from app.data.models import get_connection
+            tm = TransactionManager()
+            
+            with get_connection() as conn:
+                acc = conn.execute("SELECT id FROM accounts LIMIT 1").fetchone()
+                cat = conn.execute("SELECT id FROM categories WHERE type='income' LIMIT 1").fetchone()
+            
+            if not acc or not cat:
+                QMessageBox.warning(self, "Lỗi", "Chưa có tài khoản hoặc danh mục thu nhập để thêm.")
+                return
+                
+            tm.add_transaction(
+                account_id=acc["id"],
+                amount=data["amount"],
+                type_="income",
+                description=data["description"],
+                date=data["date"],
+                category_id=cat["id"]
+            )
+            
+            # Cập nhật lại owner_username cho giao dịch vừa thêm (vì add_transaction lấy username của session, nhưng ở đây có thể thêm cho member khác)
+            with get_connection() as conn:
+                conn.execute("UPDATE transactions SET owner_username = ? WHERE id = (SELECT MAX(id) FROM transactions)", (self.username,))
+            
+            self._load_data()
+
+    def _on_edit(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Lỗi", "Vui lòng chọn một dòng để sửa.")
+            return
+            
+        tx = self.transactions[row]
+        dlg = FundContributionDialog(tx=tx, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            if data["amount"] <= 0:
+                QMessageBox.warning(self, "Lỗi", "Số tiền phải lớn hơn 0")
+                return
+                
+            from app.core.transaction_manager import TransactionManager
+            tm = TransactionManager()
+            tm.update_transaction(
+                transaction_id=tx["id"],
+                account_id=tx["account_id"],
+                amount=data["amount"],
+                type_="income",
+                description=data["description"],
+                date=data["date"],
+                category_id=tx["category_id"],
+                note=tx["note"]
+            )
+            self._load_data()
+
+    def _on_delete(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Lỗi", "Vui lòng chọn một dòng để xóa.")
+            return
+            
+        tx = self.transactions[row]
+        reply = QMessageBox.question(self, "Xác nhận", "Bạn có chắc chắn muốn xóa đóng góp này?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            from app.core.transaction_manager import TransactionManager
+            tm = TransactionManager()
+            tm.delete_transaction(tx["id"])
+            self._load_data()
 
 
 class CustomInputDialog(QDialog):
@@ -412,8 +570,13 @@ class FundFrame(QWidget):
         btn_row.setSpacing(10)
 
         if group["my_role"] == "owner":
+            btn_manage_members = QPushButton("Quản lý thành viên")
+            btn_manage_members.setStyleSheet(self._btn_primary())
+            btn_manage_members.clicked.connect(lambda: self._on_manage_members(group["id"]))
+            btn_row.addWidget(btn_manage_members)
+            
             btn_add_member = QPushButton("Thêm thành viên")
-            btn_add_member.setStyleSheet(self._btn_primary())
+            btn_add_member.setStyleSheet(self._btn_normal())
             btn_add_member.clicked.connect(lambda: self._on_add_member(group["id"]))
             btn_row.addWidget(btn_add_member)
 
@@ -597,6 +760,56 @@ class FundFrame(QWidget):
         
     def _on_view_member_history(self, username: str):
         dlg = TransactionHistoryDialog(username, self)
+        dlg.exec()
+        self.refresh()
+
+    def _on_manage_members(self, group_id: int):
+        members = self.fm.get_members(group_id)
+        
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Quản lý thành viên")
+        dlg.resize(400, 300)
+        dlg.setStyleSheet("QDialog { background: #ffffff; }")
+        
+        layout = QVBoxLayout(dlg)
+        
+        table = QTableWidget()
+        table.setColumnCount(2)
+        table.setHorizontalHeaderLabels(["Thành viên", "Hành động"])
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        
+        # Lọc ra các thành viên không phải owner
+        members_to_manage = [m for m in members if m["role"] != "owner"]
+        table.setRowCount(len(members_to_manage))
+        
+        for i, m in enumerate(members_to_manage):
+            table.setItem(i, 0, QTableWidgetItem(m["username"]))
+            
+            btn_remove = QPushButton("Xóa")
+            btn_remove.setStyleSheet("background: #C0392B; color: white; border: none; border-radius: 4px; padding: 4px;")
+            
+            def make_remove_callback(username):
+                def remove():
+                    reply = QMessageBox.question(dlg, "Xác nhận", f"Bạn có chắc muốn xóa {username} khỏi quỹ?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    if reply == QMessageBox.StandardButton.Yes:
+                        res = self.fm.remove_member(group_id, username)
+                        if res["success"]:
+                            QMessageBox.information(dlg, "Thành công", res["message"])
+                            dlg.accept()
+                            self.refresh()
+                        else:
+                            QMessageBox.warning(dlg, "Lỗi", res["message"])
+                return remove
+                
+            btn_remove.clicked.connect(make_remove_callback(m["username"]))
+            table.setCellWidget(i, 1, btn_remove)
+            
+        layout.addWidget(table)
+        
+        btn_close = QPushButton("Đóng")
+        btn_close.clicked.connect(dlg.reject)
+        layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
+        
         dlg.exec()
 
     def _on_leave_group(self, group_id: int):

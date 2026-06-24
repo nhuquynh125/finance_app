@@ -69,7 +69,7 @@ class _EventBus(QObject):
                        *args) -> None:
         """
         Phát signal sau delay, bỏ qua các lần gọi trước đó trong cùng window.
-        Hữu ích khi nhiều thao tác nhanh liên tiếp (import CSV) chỉ cần
+        Hữu ích khi nhiều thao tác nhanh liên tiếp chỉ cần
         refresh UI một lần.
 
         Ví dụ:

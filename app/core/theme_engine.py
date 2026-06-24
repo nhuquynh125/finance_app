@@ -129,9 +129,9 @@ QMessageBox {{
     color: {t['text_primary']};
 }}
 QMessageBox QLabel {{
-    color: {t['text_primary']} !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
+    color: {t['text_primary']};
+    font-size: 15px;
+    font-weight: 500;
     background: transparent;
 }}
 QMessageBox QPushButton {{
