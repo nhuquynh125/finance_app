@@ -768,10 +768,26 @@ class FundFrame(QWidget):
         
         dlg = QDialog(self)
         dlg.setWindowTitle("Quản lý thành viên")
-        dlg.resize(400, 300)
-        dlg.setStyleSheet("QDialog { background: #ffffff; }")
+        dlg.resize(480, 360)
+        dlg.setStyleSheet("""
+            QDialog { background: #ffffff; }
+            QTableWidget { font-size: 14px; background: #ffffff; color: #1A2B45; border: 1px solid #dde6ef; border-radius: 8px; }
+            QTableWidget::item { padding: 10px 14px; color: #1A2B45; }
+            QHeaderView::section {
+                font-size: 13px;
+                font-weight: bold;
+                background-color: #1A6BAF;
+                color: #ffffff;
+                padding: 10px 14px;
+                border: none;
+                border-right: 1px solid #155c96;
+            }
+            QPushButton { font-size: 13px; padding: 7px 16px; border-radius: 6px; font-weight: bold; }
+        """)
         
         layout = QVBoxLayout(dlg)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
         
         table = QTableWidget()
         table.setColumnCount(2)
@@ -786,7 +802,7 @@ class FundFrame(QWidget):
             table.setItem(i, 0, QTableWidgetItem(m["username"]))
             
             btn_remove = QPushButton("Xóa")
-            btn_remove.setStyleSheet("background: #C0392B; color: white; border: none; border-radius: 4px; padding: 4px;")
+            btn_remove.setStyleSheet("QPushButton { background: #C0392B; color: white; border: none; border-radius: 5px; padding: 6px 14px; font-size: 13px; font-weight: bold; } QPushButton:hover { background: #a93226; }")
             
             def make_remove_callback(username):
                 def remove():
@@ -807,6 +823,7 @@ class FundFrame(QWidget):
         layout.addWidget(table)
         
         btn_close = QPushButton("Đóng")
+        btn_close.setStyleSheet("QPushButton { background: #f0f0f0; color: #333; border: 1px solid #ccc; border-radius: 7px; padding: 9px 24px; font-size: 14px; font-weight: bold; } QPushButton:hover { background: #e0e0e0; }")
         btn_close.clicked.connect(dlg.reject)
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
         

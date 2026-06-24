@@ -107,7 +107,7 @@ QWidget {{
     background: {t['bg_primary']};
     color: {t['text_primary']};
     font-family: 'Segoe UI', 'Be Vietnam Pro', 'Arial', sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     selection-background-color: {accent_light};
     selection-color: {t['text_primary']};
 }}
@@ -127,25 +127,55 @@ QFrame {{
 QMessageBox {{
     background: {t['bg_card']};
     color: {t['text_primary']};
+    font-size: 14px;
 }}
 QMessageBox QLabel {{
     color: {t['text_primary']};
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     background: transparent;
+    min-width: 260px;
+    padding: 4px 0;
 }}
 QMessageBox QPushButton {{
     background: {accent};
     color: #FFFFFF;
     border: none;
     border-radius: 6px;
-    min-width: 90px;
+    min-width: 100px;
     font-size: 14px;
     font-weight: bold;
-    padding: 8px 18px;
+    padding: 9px 20px;
 }}
 QMessageBox QPushButton:hover {{
     background: {accent_hover};
+}}
+
+/* ── Dialog chung ────────────────────────────────── */
+QDialog {{
+    background: {t['bg_secondary']};
+    font-size: 13px;
+}}
+QDialog QLabel {{
+    color: {t['text_primary']};
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+}}
+QDialog QPushButton {{
+    font-size: 13px;
+    padding: 8px 18px;
+    min-width: 80px;
+}}
+QDialog QTableWidget {{
+    font-size: 13px;
+}}
+QDialog QHeaderView::section {{
+    font-size: 12px;
+    font-weight: bold;
+    color: {t['text_primary']};
+    background: {t['bg_secondary']};
+    padding: 8px 14px;
 }}
 
 QFrame[frameShape="4"],
