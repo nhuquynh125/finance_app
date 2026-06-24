@@ -150,11 +150,6 @@ class FundFrame(QWidget):
         self.cl.setContentsMargins(24, 20, 24, 20)
         self.cl.setSpacing(16)
 
-        # Placeholder — sẽ được refresh() fill vào
-        self.state_widget = QWidget()
-        self.cl.addWidget(self.state_widget)
-        self.cl.addStretch()
-
         scroll.setWidget(self.content)
         layout.addWidget(scroll)
 
@@ -178,19 +173,22 @@ class FundFrame(QWidget):
     # ── Refresh — quyết định hiển thị gì ────────────────────────────────────
 
     def refresh(self):
-        """Hiển thị UI tùy thuộc vào việc có chọn nhóm cụ thể hay không."""
-        if self.selected_group:
-            self._replace_state_widget(self._build_group_view(self.selected_group))
-        else:
-            self._replace_state_widget(self._build_dashboard_view())
+        """Xóa toàn bộ nội dung layout và xây dựng lại từ đầu."""
+        # Xóa tất cả widget hiện có trong layout
+        while self.cl.count():
+            item = self.cl.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+                item.widget().deleteLater()
 
-    def _replace_state_widget(self, new_widget: QWidget):
-        """Thay thế widget trạng thái hiện tại."""
-        self.cl.removeWidget(self.state_widget)
-        self.state_widget.deleteLater()
-        self.state_widget = new_widget
-        # Chèn trước stretch (index cuối - 1)
-        self.cl.insertWidget(0, self.state_widget)
+        # Xây lại nội dung phù hợp
+        if self.selected_group:
+            new_widget = self._build_group_view(self.selected_group)
+        else:
+            new_widget = self._build_dashboard_view()
+
+        self.cl.addWidget(new_widget)
+        self.cl.addStretch()
 
     # ── View: Danh sách Quỹ (Dashboard) ──────────────────────────────────────
 
