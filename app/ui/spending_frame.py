@@ -960,11 +960,35 @@ class CategoryManagerDialog(QDialog):
             QMessageBox.critical(self, "Lỗi", f"Không thể nhóm: {e}")
 
     def _delete_cat(self, cat_id: int, cat_name: str):
-        reply = QMessageBox.question(
-            self, "Xác nhận xóa",
-            f'Bạn có chắc muốn xóa danh mục "{cat_name}"?\n'
-            "Danh mục con sẽ trở thành danh mục gốc.",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Xác nhận xóa")
+        msg.setText(f'Bạn có chắc muốn xóa danh mục "{cat_name}"?\nDanh mục con sẽ trở thành danh mục gốc.')
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setStyleSheet("""
+            QMessageBox {
+                background-color: #ffffff;
+            }
+            QLabel {
+                font-size: 16px;
+                color: #111111;
+                font-weight: 500;
+            }
+            QPushButton {
+                background-color: #E6F1FB;
+                color: #0C447C;
+                border: 1px solid #B5D4F4;
+                border-radius: 6px;
+                padding: 6px 20px;
+                font-size: 15px;
+                font-weight: bold;
+                min-width: 60px;
+            }
+            QPushButton:hover {
+                background-color: #B5D4F4;
+            }
+        """)
+        reply = msg.exec()
         if reply == QMessageBox.StandardButton.Yes:
             conn = get_connection()
             try:

@@ -75,8 +75,8 @@ class _UserSession:
 
     @property
     def username(self) -> str:
-        """Alias của phone — dùng để tương thích với code cũ."""
-        return self.phone
+        """Tên đăng nhập của user."""
+        return (self._user or {}).get("username", self.phone)
 
     @property
     def full_name(self) -> str:

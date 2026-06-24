@@ -509,12 +509,6 @@ class ProfileFrame(QWidget):
         self.le_phone.setStyleSheet(self._input_style())
         form.addRow(self._form_label("Số điện thoại:"), self.le_phone)
 
-        self.le_phone_ro = QLineEdit()
-        self.le_phone_ro.setReadOnly(True)
-        self.le_phone_ro.setStyleSheet(
-            self._input_style() + " background:#f7f7f7; color:#888;")
-        form.addRow(self._form_label("Định danh (SĐT):"), self.le_phone_ro)
-
         self.te_bio = QTextEdit()
         self.te_bio.setFixedHeight(72)
         self.te_bio.setPlaceholderText(
@@ -612,7 +606,6 @@ class ProfileFrame(QWidget):
             self.lbl_role_badge.setText(role_map.get(session.role, session.role))
 
             self.le_fullname.setText(session.full_name or "")
-            self.le_phone_ro.setText(session.phone)
 
             try:
                 self.le_phone.setText(session.phone)
@@ -855,11 +848,22 @@ class ProfileFrame(QWidget):
 
     def _toggle_user_active(self, user_id: int, current_active: bool):
         action = "khóa" if current_active else "mở khóa"
-        reply = QMessageBox.question(
-            self, "Xác nhận",
-            f"Bạn muốn {action} tài khoản này?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Xác nhận")
+        msg.setText(f"Bạn muốn {action} tài khoản này?")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setStyleSheet("""
+            QMessageBox { background-color: #ffffff; }
+            QLabel { font-size: 16px; color: #111111; font-weight: 500; }
+            QPushButton {
+                background-color: #E6F1FB; color: #0C447C;
+                border: 1px solid #B5D4F4; border-radius: 6px;
+                padding: 6px 20px; font-size: 15px; font-weight: bold; min-width: 60px;
+            }
+            QPushButton:hover { background-color: #B5D4F4; }
+        """)
+        reply = msg.exec()
         if reply != QMessageBox.StandardButton.Yes:
             return
         try:
@@ -875,13 +879,23 @@ class ProfileFrame(QWidget):
             self._msg_box("Lỗi", str(e), "critical")
 
     def _delete_user(self, username: str):
-        reply = QMessageBox.warning(
-            self, "Xóa tài khoản",
-            f"Xóa tài khoản '@{username}'?\n\n"
-            "Dữ liệu tài chính trong thư mục của user vẫn còn trên ổ đĩa.",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Xóa tài khoản")
+        msg.setText(f"Xóa tài khoản '@{username}'?\n\nDữ liệu tài chính trong thư mục của user vẫn còn trên ổ đĩa.")
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+        msg.setStyleSheet("""
+            QMessageBox { background-color: #ffffff; }
+            QLabel { font-size: 16px; color: #111111; font-weight: 500; }
+            QPushButton {
+                background-color: #E6F1FB; color: #0C447C;
+                border: 1px solid #B5D4F4; border-radius: 6px;
+                padding: 6px 20px; font-size: 15px; font-weight: bold; min-width: 60px;
+            }
+            QPushButton:hover { background-color: #B5D4F4; }
+        """)
+        reply = msg.exec()
         if reply != QMessageBox.StandardButton.Yes:
             return
         try:
@@ -896,13 +910,23 @@ class ProfileFrame(QWidget):
     def _delete_own_account(self):
         from user_session import session
 
-        reply = QMessageBox.warning(
-            self, "Xóa tài khoản",
-            f"Bạn sắp xóa tài khoản SĐT '{session.phone}' và toàn bộ dữ liệu tài chính.\n\n"
-            "Hành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Xóa tài khoản")
+        msg.setText(f"Bạn sắp xóa tài khoản SĐT '{session.phone}' và toàn bộ dữ liệu tài chính.\n\nHành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?")
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+        msg.setStyleSheet("""
+            QMessageBox { background-color: #ffffff; }
+            QLabel { font-size: 16px; color: #111111; font-weight: 500; }
+            QPushButton {
+                background-color: #E6F1FB; color: #0C447C;
+                border: 1px solid #B5D4F4; border-radius: 6px;
+                padding: 6px 20px; font-size: 15px; font-weight: bold; min-width: 60px;
+            }
+            QPushButton:hover { background-color: #B5D4F4; }
+        """)
+        reply = msg.exec()
         if reply != QMessageBox.StandardButton.Yes:
             return
 

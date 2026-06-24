@@ -572,9 +572,35 @@ class BudgetFrame(QWidget):
             self.refresh()
 
     def _delete_budget(self, budget_id: int):
-        reply = QMessageBox.question(
-            self, "Xác nhận xóa", "Xóa ngân sách này?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Xác nhận xóa")
+        msg.setText("Xóa ngân sách này?")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setStyleSheet("""
+            QMessageBox {
+                background-color: #ffffff;
+            }
+            QLabel {
+                font-size: 16px;
+                color: #111111;
+                font-weight: 500;
+            }
+            QPushButton {
+                background-color: #E6F1FB;
+                color: #0C447C;
+                border: 1px solid #B5D4F4;
+                border-radius: 6px;
+                padding: 6px 20px;
+                font-size: 15px;
+                font-weight: bold;
+                min-width: 60px;
+            }
+            QPushButton:hover {
+                background-color: #B5D4F4;
+            }
+        """)
+        reply = msg.exec()
         if reply == QMessageBox.StandardButton.Yes:
             conn = get_connection()
             b = conn.execute("SELECT category_id, month FROM budgets WHERE id=?", (budget_id,)).fetchone()

@@ -70,28 +70,28 @@ class AuthManager:
 
     # ── Public API ────────────────────────────────────────────────────────
 
-    def login(self, phone: str, password: str,
+    def login(self, username: str, password: str,
               remember: bool = False) -> dict:
         """
-        Xác thực bằng SĐT và thiết lập session.
+        Xác thực bằng Username và thiết lập session.
         Trả về {'success': bool, 'message': str, 'user': dict | None}
         """
-        ok, phone_normalized = _validate_phone(phone)
-        if not ok:
-            return {"success": False, "message": phone_normalized, "user": None}
+        username = username.strip()
+        if not username:
+            return {"success": False, "message": "Tên đăng nhập không được để trống.", "user": None}
 
         conn = _auth_conn()
         try:
             row = conn.execute(
-                "SELECT * FROM users WHERE phone=? AND is_active=1",
-                (phone_normalized,)
+                "SELECT * FROM users WHERE username=? AND is_active=1",
+                (username,)
             ).fetchone()
         finally:
             conn.close()
 
         if not row:
             return {"success": False,
-                    "message": "Số điện thoại chưa được đăng ký.",
+                    "message": "Tên đăng nhập không tồn tại.",
                     "user": None}
 
         expected = _hash_password(password, row["salt"])
@@ -104,8 +104,8 @@ class AuthManager:
         conn = _auth_conn()
         try:
             conn.execute(
-                "UPDATE users SET last_login=? WHERE phone=?",
-                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phone_normalized)
+                "UPDATE users SET last_login=? WHERE username=?",
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), username)
             )
             conn.commit()
         finally:
@@ -113,8 +113,9 @@ class AuthManager:
 
         user = {
             "id":        row["id"],
+            "username":  row["username"],
             "phone":     row["phone"],
-            "full_name": row["full_name"] or row["phone"],
+            "full_name": row["full_name"] or row["username"],
             "role":      row["role"],
         }
 
@@ -126,18 +127,22 @@ class AuthManager:
         init_database()
 
         if remember:
-            self._save_session(phone_normalized)
+            self._save_session(username)
         else:
             self._clear_session()
 
         return {"success": True, "message": "Đăng nhập thành công.", "user": user}
 
-    def register(self, password: str,
+    def register(self, username: str, password: str,
                  full_name: str = "", phone: str = "") -> dict:
         """
-        Tạo tài khoản mới. Khóa chính là SĐT.
+        Tạo tài khoản mới.
         Trả về {'success': bool, 'message': str}
         """
+        username = username.strip()
+        if not username:
+            return {"success": False, "message": "Tên đăng nhập không được để trống."}
+            
         if len(password) < 6:
             return {"success": False,
                     "message": "Mật khẩu phải có ít nhất 6 ký tự."}
@@ -156,27 +161,27 @@ class AuthManager:
 
         conn = _auth_conn()
         try:
-            # Kiểm tra SĐT trùng
-            existing_phone = conn.execute(
-                "SELECT id FROM users WHERE phone=?", (phone_normalized,)
+            # Kiểm tra SĐT hoặc Username trùng
+            existing = conn.execute(
+                "SELECT id FROM users WHERE phone=? OR username=?", (phone_normalized, username)
             ).fetchone()
-            if existing_phone:
+            if existing:
                 return {"success": False,
-                        "message": "Số điện thoại này đã được đăng ký với tài khoản khác."}
+                        "message": "Số điện thoại hoặc tên đăng nhập đã tồn tại."}
 
             salt = secrets.token_hex(16)
             pw_hash = _hash_password(password, salt)
 
             conn.execute("""
-                INSERT INTO users (password_hash, salt, full_name, phone, role)
-                VALUES (?, ?, ?, ?, 'user')
-            """, (pw_hash, salt, full_name.strip(), phone_normalized))
+                INSERT INTO users (username, password_hash, salt, full_name, phone, role)
+                VALUES (?, ?, ?, ?, ?, 'user')
+            """, (username, pw_hash, salt, full_name.strip(), phone_normalized))
             conn.commit()
         finally:
             conn.close()
 
         # Tạo thư mục và DB cho user mới ngay khi đăng ký
-        _tmp_user = {"phone": phone_normalized, "full_name": full_name.strip(), "role": "user"}
+        _tmp_user = {"username": username, "phone": phone_normalized, "full_name": full_name.strip(), "role": "user"}
         session.set_user(_tmp_user)
         from app.data.models import init_database
         init_database()
@@ -184,27 +189,27 @@ class AuthManager:
 
         return {"success": True, "message": "Tạo tài khoản thành công!"}
 
-    def reset_password(self, phone: str, new_password: str) -> dict:
-        """Đặt lại mật khẩu cho user theo SĐT."""
-        ok, phone_normalized = _validate_phone(phone)
-        if not ok:
-            return {"success": False, "message": phone_normalized}
+    def reset_password(self, username: str, new_password: str) -> dict:
+        """Đặt lại mật khẩu cho user theo Username."""
+        username = username.strip()
+        if not username:
+            return {"success": False, "message": "Tên đăng nhập không được để trống."}
 
         conn = _auth_conn()
         try:
             row = conn.execute(
-                "SELECT id FROM users WHERE phone=? AND is_active=1",
-                (phone_normalized,)
+                "SELECT id FROM users WHERE username=? AND is_active=1",
+                (username,)
             ).fetchone()
             if not row:
                 return {"success": False,
-                        "message": "Số điện thoại không tồn tại hoặc tài khoản đã bị khóa."}
+                        "message": "Tên đăng nhập không tồn tại hoặc tài khoản đã bị khóa."}
 
             salt = secrets.token_hex(16)
             pw_hash = _hash_password(new_password, salt)
             conn.execute(
-                "UPDATE users SET password_hash=?, salt=? WHERE phone=?",
-                (pw_hash, salt, phone_normalized)
+                "UPDATE users SET password_hash=?, salt=? WHERE username=?",
+                (pw_hash, salt, username)
             )
             conn.commit()
         finally:
@@ -218,7 +223,7 @@ class AuthManager:
             return None
         try:
             data = json.loads(sf.read_text(encoding="utf-8"))
-            return data.get("phone")
+            return data.get("username")
         except Exception:
             return None
 
@@ -238,7 +243,7 @@ class AuthManager:
         conn = _auth_conn()
         try:
             row = conn.execute(
-                "SELECT id, full_name, phone FROM users WHERE phone=? AND is_active=1",
+                "SELECT id, full_name, phone, username FROM users WHERE phone=? AND is_active=1",
                 (phone_normalized,)
             ).fetchone()
             return dict(row) if row else None
@@ -250,7 +255,7 @@ class AuthManager:
         conn = _auth_conn()
         try:
             rows = conn.execute(
-                "SELECT id, full_name, phone, role, last_login, is_active "
+                "SELECT id, username, full_name, phone, role, last_login, is_active "
                 "FROM users ORDER BY id"
             ).fetchall()
             return [dict(r) for r in rows]
@@ -266,6 +271,7 @@ class AuthManager:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username      TEXT    NOT NULL UNIQUE,
                     password_hash TEXT    NOT NULL,
                     salt          TEXT    NOT NULL,
                     full_name     TEXT    DEFAULT '',
@@ -276,11 +282,18 @@ class AuthManager:
                     created_at    TEXT    DEFAULT (datetime('now','localtime'))
                 )
             """)
-            # Migration: thêm cột phone nếu DB cũ chưa có
+            # Migration: thêm cột phone và username nếu DB cũ chưa có
             try:
                 conn.execute("ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''")
             except Exception:
                 pass  # cột đã tồn tại
+            try:
+                conn.execute("ALTER TABLE users ADD COLUMN username TEXT DEFAULT ''")
+                # Điền username ngẫu nhiên hoặc từ phone cho tài khoản cũ
+                conn.execute("UPDATE users SET username = phone WHERE username = '' OR username IS NULL")
+                conn.execute("CREATE UNIQUE INDEX idx_users_username ON users(username)")
+            except Exception:
+                pass
             # Đảm bảo có UNIQUE index cho phone
             try:
                 conn.execute(
@@ -295,18 +308,18 @@ class AuthManager:
                 salt = secrets.token_hex(16)
                 pw_hash = _hash_password("admin123", salt)
                 conn.execute("""
-                    INSERT INTO users (password_hash, salt, full_name, phone, role)
-                    VALUES (?, ?, 'Quản trị viên', '0000000000', 'admin')
-                """, (pw_hash, salt))
+                    INSERT INTO users (username, password_hash, salt, full_name, phone, role)
+                    VALUES (?, ?, ?, 'Quản trị viên', '0000000000', 'admin')
+                """, ('admin', pw_hash, salt))
             conn.commit()
         finally:
             conn.close()
 
-    def _save_session(self, phone: str):
+    def _save_session(self, username: str):
         sf = _session_file()
         sf.parent.mkdir(parents=True, exist_ok=True)
         sf.write_text(
-            json.dumps({"phone": phone}, ensure_ascii=False),
+            json.dumps({"username": username}, ensure_ascii=False),
             encoding="utf-8"
         )
 
