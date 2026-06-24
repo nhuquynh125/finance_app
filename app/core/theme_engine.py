@@ -123,6 +123,21 @@ QFrame {{
     border-radius: 12px;
 }}
 
+/* ── MessageBox ─────────────────────────────────── */
+QMessageBox {{
+    background: {t['bg_card']};
+}}
+QMessageBox QLabel {{
+    color: {t['text_primary']};
+    font-size: 14px;
+    font-weight: 500;
+}}
+QMessageBox QPushButton {{
+    min-width: 80px;
+    font-size: 13px;
+    padding: 6px 16px;
+}}
+
 QFrame[frameShape="4"],
 QFrame[frameShape="5"] {{
     background: {t['border']};

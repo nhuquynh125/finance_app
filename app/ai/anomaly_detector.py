@@ -61,6 +61,27 @@ class AnomalyDetector:
             SELECT amount FROM transactions
             WHERE category_id=? AND type='expense' AND id!=?
         """, (tx["category_id"], transaction_id)).fetchall()
+
+        tx_date = tx["date"]
+        try:
+            from dateutil.relativedelta import relativedelta
+            from datetime import datetime
+            dt = datetime.strptime(tx_date, "%Y-%m-%d")
+            d7 = (dt - relativedelta(days=7)).strftime("%Y-%m-%d")
+            m1 = (dt - relativedelta(months=1)).strftime("%Y-%m-%d")
+
+            daily_sums = conn.execute("""
+                SELECT date, SUM(amount) as total FROM transactions
+                WHERE type='expense' AND date IN (?, ?, ?)
+                GROUP BY date
+            """, (tx_date, d7, m1)).fetchall()
+            sums = {r["date"]: r["total"] for r in daily_sums}
+            today_total = sums.get(tx_date, 0)
+            d7_total = sums.get(d7, 0)
+            m1_total = sums.get(m1, 0)
+        except Exception:
+            today_total = d7_total = m1_total = 0
+
         conn.close()
 
         reasons = []
@@ -75,6 +96,11 @@ class AnomalyDetector:
                     f"Cao hơn {pct:.0f}% so với trung bình ({avg:,.0f} đ)")
             if std > 0 and (amount - avg) / (std + 1) > 2:
                 reasons.append(f"Z-score = {(amount - avg) / (std + 1):.1f}")
+        
+        if m1_total > 0 and today_total / m1_total > 2.0:
+            reasons.append(f"Tổng chi ngày cao gấp {today_total/m1_total:.1f} lần cùng kỳ tháng trước")
+        elif d7_total > 0 and today_total / d7_total > 2.0:
+            reasons.append(f"Tổng chi ngày cao gấp {today_total/d7_total:.1f} lần cùng kỳ tuần trước")
         if tx["created_at"]:
             try:
                 hour = datetime.strptime(
@@ -110,6 +136,31 @@ class AnomalyDetector:
     def _engineer_features(self, df) -> "pd.DataFrame":
         import pandas as pd
         df = df.copy()
+
+        daily_totals = df.groupby("date")["amount"].sum().to_dict()
+        def get_past_total(date_str, days=0, months=0):
+            try:
+                from dateutil.relativedelta import relativedelta
+                dt = pd.to_datetime(date_str)
+                if days:
+                    past_dt = dt - relativedelta(days=days)
+                elif months:
+                    past_dt = dt - relativedelta(months=months)
+                return daily_totals.get(past_dt.strftime('%Y-%m-%d'), 0.0)
+            except:
+                return 0.0
+                
+        df['daily_total'] = df['date'].map(daily_totals)
+        df['daily_total_last_week'] = df['date'].apply(lambda d: get_past_total(d, days=7))
+        df['daily_total_last_month'] = df['date'].apply(lambda d: get_past_total(d, months=1))
+        
+        if not df.empty:
+            df['ratio_last_week'] = np.where(df['daily_total_last_week'] > 0, df['daily_total'] / df['daily_total_last_week'], 0.0)
+            df['ratio_last_month'] = np.where(df['daily_total_last_month'] > 0, df['daily_total'] / df['daily_total_last_month'], 0.0)
+        else:
+            df['ratio_last_week'] = 0.0
+            df['ratio_last_month'] = 0.0
+
         df["date_dt"]    = pd.to_datetime(df["date"], errors="coerce")
         df["created_dt"] = pd.to_datetime(
             df["created_at"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
@@ -142,7 +193,7 @@ class AnomalyDetector:
         from sklearn.ensemble import IsolationForest
         from sklearn.preprocessing import StandardScaler
         features = ["log_amount", "amount_zscore", "amount_ratio",
-                    "hour_anomaly", "dayofweek"]
+                    "hour_anomaly", "dayofweek", "ratio_last_week", "ratio_last_month"]
         X = df[features].fillna(0).values
         X_scaled = StandardScaler().fit_transform(X)
         model = IsolationForest(
@@ -177,6 +228,15 @@ class AnomalyDetector:
             if row.get("hour_anomaly", 0) > 0:
                 h = int(row.get("hour", 0))
                 reasons.append(f"Giao dịch lúc {h:02d}:xx SA")
+                severity = "high"
+
+            rm = row.get("ratio_last_month", 0.0)
+            rw = row.get("ratio_last_week", 0.0)
+            if rm > 2.0:
+                reasons.append(f"Chi tiêu ngày cao gấp {rm:.1f} lần cùng kỳ tháng trước")
+                severity = "high"
+            elif rw > 2.0:
+                reasons.append(f"Chi tiêu ngày cao gấp {rw:.1f} lần cùng kỳ tuần trước")
                 severity = "high"
             if not reasons:
                 reasons.append("Mẫu chi tiêu bất thường")
