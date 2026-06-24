@@ -182,6 +182,33 @@ class FundManager:
 
     # ── Truy vấn thông tin nhóm ───────────────────────────────────────────────
 
+    def add_member_by_username(self, group_id: int, username: str) -> dict:
+        """Chủ quỹ thêm thành viên trực tiếp bằng username."""
+        my_username = session.username
+        
+        with get_connection() as conn:
+            group = conn.execute(
+                "SELECT * FROM family_groups WHERE id=?", (group_id,)
+            ).fetchone()
+            if not group:
+                return {"success": False, "message": "Quỹ không tồn tại."}
+            if group["owner_username"] != my_username:
+                return {"success": False, "message": "Chỉ chủ quỹ mới có quyền thêm thành viên."}
+                
+            already = conn.execute(
+                "SELECT 1 FROM group_members WHERE group_id=? AND username=?",
+                (group_id, username)
+            ).fetchone()
+            if already:
+                return {"success": False, "message": f"Thành viên '{username}' đã có trong nhóm."}
+                
+            conn.execute("""
+                INSERT INTO group_members (group_id, username, role)
+                VALUES (?, ?, 'member')
+            """, (group_id, username))
+            
+        return {"success": True, "message": f"Đã thêm thành viên '{username}' thành công!"}
+
     def get_my_groups(self) -> list[dict]:
         """
         Lấy danh sách các quỹ mà user đang tham gia.

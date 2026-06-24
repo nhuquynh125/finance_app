@@ -228,6 +228,21 @@ class AuthManager:
         DatabaseManager.reset()
         session.clear()
 
+    def find_user_by_phone(self, phone: str) -> dict | None:
+        """Tìm người dùng theo số điện thoại."""
+        ok, phone_normalized = _validate_phone(phone)
+        if not ok:
+            return None
+        conn = _auth_conn()
+        try:
+            row = conn.execute(
+                "SELECT id, username, full_name, phone FROM users WHERE phone=? AND is_active=1",
+                (phone_normalized,)
+            ).fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
+
     def list_users(self) -> list:
         """Trả danh sách user (admin only)."""
         conn = _auth_conn()

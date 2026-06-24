@@ -20,8 +20,8 @@ class TransactionHistoryDialog(QDialog):
         self.username = username
         self.fm = FundManager()
         self.setWindowTitle(f"Lịch sử góp quỹ - {username}")
-        self.resize(600, 400)
-        self.setStyleSheet("background:#fff;")
+        self.resize(650, 450)
+        self.setStyleSheet("QDialog { background:#fff; }")
         self._build()
 
     def _build(self):
@@ -29,13 +29,40 @@ class TransactionHistoryDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         
         title = QLabel(f"Lịch sử góp quỹ của {self.username}")
-        title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        title.setStyleSheet("color: #1A2B45; border: none;")
         layout.addWidget(title)
         
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["Ngày", "Số tiền", "Ghi chú"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        
+        self.table.setStyleSheet("""
+            QTableWidget {
+                font-size: 15px;
+                color: #1A2B45;
+                background-color: #ffffff;
+                alternate-background-color: #f4f8fc;
+                gridline-color: #dcdcdc;
+                border: 1px solid #dcdcdc;
+                border-radius: 8px;
+            }
+            QTableWidget::item {
+                color: #1A2B45;
+                padding: 8px;
+            }
+            QHeaderView::section {
+                font-size: 15px;
+                font-weight: bold;
+                background-color: #0B2A4A;
+                color: #ffffff;
+                padding: 10px;
+                border: none;
+                border-right: 1px solid #163e68;
+            }
+        """)
+        self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table)
         
         self._load_data()
@@ -385,6 +412,11 @@ class FundFrame(QWidget):
         btn_row.setSpacing(10)
 
         if group["my_role"] == "owner":
+            btn_add_member = QPushButton("Thêm thành viên")
+            btn_add_member.setStyleSheet(self._btn_primary())
+            btn_add_member.clicked.connect(lambda: self._on_add_member(group["id"]))
+            btn_row.addWidget(btn_add_member)
+
             btn_disband = QPushButton("Giải tán quỹ")
             btn_disband.setStyleSheet(self._btn_danger())
             btn_disband.clicked.connect(lambda: self._on_disband_group(group["id"]))
@@ -580,6 +612,40 @@ class FundFrame(QWidget):
         if result["success"]:
             QMessageBox.information(self, "Đã rời quỹ", result["message"])
             self.selected_group = None
+            self.refresh()
+        else:
+            QMessageBox.warning(self, "Lỗi", result["message"])
+
+    def _on_add_member(self, group_id: int):
+        dlg = CustomInputDialog("Thêm thành viên", "Nhập số điện thoại:", self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        phone = dlg.get_text().strip()
+        if not phone:
+            return
+
+        from app.data.auth_manager import AuthManager
+        auth_mgr = AuthManager()
+        user_info = auth_mgr.find_user_by_phone(phone)
+        
+        if not user_info:
+            QMessageBox.warning(self, "Lỗi", "Không tìm thấy thành viên với số điện thoại này.")
+            return
+            
+        reply = QMessageBox.question(
+            self, "Xác nhận thêm thành viên",
+            f"Đã tìm thấy thành viên:\n\n"
+            f"Tên: {user_info['full_name']}\n"
+            f"Username: {user_info['username']}\n\n"
+            "Bạn có muốn thêm thành viên này vào quỹ?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+            
+        result = self.fm.add_member_by_username(group_id, user_info['username'])
+        if result["success"]:
+            QMessageBox.information(self, "Thành công", result["message"])
             self.refresh()
         else:
             QMessageBox.warning(self, "Lỗi", result["message"])
