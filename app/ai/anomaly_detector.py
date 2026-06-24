@@ -180,7 +180,7 @@ class AnomalyDetector:
             return group
 
         if "category_id" in df.columns and not df.empty:
-            df = df.groupby("category_id", group_keys=False).apply(cat_zscore)
+            df = df.groupby("category_id", dropna=False, group_keys=False).apply(cat_zscore)
         else:
             df["amount_zscore"] = 0.0
 
@@ -204,8 +204,11 @@ class AnomalyDetector:
 
     def _build_anomaly_report(self, anomalies, all_df) -> list:
         results = []
-        cat_stats = all_df.groupby("category_id")["amount"].agg(
-            ["mean", "std"]).to_dict("index")
+        if "category_id" in all_df.columns:
+            cat_stats = all_df.groupby("category_id", dropna=False)["amount"].agg(
+                ["mean", "std"]).to_dict("index")
+        else:
+            cat_stats = {}
         for _, row in anomalies.iterrows():
             cat_id  = row.get("category_id")
             amount  = row["amount"]

@@ -140,7 +140,11 @@ class DatabaseManager:
                 raise e
 
     def close(self):
-        self._close_conn()
+        """
+        No-op. Không đóng singleton connection khi gọi conn.close().
+        Sử dụng DatabaseManager.reset() khi thực sự muốn đóng (ví dụ: đăng xuất).
+        """
+        pass
 
     @classmethod
     def reset(cls):
