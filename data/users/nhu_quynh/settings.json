@@ -6,6 +6,6 @@
   "auto_classification": true,
   "anomaly_detection": true,
   "forecast_method": "auto",
-  "chat_engine": "gemini",
+  "chat_engine": "finance_ai",
   "window_mode": "default"
 }

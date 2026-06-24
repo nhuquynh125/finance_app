@@ -201,6 +201,7 @@ def init_database(db_path: Optional[Path] = None):
         for migration in [
             "ALTER TABLE transactions ADD COLUMN owner_username TEXT",
             "ALTER TABLE transactions ADD COLUMN is_anomaly_feedback INTEGER DEFAULT 0",
+            "ALTER TABLE budgets ADD COLUMN is_recurring INTEGER DEFAULT 0",
         ]:
             try:
                 cursor.execute(migration)
@@ -280,7 +281,8 @@ def init_database(db_path: Optional[Path] = None):
                 limit_amount    REAL NOT NULL,
                 spent_amount    REAL DEFAULT 0,
                 month           TEXT NOT NULL,
-                alert_threshold REAL DEFAULT 0.8
+                alert_threshold REAL DEFAULT 0.8,
+                is_recurring    INTEGER DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS ai_predictions (

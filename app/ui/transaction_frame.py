@@ -91,7 +91,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         title.setStyleSheet("color: #111111;")
         layout.addWidget(title)
         layout.addStretch()
-        for text, slot in [("Nhập CSV", self._import_csv), ("Xuất Excel", self._export_excel)]:
+        for text, slot in [("Xuất Excel", self._export_excel)]:
             btn = QPushButton(text)
             btn.setStyleSheet(self._btn_style())
             btn.clicked.connect(slot)
@@ -536,22 +536,6 @@ class TransactionFrame(QWidget, BusConnectMixin):
             "Cảm ơn bạn đã phản hồi! AI sẽ học từ dữ liệu này."
         )
         self.refresh()
-
-    def _import_csv(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self, "Chọn file CSV", "", "CSV Files (*.csv)")
-        if not path:
-            return
-        try:
-            from app.core.csv_importer import CsvImporter
-            count, warnings = CsvImporter().import_file(path)
-            msg = f"Đã nhập {count} giao dịch"
-            if warnings:
-                msg += "\n\nLog:\n" + "\n".join(warnings)
-            QMessageBox.information(self, "Thành công", msg)
-            self.refresh()
-        except Exception as e:
-            QMessageBox.critical(self, "Lỗi", str(e))
 
     def _export_excel(self):
         path, _ = QFileDialog.getSaveFileName(

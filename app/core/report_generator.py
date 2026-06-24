@@ -506,7 +506,9 @@ class ReportGenerator:
         font = "Helvetica"
 
         def ps(name, **kwargs):
-            return ParagraphStyle(name, fontName=font, **kwargs)
+            if "fontName" not in kwargs:
+                kwargs["fontName"] = font
+            return ParagraphStyle(name, **kwargs)
 
         return {
             "title":       ps("title", fontSize=16, textColor=colors.white,

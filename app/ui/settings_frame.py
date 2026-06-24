@@ -58,8 +58,6 @@ class SettingsFrame(QWidget):
         self.date_combo.setCurrentText(self.settings["date_format"])
         self._set_combo_data(self.month_combo, self.settings["default_month"])
         self.auto_refresh_check.setChecked(bool(self.settings["auto_refresh"]))
-        self._set_combo_data(self.window_mode_combo, self.settings.get("window_mode", "default"))
-        self._set_combo_data(self.theme_combo, theme_engine.mode)
         self.auto_classify_check.setChecked(bool(self.settings["auto_classification"]))
         self.anomaly_check.setChecked(bool(self.settings["anomaly_detection"]))
         self._set_combo_data(self.forecast_combo, self.settings["forecast_method"])
@@ -160,25 +158,6 @@ class SettingsFrame(QWidget):
         self.auto_refresh_check.setStyleSheet(self._check_style())
         self._add_control(grid, 3, "Làm mới", self.auto_refresh_check)
 
-        self.window_mode_combo = QComboBox()
-        self.window_mode_combo.addItem("Mặc định (1150x700)", "default")
-        self.window_mode_combo.addItem("Lớn (1366x768)", "large")
-        self.window_mode_combo.addItem("Toàn màn hình", "fullscreen")
-        self.window_mode_combo.setStyleSheet(self._combo_style())
-        self._add_control(grid, 4, "Chế độ cửa sổ", self.window_mode_combo)
-
-        self.theme_combo = QComboBox()
-        self.theme_combo.addItem("Sáng", "light")
-        self.theme_combo.addItem("Tối", "dark")
-        self.theme_combo.addItem("Theo hệ thống", "auto")
-        self.theme_combo.setStyleSheet(self._combo_style())
-        self.theme_combo.currentIndexChanged.connect(
-            lambda: theme_engine.set_mode(self.theme_combo.currentData())
-        )
-        self._add_control(grid, 5, "Chủ đề UI", self.theme_combo)
-
-
-
         self.body.addWidget(panel)
 
     def _build_ai_settings(self):
@@ -204,22 +183,7 @@ class SettingsFrame(QWidget):
         self.chat_engine_combo.setStyleSheet(self._combo_style())
         self._add_control(grid, 3, "Engine chatbot", self.chat_engine_combo)
 
-        self.package_labels = {}
-        status_row = QWidget()
-        status_row.setStyleSheet("background:transparent;")
-        row = QHBoxLayout(status_row)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(8)
-        for package in ["sklearn", "prophet", "torch"]:
-            lbl = QLabel(package)
-            lbl.setStyleSheet(self._badge_style(False))
-            self.package_labels[package] = lbl
-            row.addWidget(lbl)
-        row.addStretch()
-        self._add_control(grid, 4, "Trạng thái package", status_row)
         self.body.addWidget(panel)
-
-        QTimer.singleShot(200, self._refresh_package_status)
 
     def _build_data_tools(self):
         panel, grid = self._panel("Quản lý dữ liệu")
@@ -244,12 +208,6 @@ class SettingsFrame(QWidget):
         btn_folder.clicked.connect(self._open_data_folder)
         self._add_control(grid, 3, "Thư mục", btn_folder)
 
-        self.backup_info = QLabel("")
-        self.backup_info.setWordWrap(True)
-        self.backup_info.setFont(QFont("Segoe UI", 15))
-        self.backup_info.setStyleSheet("color:#4A6785; border:none;")
-        self._add_control(grid, 4, "Trạng thái", self.backup_info)
-
         self.body.addWidget(panel)
 
     # -- Refresh / Save --
@@ -260,13 +218,10 @@ class SettingsFrame(QWidget):
         self.date_combo.setCurrentText(self.settings["date_format"])
         self._set_combo_data(self.month_combo, self.settings["default_month"])
         self.auto_refresh_check.setChecked(bool(self.settings["auto_refresh"]))
-        self._set_combo_data(self.window_mode_combo, self.settings.get("window_mode", "default"))
-        self._set_combo_data(self.theme_combo, theme_engine.mode)
         self.auto_classify_check.setChecked(bool(self.settings["auto_classification"]))
         self.anomaly_check.setChecked(bool(self.settings["anomaly_detection"]))
         self._set_combo_data(self.forecast_combo, self.settings["forecast_method"])
         self._set_combo_data(self.chat_engine_combo, self.settings["chat_engine"])
-        self._refresh_package_status()
 
 
     def _save(self):
@@ -275,7 +230,6 @@ class SettingsFrame(QWidget):
             "date_format":         self.date_combo.currentText(),
             "default_month":       self.month_combo.currentData(),
             "auto_refresh":        self.auto_refresh_check.isChecked(),
-            "window_mode":         self.window_mode_combo.currentData(),
             "auto_classification": self.auto_classify_check.isChecked(),
             "anomaly_detection":   self.anomaly_check.isChecked(),
             "forecast_method":     self.forecast_combo.currentData(),
@@ -284,7 +238,7 @@ class SettingsFrame(QWidget):
         self.settings = save_settings(data)
         self.status_label.setText("Đã lưu ✓")
         QTimer.singleShot(3000, lambda: self.status_label.setText(""))
-        QMessageBox.information(self, "Thông báo", "Cài đặt đã được lưu thành công!")
+        self._show_message_box("Thông báo", "Cài đặt đã được lưu thành công!")
         if self.main_window:
             self.main_window.refresh_all()
 
@@ -294,11 +248,9 @@ class SettingsFrame(QWidget):
         try:
             target = backup_database()
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi backup", str(e))
+            self._show_message_box("Lỗi backup", str(e), QMessageBox.Icon.Critical)
             return
-        self.backup_info.setText(f"Đã tạo backup: {target.name}")
-        QMessageBox.information(self, "Thành công",
-                                f"Đã sao lưu database:\n{target}")
+        self._show_message_box("Thành công", f"Đã sao lưu database:\n{target}")
 
     def _export_excel(self):
         exports_dir = get_exports_dir()
@@ -312,10 +264,9 @@ class SettingsFrame(QWidget):
         try:
             target = export_database_to_excel(path)
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi xuất Excel", str(e))
+            self._show_message_box("Lỗi xuất Excel", str(e), QMessageBox.Icon.Critical)
             return
-        self.backup_info.setText(f"Đã xuất Excel: {Path(target).name}")
-        QMessageBox.information(self, "Thành công", f"Đã xuất dữ liệu:\n{target}")
+        self._show_message_box("Thành công", f"Đã xuất dữ liệu:\n{target}")
 
     def _restore_db(self):
         try:
@@ -330,11 +281,12 @@ class SettingsFrame(QWidget):
         )
         if not path:
             return
-        reply = QMessageBox.warning(
-            self, "Xác nhận phục hồi",
+        reply = self._show_message_box(
+            "Xác nhận phục hồi",
             "Phục hồi database sẽ ghi đè dữ liệu hiện tại.\n"
             "App sẽ tự động sao lưu trước khi ghi đè.\n\n"
             "Bạn có muốn tiếp tục?",
+            QMessageBox.Icon.Warning,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
@@ -342,14 +294,12 @@ class SettingsFrame(QWidget):
         try:
             backup_path = restore_database(path)
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi phục hồi", str(e))
+            self._show_message_box("Lỗi phục hồi", str(e), QMessageBox.Icon.Critical)
             return
-        self.backup_info.setText(
-            f"Đã phục hồi. Backup cũ: {Path(str(backup_path)).name if backup_path else 'N/A'}")
         if self.main_window:
             self.main_window.refresh_all()
-        QMessageBox.information(
-            self, "Thành công",
+        self._show_message_box(
+            "Thành công",
             f"Đã phục hồi database.\nBackup trước khi phục hồi:\n{backup_path}"
         )
 
@@ -365,11 +315,37 @@ class SettingsFrame(QWidget):
         else:
             subprocess.call(["xdg-open", folder])
 
-    def _refresh_package_status(self):
-        statuses = package_status(list(self.package_labels.keys()))
-        for name, ok in statuses.items():
-            self.package_labels[name].setText(f"{name}: {'OK' if ok else 'thiếu'}")
-            self.package_labels[name].setStyleSheet(self._badge_style(ok))
+    def _show_message_box(self, title, text, icon=QMessageBox.Icon.Information, buttons=QMessageBox.StandardButton.Ok):
+        msg = QMessageBox(self)
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        msg.setIcon(icon)
+        msg.setStandardButtons(buttons)
+        msg.setStyleSheet("""
+            QMessageBox {
+                background-color: #ffffff;
+            }
+            QLabel {
+                color: #0B2A4A;
+                font-size: 16px;
+                font-weight: 500;
+                min-width: 300px;
+                min-height: 50px;
+            }
+            QPushButton {
+                background: #E6F1FB;
+                color: #0B2A4A;
+                border: 1px solid #B5D4F4;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 15px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background: #B5D4F4;
+            }
+        """)
+        return msg.exec()
 
     # -- Helpers --
 

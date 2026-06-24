@@ -158,10 +158,41 @@ class BudgetFrame(QWidget):
         self.threadpool.start(worker)
 
     def _fetch_budget_data(self, month: str):
+        self._forward_recurring_budgets(month)
         self._sync_spent_amounts(month)
         budgets = self._load_budgets(month)
         summary = self._calc_summary(budgets)
         return budgets, summary
+
+    def _forward_recurring_budgets(self, month: str):
+        conn = get_connection()
+        try:
+            # Check if column exists, skip if DB is not migrated yet
+            conn.execute("SELECT is_recurring FROM budgets LIMIT 1")
+        except:
+            conn.close()
+            return
+
+        rows = conn.execute("""
+            SELECT category_id, limit_amount, alert_threshold
+            FROM budgets b1
+            WHERE is_recurring = 1 
+              AND month < ?
+              AND month = (
+                  SELECT MAX(month) FROM budgets b2 
+                  WHERE b2.category_id = b1.category_id AND b2.is_recurring = 1 AND b2.month < ?
+              )
+              AND category_id NOT IN (SELECT category_id FROM budgets WHERE month = ?)
+        """, (month, month, month)).fetchall()
+        
+        if rows:
+            for r in rows:
+                conn.execute("""
+                    INSERT INTO budgets (category_id, limit_amount, spent_amount, month, alert_threshold, is_recurring)
+                    VALUES (?, ?, 0, ?, ?, 1)
+                """, (r["category_id"], r["limit_amount"], month, r["alert_threshold"]))
+            conn.commit()
+        conn.close()
 
     def _on_budget_fetched(self, data):
         budgets, summary = data
@@ -526,9 +557,16 @@ class BudgetFrame(QWidget):
             data = dialog.get_data()
             conn = get_connection()
             conn.execute(
-                "UPDATE budgets SET limit_amount=?, alert_threshold=? WHERE id=?",
-                (data["limit_amount"], data["alert_threshold"], budget_id)
+                "UPDATE budgets SET limit_amount=?, alert_threshold=?, is_recurring=? WHERE id=?",
+                (data["limit_amount"], data["alert_threshold"], data["is_recurring"], budget_id)
             )
+            if data["is_recurring"] == 1:
+                b = conn.execute("SELECT category_id, month FROM budgets WHERE id=?", (budget_id,)).fetchone()
+                if b:
+                    conn.execute(
+                        "UPDATE budgets SET limit_amount=?, alert_threshold=?, is_recurring=1 WHERE category_id=? AND month > ? AND is_recurring=1",
+                        (data["limit_amount"], data["alert_threshold"], b["category_id"], b["month"])
+                    )
             conn.commit()
             conn.close()
             self.refresh()
@@ -539,6 +577,13 @@ class BudgetFrame(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
             conn = get_connection()
+            b = conn.execute("SELECT category_id, month FROM budgets WHERE id=?", (budget_id,)).fetchone()
+            if b:
+                # Dừng tính chu kỳ từ quá khứ
+                conn.execute("UPDATE budgets SET is_recurring = 0 WHERE category_id=? AND month <= ?", (b["category_id"], b["month"]))
+                # Xóa các ngân sách tương lai được tạo tự động
+                conn.execute("DELETE FROM budgets WHERE category_id=? AND month > ? AND is_recurring=1", (b["category_id"], b["month"]))
+            
             conn.execute("DELETE FROM budgets WHERE id=?", (budget_id,))
             conn.commit()
             conn.close()
@@ -552,14 +597,20 @@ class BudgetFrame(QWidget):
         ).fetchone()
         if existing:
             conn.execute(
-                "UPDATE budgets SET limit_amount=?, alert_threshold=? WHERE id=?",
-                (data["limit_amount"], data["alert_threshold"], existing["id"])
+                "UPDATE budgets SET limit_amount=?, alert_threshold=?, is_recurring=? WHERE id=?",
+                (data["limit_amount"], data["alert_threshold"], data["is_recurring"], existing["id"])
             )
         else:
             conn.execute(
-                "INSERT INTO budgets (category_id, limit_amount, spent_amount, month, alert_threshold) "
-                "VALUES (?, ?, 0, ?, ?)",
-                (data["category_id"], data["limit_amount"], data["month"], data["alert_threshold"])
+                "INSERT INTO budgets (category_id, limit_amount, spent_amount, month, alert_threshold, is_recurring) "
+                "VALUES (?, ?, 0, ?, ?, ?)",
+                (data["category_id"], data["limit_amount"], data["month"], data["alert_threshold"], data["is_recurring"])
+            )
+        
+        if data["is_recurring"] == 1:
+            conn.execute(
+                "UPDATE budgets SET limit_amount=?, alert_threshold=?, is_recurring=1 WHERE category_id=? AND month > ? AND is_recurring=1",
+                (data["limit_amount"], data["alert_threshold"], data["category_id"], data["month"])
             )
         conn.commit()
         conn.close()
@@ -647,6 +698,10 @@ class BudgetDialog(QDialog):
         self.spin_alert.setValue(80)
         form.addRow("Cảnh báo khi đạt:", self.spin_alert)
 
+        self.cb_recurring = QComboBox()
+        self.cb_recurring.addItems(["Chỉ tháng này", "Cố định hàng tháng"])
+        form.addRow("Áp dụng:", self.cb_recurring)
+
         layout.addLayout(form)
 
         note = QLabel("* Cảnh báo hiện khi chi tiêu vượt % ngân sách đặt ra")
@@ -705,6 +760,8 @@ class BudgetDialog(QDialog):
         self.spin_limit.setValue(budget.get("limit_amount", 0))
         threshold = budget.get("alert_threshold", 0.8)
         self.spin_alert.setValue(int(threshold * 100))
+        is_rec = budget.get("is_recurring", 0)
+        self.cb_recurring.setCurrentIndex(1 if is_rec else 0)
 
     def get_data(self) -> dict:
         return {
@@ -712,4 +769,5 @@ class BudgetDialog(QDialog):
             "limit_amount":    self.spin_limit.value(),
             "alert_threshold": self.spin_alert.value() / 100,
             "month":           self.month,
+            "is_recurring":    1 if self.cb_recurring.currentIndex() == 1 else 0,
         }
