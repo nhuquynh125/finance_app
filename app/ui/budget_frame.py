@@ -11,6 +11,8 @@ from app.data.models import get_connection
 from app.core.transaction_manager import TransactionManager
 from app.data.repositories import BudgetRepo
 from app.core.worker import Worker
+from app.core.event_bus import bus
+from app.ui.notification import notifier
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool
 
@@ -542,6 +544,7 @@ class BudgetFrame(QWidget):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
             self._save_budget(data)
+            notifier.success("Ngân sách", "Đã đặt ngân sách mới thành công.")
             self.refresh()
 
     def _open_edit_dialog(self, budget_id: int):
@@ -569,13 +572,14 @@ class BudgetFrame(QWidget):
                     )
             conn.commit()
             conn.close()
+            notifier.success("Ngân sách", "Đã cập nhật ngân sách thành công.")
             self.refresh()
 
     def _delete_budget(self, budget_id: int):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xác nhận xóa")
         msg.setText("Xóa ngân sách này?")
-        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setStyleSheet("""
             QMessageBox {
@@ -613,6 +617,7 @@ class BudgetFrame(QWidget):
             conn.execute("DELETE FROM budgets WHERE id=?", (budget_id,))
             conn.commit()
             conn.close()
+            notifier.success("Ngân sách", "Đã xóa ngân sách.")
             self.refresh()
 
     def _save_budget(self, data: dict):

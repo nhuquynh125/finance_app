@@ -658,12 +658,7 @@ class ProfileFrame(QWidget):
         box = QMessageBox()
         box.setWindowTitle(title)
         box.setText(msg)
-        if kind == "critical":
-            box.setIcon(QMessageBox.Icon.Critical)
-        elif kind == "warning":
-            box.setIcon(QMessageBox.Icon.Warning)
-        else:
-            box.setIcon(QMessageBox.Icon.Information)
+        box.setIcon(QMessageBox.Icon.NoIcon)
         box.exec()
 
     def _build_admin_card(self):
@@ -851,7 +846,7 @@ class ProfileFrame(QWidget):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xác nhận")
         msg.setText(f"Bạn muốn {action} tài khoản này?")
-        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setStyleSheet("""
             QMessageBox { background-color: #ffffff; }
@@ -882,7 +877,7 @@ class ProfileFrame(QWidget):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xóa tài khoản")
         msg.setText(f"Xóa tài khoản '@{username}'?\n\nDữ liệu tài chính trong thư mục của user vẫn còn trên ổ đĩa.")
-        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setDefaultButton(QMessageBox.StandardButton.No)
         msg.setStyleSheet("""
@@ -913,7 +908,7 @@ class ProfileFrame(QWidget):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xóa tài khoản")
         msg.setText(f"Bạn sắp xóa tài khoản SĐT '{session.phone}' và toàn bộ dữ liệu tài chính.\n\nHành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?")
-        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setDefaultButton(QMessageBox.StandardButton.No)
         msg.setStyleSheet("""

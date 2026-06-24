@@ -337,7 +337,7 @@ class SettingsFrame(QWidget):
         msg = QMessageBox(self)
         msg.setWindowTitle(title)
         msg.setText(text)
-        msg.setIcon(icon)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(buttons)
         msg.setStyleSheet("""
             QMessageBox {

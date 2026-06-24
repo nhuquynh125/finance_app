@@ -27,7 +27,8 @@ from matplotlib.figure import Figure
 
 from app.data.models import get_connection
 from app.core.transaction_manager import TransactionManager
-
+from app.core.event_bus import bus
+from app.ui.notification import notifier
 
 # ── Design tokens ──────────────────────────────────────────────────────────────
 NAVY        = "#0B2A4A"
@@ -909,11 +910,11 @@ class CategoryManagerDialog(QDialog):
                 "INSERT INTO categories (name, type, color, parent_id) VALUES (?,?,?,?)",
                 (name, tx_type, color, parent_id)
             )
-            QMessageBox.information(self, "Thành công", f'Đã thêm danh mục "{name}".')
+            notifier.success("Đã thêm danh mục", f'"{name}" đã được thêm vào danh mục.')
             self._inp_name.clear()
             self._refresh_all_data()
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi", f"Không thể lưu: {e}")
+            notifier.error("Lỗi", f"Không thể lưu: {e}")
 
     def _do_group(self):
         selected_ids = [(cat_id, cat_type)
@@ -952,18 +953,17 @@ class CategoryManagerDialog(QDialog):
             for cat_id, _ in selected_ids:
                 conn.execute_write(
                     "UPDATE categories SET parent_id=? WHERE id=?", (target_id, cat_id))
-            QMessageBox.information(self, "Thành công",
-                                    f"Đã nhóm {len(selected_ids)} danh mục vào cha.")
+            notifier.success("Nhóm danh mục", f"Đã nhóm {len(selected_ids)} danh mục vào cha.")
             self._inp_new_parent.clear()
             self._refresh_all_data()
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi", f"Không thể nhóm: {e}")
+            notifier.error("Lỗi", f"Không thể nhóm: {e}")
 
     def _delete_cat(self, cat_id: int, cat_name: str):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xác nhận xóa")
         msg.setText(f'Bạn có chắc muốn xóa danh mục "{cat_name}"?\nDanh mục con sẽ trở thành danh mục gốc.')
-        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setStyleSheet("""
             QMessageBox {
@@ -995,9 +995,10 @@ class CategoryManagerDialog(QDialog):
                 conn.execute_write("UPDATE categories SET parent_id=NULL WHERE parent_id=?",
                                    (cat_id,))
                 conn.execute_write("DELETE FROM categories WHERE id=?", (cat_id,))
+                notifier.success("Đã xóa danh mục", f'"{cat_name}" đã bị xóa.')
                 self._refresh_all_data()
             except Exception as e:
-                QMessageBox.critical(self, "Lỗi", f"Không thể xóa: {e}")
+                notifier.error("Lỗi", f"Không thể xóa: {e}")
 
     def _refresh_all_data(self):
         tx_type = "expense" if self._cb_type.currentIndex() == 0 else "income"

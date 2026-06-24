@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 from app.core.fund_manager import FundManager
-
+from app.ui.notification import notifier
 
 class FundContributionDialog(QDialog):
     def __init__(self, tx=None, parent=None):
@@ -197,10 +197,11 @@ class TransactionHistoryDialog(QDialog):
                 category_id=cat["id"]
             )
             
-            # Cập nhật lại owner_username cho giao dịch vừa thêm (vì add_transaction lấy username của session, nhưng ở đây có thể thêm cho member khác)
+            # Cập nhật lại owner_username cho giao dịch vừa thêm
             with get_connection() as conn:
                 conn.execute("UPDATE transactions SET owner_username = ? WHERE id = (SELECT MAX(id) FROM transactions)", (self.username,))
             
+            notifier.success("Đóng góp", f"Đã thêm đóng góp {data['amount']:,.0f}đ cho {self.username}.")
             self._load_data()
 
     def _on_edit(self):
@@ -229,6 +230,7 @@ class TransactionHistoryDialog(QDialog):
                 category_id=tx["category_id"],
                 note=tx["note"]
             )
+            notifier.success("Đóng góp", f"Đã cập nhật đóng góp của {self.username}.")
             self._load_data()
 
     def _on_delete(self):
@@ -243,6 +245,7 @@ class TransactionHistoryDialog(QDialog):
             from app.core.transaction_manager import TransactionManager
             tm = TransactionManager()
             tm.delete_transaction(tx["id"])
+            notifier.success("Đóng góp", "Đã xóa đóng góp.")
             self._load_data()
 
 
@@ -710,15 +713,11 @@ class FundFrame(QWidget):
 
         result = self.fm.create_group(name.strip())
         if result["success"]:
-            QMessageBox.information(
-                self, "Thành công",
-                f"✅ {result['message']}\n\n"
-                f"Mã mời của quỹ: {result['invite_code']}\n\n"
-                "Hãy chia sẻ mã này để mời thành viên tham gia."
-            )
+            notifier.success("Tạo quỹ",
+                f"Đã tạo quỹ \"{name.strip()}\" — Mã mời: {result['invite_code']}")
             self.refresh()
         else:
-            QMessageBox.warning(self, "Không thể tạo quỹ", result["message"])
+            notifier.error("Không thể tạo quỹ", result["message"])
 
     def _on_join_group(self):
         dlg = CustomInputDialog("Tham gia quỹ", "Nhập mã mời (6 ký tự):", self)
@@ -745,10 +744,10 @@ class FundFrame(QWidget):
 
         result = self.fm.join_group(code.strip())
         if result["success"]:
-            QMessageBox.information(self, "Thành công", f"✅ {result['message']}")
+            notifier.success("Tham gia quỹ", result["message"])
             self.refresh()
         else:
-            QMessageBox.warning(self, "Không thể tham gia", result["message"])
+            notifier.error("Không thể tham gia", result["message"])
             
     def _on_select_group(self, group: dict):
         self.selected_group = group
@@ -810,11 +809,11 @@ class FundFrame(QWidget):
                     if reply == QMessageBox.StandardButton.Yes:
                         res = self.fm.remove_member(group_id, username)
                         if res["success"]:
-                            QMessageBox.information(dlg, "Thành công", res["message"])
+                            notifier.success("Xóa thành viên", res["message"])
                             dlg.accept()
                             self.refresh()
                         else:
-                            QMessageBox.warning(dlg, "Lỗi", res["message"])
+                            notifier.error("Lỗi", res["message"])
                 return remove
                 
             btn_remove.clicked.connect(make_remove_callback(m["username"]))
@@ -840,11 +839,11 @@ class FundFrame(QWidget):
 
         result = self.fm.leave_group(group_id)
         if result["success"]:
-            QMessageBox.information(self, "Đã rời quỹ", result["message"])
+            notifier.info("Rời quỹ", result["message"])
             self.selected_group = None
             self.refresh()
         else:
-            QMessageBox.warning(self, "Lỗi", result["message"])
+            notifier.error("Lỗi", result["message"])
 
     def _on_add_member(self, group_id: int):
         dlg = CustomInputDialog("Thêm thành viên", "Nhập số điện thoại:", self)
@@ -875,10 +874,10 @@ class FundFrame(QWidget):
             
         result = self.fm.add_member_by_username(group_id, user_info['username'])
         if result["success"]:
-            QMessageBox.information(self, "Thành công", result["message"])
+            notifier.success("Thêm thành viên", result["message"])
             self.refresh()
         else:
-            QMessageBox.warning(self, "Lỗi", result["message"])
+            notifier.error("Lỗi", result["message"])
 
     def _on_disband_group(self, group_id: int):
         reply = QMessageBox.warning(
@@ -892,11 +891,11 @@ class FundFrame(QWidget):
 
         result = self.fm.disband_group(group_id)
         if result["success"]:
-            QMessageBox.information(self, "Đã giải tán", result["message"])
+            notifier.warning("Giải tán quỹ", result["message"])
             self.selected_group = None
             self.refresh()
         else:
-            QMessageBox.warning(self, "Lỗi", result["message"])
+            notifier.error("Lỗi", result["message"])
 
     # ── Style helpers ─────────────────────────────────────────────────────────
 

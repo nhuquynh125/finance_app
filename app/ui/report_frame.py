@@ -402,7 +402,7 @@ class ReportFrame(QWidget):
         mb = QMessageBox(self)
         mb.setWindowTitle("Thành công")
         mb.setText(f"Báo cáo đã được tạo!\n{path}\n\nMở file ngay?")
-        mb.setIcon(QMessageBox.Icon.Information)
+        mb.setIcon(QMessageBox.Icon.NoIcon)
         mb.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         # Force dark text so it stays legible regardless of global QSS
         mb.setStyleSheet("""
@@ -459,7 +459,7 @@ class ReportFrame(QWidget):
             mb = QMessageBox(self)
             mb.setWindowTitle("Lỗi tạo báo cáo")
             mb.setText(msg)
-            mb.setIcon(QMessageBox.Icon.Critical)
+            mb.setIcon(QMessageBox.Icon.NoIcon)
             # Force dark text so it stays legible regardless of global QSS
             mb.setStyleSheet("""
                 QMessageBox {
@@ -553,7 +553,7 @@ class ReportFrame(QWidget):
             mb = QMessageBox(self)
             mb.setWindowTitle("Lỗi")
             mb.setText(f"Không mở được file:\n{e}")
-            mb.setIcon(QMessageBox.Icon.Warning)
+            mb.setIcon(QMessageBox.Icon.NoIcon)
             mb.setStyleSheet("""
                 QMessageBox { background-color: #FFFFFF; }
                 QMessageBox QLabel {

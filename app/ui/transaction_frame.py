@@ -11,6 +11,7 @@ from PyQt6.QtGui import QFont, QColor, QBrush
 from app.core.transaction_manager import TransactionManager
 from app.data.models import get_connection
 from app.core.event_bus import bus, BusConnectMixin
+from app.ui.notification import notifier
 from app.core.worker import Worker
 from app.data.repositories import BudgetRepo
 from datetime import datetime
@@ -410,39 +411,10 @@ class TransactionFrame(QWidget, BusConnectMixin):
     def _on_ai_finished(self, count):
         self.btn_ai.setText("Phân loại AI")
         self.btn_ai.setEnabled(True)
-        
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Hoàn tất")
-        msg.setIcon(QMessageBox.Icon.Information)
         if count > 0:
-            msg.setText(f"AI đã tự động phân loại {count} giao dịch mới.")
+            notifier.success("Phân loại AI", f"Đã tự động phân loại {count} giao dịch mới.")
         else:
-            msg.setText("Tất cả giao dịch đã có danh mục. AI không có dữ liệu mới để phân loại,\nnhưng đã kiểm tra các khoản bất thường.")
-        
-        msg.setStyleSheet("""
-            QMessageBox {
-                background-color: #ffffff;
-            }
-            QLabel {
-                font-size: 16px;
-                color: #111111;
-                font-weight: 500;
-                min-height: 40px;
-            }
-            QPushButton {
-                background-color: #E6F1FB;
-                color: #0C447C;
-                border: 1px solid #B5D4F4;
-                border-radius: 6px;
-                padding: 6px 20px;
-                font-size: 15px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #B5D4F4;
-            }
-        """)
-        msg.exec()
+            notifier.info("Phân loại AI", "Tất cả giao dịch đã có danh mục. Đã kiểm tra các khoản bất thường.")
         self.refresh()
 
     def _open_add_dialog(self):
@@ -450,7 +422,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
             self.tm.add_transaction(**data)
-
+            notifier.success("Giao dịch", f"Đã thêm: {data.get('description', '')}")
             if self.main_window:
                 self.main_window.refresh_all()
             else:
@@ -469,6 +441,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
             self.tm.update_transaction(tx_id, **data)
+            notifier.success("Giao dịch", f"Đã cập nhật: {data.get('description', '')}")
 
             if tx.get("category_id") != data.get("category_id"):
                 try:
@@ -520,7 +493,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         msg = QMessageBox(self)
         msg.setWindowTitle("Xác nhận xóa")
         msg.setText("Bạn có chắc muốn xóa giao dịch này?")
-        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setStyleSheet("""
             QMessageBox {
@@ -548,6 +521,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
         reply = msg.exec()
         if reply == QMessageBox.StandardButton.Yes:
             self.tm.delete_transaction(tx_id)
+            notifier.success("Giao dịch", "Đã xóa giao dịch.")
             if self.main_window:
                 self.main_window.refresh_all()
             else:
@@ -566,10 +540,7 @@ class TransactionFrame(QWidget, BusConnectMixin):
                 "UPDATE transactions SET is_anomaly_feedback=? WHERE id=?",
                 (feedback_value, tx_id)
             )
-        QMessageBox.information(
-            self, "AI Feedback",
-            "Cảm ơn bạn đã phản hồi! AI sẽ học từ dữ liệu này."
-        )
+        notifier.info("AI Feedback", "Cảm ơn! AI sẽ học từ phản hồi của bạn.")
         self.refresh()
 
     def _export_excel(self):
@@ -587,9 +558,9 @@ class TransactionFrame(QWidget, BusConnectMixin):
             df.columns = ["Ngày", "Mô tả", "Danh mục",
                           "Tài khoản", "Số tiền", "Loại", "Ghi chú"]
             df.to_excel(path, index=False)
-            QMessageBox.information(self, "Thành công", f"Đã xuất {len(df)} giao dịch")
+            notifier.success("Xuất Excel", f"Đã xuất {len(df)} giao dịch thành công.")
         except Exception as e:
-            QMessageBox.critical(self, "Lỗi", str(e))
+            notifier.error("Xuất Excel", str(e))
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
