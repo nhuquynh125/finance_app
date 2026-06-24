@@ -509,11 +509,11 @@ class ProfileFrame(QWidget):
         self.le_phone.setStyleSheet(self._input_style())
         form.addRow(self._form_label("Số điện thoại:"), self.le_phone)
 
-        self.le_username_ro = QLineEdit()
-        self.le_username_ro.setReadOnly(True)
-        self.le_username_ro.setStyleSheet(
+        self.le_phone_ro = QLineEdit()
+        self.le_phone_ro.setReadOnly(True)
+        self.le_phone_ro.setStyleSheet(
             self._input_style() + " background:#f7f7f7; color:#888;")
-        form.addRow(self._form_label("Tên đăng nhập:"), self.le_username_ro)
+        form.addRow(self._form_label("Định danh (SĐT):"), self.le_phone_ro)
 
         self.te_bio = QTextEdit()
         self.te_bio.setFixedHeight(72)
@@ -603,27 +603,19 @@ class ProfileFrame(QWidget):
                 return
 
             self._color = _get_user_color()
-            initials    = (session.full_name or session.username)[:2].upper()
+            initials    = (session.full_name or session.phone)[:2].upper()
             self.avatar_w.set_user(initials, self._color)
 
-            self.lbl_display_name.setText(session.full_name or session.username)
-            self.lbl_username_at.setText(f"@{session.username}")
+            self.lbl_display_name.setText(session.full_name or session.phone)
+            self.lbl_username_at.setText(f"📱 {session.phone}")
             role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
             self.lbl_role_badge.setText(role_map.get(session.role, session.role))
 
             self.le_fullname.setText(session.full_name or "")
-            self.le_username_ro.setText(session.username)
+            self.le_phone_ro.setText(session.phone)
 
             try:
-                import sqlite3 as _sq
-                _c = _sq.connect(str(session.auth_db_path))
-                _c.row_factory = _sq.Row
-                _row = _c.execute(
-                    "SELECT phone FROM users WHERE username=?",
-                    (session.username,)
-                ).fetchone()
-                _c.close()
-                self.le_phone.setText(_row["phone"] if _row and _row["phone"] else "")
+                self.le_phone.setText(session.phone)
             except Exception:
                 self.le_phone.setText("")
 
@@ -707,7 +699,7 @@ class ProfileFrame(QWidget):
         self.user_table = QTableWidget()
         self.user_table.setColumnCount(7)
         self.user_table.setHorizontalHeaderLabels(
-            ["Username", "Họ tên", "SĐT", "Vai trò", "Trạng thái", "Đăng nhập cuối", ""])
+            ["SĐT", "Họ tên", "SĐT xác nhận", "Vai trò", "Trạng thái", "Đăng nhập cuối", ""])
         self.user_table.setStyleSheet("""
             QTableWidget {
                 background:#fff; border:1px solid #e8e8e8;
@@ -772,20 +764,20 @@ class ProfileFrame(QWidget):
         try:
             conn = self._auth_conn()
             rows = conn.execute(
-                "SELECT id, username, full_name, phone, role, is_active, last_login "
+                "SELECT id, full_name, phone, role, is_active, last_login "
                 "FROM users ORDER BY id"
             ).fetchall()
             conn.close()
 
             self.user_table.setRowCount(0)
             from user_session import session as _sess
-            current_username = _sess.username if _sess.is_logged_in else ""
+            current_phone = _sess.phone if _sess.is_logged_in else ""
 
             for row in rows:
                 r = self.user_table.rowCount()
                 self.user_table.insertRow(r)
 
-                self._tbl_item(r, 0, row["username"])
+                self._tbl_item(r, 0, row["phone"] or "")
                 self._tbl_item(r, 1, row["full_name"] or "")
                 self._tbl_item(r, 2, row["phone"] or "--", "#4A6785")
                 role_map = {"admin": "Quản trị viên", "user": "Người dùng"}
@@ -800,7 +792,7 @@ class ProfileFrame(QWidget):
                 ll = (row["last_login"] or "Chưa đăng nhập")[:16]
                 self._tbl_item(r, 5, ll, "#4A6785")
 
-                if row["username"] != current_username:
+                if row["phone"] != current_phone:
                     btn_w = QWidget()
                     btn_l = QHBoxLayout(btn_w)
                     btn_l.setContentsMargins(4, 2, 4, 2)
@@ -833,8 +825,8 @@ class ProfileFrame(QWidget):
                         "border:none; border-radius:4px; font-size:14px; } "
                         "QPushButton:hover { background:#f5c6cb; }")
                     btn_del.clicked.connect(
-                        lambda _, uname=row["username"]:
-                            self._delete_user(uname))
+                        lambda _, uphone=row["phone"]:
+                            self._delete_user(uphone))
 
                     btn_l.addWidget(btn_edit)
                     btn_l.addWidget(btn_toggle)
@@ -894,7 +886,7 @@ class ProfileFrame(QWidget):
             return
         try:
             conn = self._auth_conn()
-            conn.execute("DELETE FROM users WHERE username=?", (username,))
+            conn.execute("DELETE FROM users WHERE phone=?", (username,))
             conn.commit()
             conn.close()
             self._load_user_table()
@@ -906,7 +898,7 @@ class ProfileFrame(QWidget):
 
         reply = QMessageBox.warning(
             self, "Xóa tài khoản",
-            f"Bạn sắp xóa tài khoản '@{session.username}' và toàn bộ dữ liệu tài chính.\n\n"
+            f"Bạn sắp xóa tài khoản SĐT '{session.phone}' và toàn bộ dữ liệu tài chính.\n\n"
             "Hành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
@@ -914,14 +906,14 @@ class ProfileFrame(QWidget):
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        pw_dialog = _ConfirmPasswordDialog(session.username, self)
+        pw_dialog = _ConfirmPasswordDialog(session.phone, self)
         if pw_dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         try:
             import shutil
             conn = self._auth_conn()
-            conn.execute("DELETE FROM users WHERE username=?", (session.username,))
+            conn.execute("DELETE FROM users WHERE phone=?", (session.phone,))
             conn.commit()
             conn.close()
 
@@ -986,8 +978,8 @@ class ProfileFrame(QWidget):
                 _c = sqlite3.connect(str(session.auth_db_path))
                 _c.row_factory = sqlite3.Row
                 dup = _c.execute(
-                    "SELECT username FROM users WHERE phone=? AND username!=?",
-                    (phone_normalized, session.username)
+                    "SELECT phone FROM users WHERE phone=? AND phone!=?",
+                    (phone_normalized, session.phone)
                 ).fetchone()
                 _c.close()
                 if dup:
@@ -999,8 +991,8 @@ class ProfileFrame(QWidget):
 
             conn = sqlite3.connect(str(session.auth_db_path))
             conn.execute(
-                "UPDATE users SET full_name=?, phone=? WHERE username=?",
-                (full_name, phone_normalized, session.username)
+                "UPDATE users SET full_name=?, phone=? WHERE phone=?",
+                (full_name, phone_normalized, session.phone)
             )
             conn.commit()
             conn.close()
@@ -1018,9 +1010,9 @@ class ProfileFrame(QWidget):
             if self.main_window and hasattr(self.main_window, "sidebar"):
                 self.main_window.setWindowTitle(f"Finance AI — {full_name}")
                 self.main_window.sidebar._refresh_user_info(
-                    full_name, session.username, session.role)
+                    full_name, session.phone, session.role)
 
-            bus.profile_updated.emit(session.username)
+            bus.profile_updated.emit(session.phone)
             bus.notify_success.emit("Đã lưu", "Thông tin hồ sơ đã được cập nhật!")
 
         except Exception as e:
@@ -1099,8 +1091,8 @@ class ProfileFrame(QWidget):
             conn = sqlite3.connect(str(session.auth_db_path))
             conn.row_factory = sqlite3.Row
             row = conn.execute(
-                "SELECT password_hash, salt FROM users WHERE username=?",
-                (session.username,)
+                "SELECT password_hash, salt FROM users WHERE phone=?",
+                (session.phone,)
             ).fetchone()
             expected = hashlib.sha256(
                 (row["salt"] + old_pw).encode()).hexdigest()
@@ -1112,8 +1104,8 @@ class ProfileFrame(QWidget):
             new_salt = secrets.token_hex(16)
             new_hash = hashlib.sha256((new_salt + new_pw).encode()).hexdigest()
             conn.execute(
-                "UPDATE users SET password_hash=?, salt=? WHERE username=?",
-                (new_hash, new_salt, session.username)
+                "UPDATE users SET password_hash=?, salt=? WHERE phone=?",
+                (new_hash, new_salt, session.phone)
             )
             conn.commit()
             conn.close()
@@ -1229,7 +1221,7 @@ class _ConfirmPasswordDialog(QDialog):
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(12)
 
-        lbl = QLabel(f"Nhập mật khẩu của @{self.username} để xác nhận xóa:")
+        lbl = QLabel(f"Nhập mật khẩu của số điện thoại '{self.username}' để xác nhận xóa:")
         lbl.setWordWrap(True)
         lbl.setFont(QFont("Segoe UI", 16))
         lbl.setStyleSheet("color:#0B2A4A; border:none;")
@@ -1277,8 +1269,8 @@ class _ConfirmPasswordDialog(QDialog):
             conn = sqlite3.connect(str(path))
             conn.row_factory = sqlite3.Row
             row = conn.execute(
-                "SELECT password_hash, salt FROM users WHERE username=?",
-                (self.username,)
+                "SELECT password_hash, salt FROM users WHERE phone=?",
+                (self.username,)  # self.username now holds phone value
             ).fetchone()
             conn.close()
             if not row:
@@ -1323,10 +1315,10 @@ class _AddUserDialog(QDialog):
         self.le_fullname.setStyleSheet(_s)
         form.addRow("Họ tên:", self.le_fullname)
 
-        self.le_username = QLineEdit()
-        self.le_username.setPlaceholderText("3-30 ký tự, không dấu cách")
-        self.le_username.setStyleSheet(_s)
-        form.addRow("Username:", self.le_username)
+        self.le_phone = QLineEdit()
+        self.le_phone.setPlaceholderText("Số điện thoại (0912345678)")
+        self.le_phone.setStyleSheet(_s)
+        form.addRow("Số ĐT:", self.le_phone)
 
         self.le_pw = QLineEdit()
         self.le_pw.setEchoMode(QLineEdit.EchoMode.Password)
@@ -1367,31 +1359,30 @@ class _AddUserDialog(QDialog):
 
     def _do_add(self):
         fullname = self.le_fullname.text().strip()
-        username = self.le_username.text().strip()
+        phone    = self.le_phone.text().strip()
         password = self.le_pw.text()
         role     = self.cb_role.currentData()
 
-        if not fullname or not username or not password:
+        if not fullname or not phone or not password:
             self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
-            return
-        if len(username) < 3:
-            self._show_msg("Username phải có ít nhất 3 ký tự.", "error")
             return
         if len(password) < 6:
             self._show_msg("Mật khẩu phải có ít nhất 6 ký tự.", "error")
             return
 
         from app.data.auth_manager import AuthManager
-        result = AuthManager().register(username, password, fullname)
+        result = AuthManager().register(password, fullname, phone)
         if not result["success"]:
             self._show_msg(result["message"], "error")
             return
 
         if role == "admin":
+            from app.data.auth_manager import _validate_phone
+            _, phone_norm = _validate_phone(phone)
             from user_session import session
             import sqlite3
             conn = sqlite3.connect(str(session.auth_db_path))
-            conn.execute("UPDATE users SET role='admin' WHERE username=?", (username,))
+            conn.execute("UPDATE users SET role='admin' WHERE phone=?", (phone_norm,))
             conn.commit()
             conn.close()
 
@@ -1411,7 +1402,7 @@ class _EditUserDialog(QDialog):
     def __init__(self, user: dict, parent=None):
         super().__init__(parent)
         self.user = user
-        self.setWindowTitle(f"Sửa thông tin @{user['username']}")
+        self.setWindowTitle(f"Sửa thông tin {user.get('phone', '')}")
         self.setFixedSize(420, 280)
         self.setStyleSheet("QDialog { background:#fff; } "
                            "QLabel { font-size:16px; color:#0B2A4A; }")
@@ -1433,10 +1424,10 @@ class _EditUserDialog(QDialog):
         self.le_fullname.setStyleSheet(_s)
         form.addRow("Họ tên:", self.le_fullname)
 
-        un = QLineEdit(self.user.get("username") or "")
+        un = QLineEdit(self.user.get("phone") or "")
         un.setReadOnly(True)
         un.setStyleSheet(_s + " background:#f7f7f7; color:#999;")
-        form.addRow("Username:", un)
+        form.addRow("Số ĐT (khóa chính):", un)
 
         self.cb_role = QComboBox()
         self.cb_role.addItem("Người dùng", "user")
@@ -1492,8 +1483,8 @@ class _EditUserDialog(QDialog):
             from user_session import session
             conn = sqlite3.connect(str(session.auth_db_path))
             conn.execute(
-                "UPDATE users SET full_name=?, role=? WHERE username=?",
-                (fullname, role, self.user["username"])
+                "UPDATE users SET full_name=?, role=? WHERE phone=?",
+                (fullname, role, self.user["phone"])
             )
             if new_pw:
                 if len(new_pw) < 6:
@@ -1503,8 +1494,8 @@ class _EditUserDialog(QDialog):
                 salt    = _sec.token_hex(16)
                 pw_hash = hashlib.sha256((salt + new_pw).encode()).hexdigest()
                 conn.execute(
-                    "UPDATE users SET password_hash=?, salt=? WHERE username=?",
-                    (pw_hash, salt, self.user["username"])
+                    "UPDATE users SET password_hash=?, salt=? WHERE phone=?",
+                    (pw_hash, salt, self.user["phone"])
                 )
             conn.commit()
             conn.close()

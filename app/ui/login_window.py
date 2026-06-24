@@ -263,9 +263,9 @@ class LoginPanel(QWidget):
                 "border:none; background:transparent;")
             return lbl
 
-        layout.addWidget(_field_label("Tên đăng nhập"))
-        self.username_input = StyledInput("Nhập tên đăng nhập...")
-        layout.addWidget(self.username_input)
+        layout.addWidget(_field_label("Số điện thoại"))
+        self.phone_input = StyledInput("Nhập số điện thoại...")
+        layout.addWidget(self.phone_input)
 
         pass_row_lbl = QHBoxLayout()
         pass_row_lbl.addWidget(_field_label("Mật khẩu"))
@@ -354,14 +354,14 @@ class LoginPanel(QWidget):
         layout.addLayout(reg_row)
 
     def _do_login(self):
-        username = self.username_input.text().strip()
+        phone = self.phone_input.text().strip()
         password = self.password_input.text()
-        if not username or not password:
-            self._show_error("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.")
+        if not phone or not password:
+            self._show_error("Vui lòng nhập đầy đủ số điện thoại và mật khẩu.")
             return
         self.login_btn.setEnabled(False)
         self.login_btn.setText("Đang đăng nhập...")
-        result = self.auth.login(username, password, remember=self.remember_check.isChecked())
+        result = self.auth.login(phone, password, remember=self.remember_check.isChecked())
         self.login_btn.setEnabled(True)
         self.login_btn.setText("Đăng nhập")
         if result["success"]:
@@ -375,8 +375,8 @@ class LoginPanel(QWidget):
         self.error_lbl.show()
         QTimer.singleShot(4000, self.error_lbl.hide)
 
-    def prefill_username(self, username: str):
-        self.username_input.setText(username)
+    def prefill_phone(self, phone: str):
+        self.phone_input.setText(phone)
         self.remember_check.setChecked(True)
 
 
@@ -426,13 +426,9 @@ class RegisterPanel(QWidget):
         self.fullname_input = StyledInput("Nguyễn Văn A...")
         layout.addWidget(self.fullname_input)
 
-        layout.addWidget(_lbl("Số điện thoại (định danh chính)"))
+        layout.addWidget(_lbl("Số điện thoại"))
         self.phone_input = StyledInput("0912 345 678...")
         layout.addWidget(self.phone_input)
-
-        layout.addWidget(_lbl("Tên đăng nhập"))
-        self.username_input = StyledInput("Nhập tên đăng nhập (3-30 ký tự)...")
-        layout.addWidget(self.username_input)
 
         layout.addWidget(_lbl("Mật khẩu"))
         self.password_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
@@ -471,15 +467,11 @@ class RegisterPanel(QWidget):
     def _do_register(self):
         fullname = self.fullname_input.text().strip()
         phone = self.phone_input.text().strip()
-        username = self.username_input.text().strip()
         password = self.password_input.text()
         confirm = self.confirm_input.text()
 
-        if not fullname or not phone or not username or not password:
+        if not fullname or not phone or not password:
             self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
-            return
-        if len(username) < 3:
-            self._show_msg("Tên đăng nhập phải có ít nhất 3 ký tự.", "error")
             return
         if len(password) < 6:
             self._show_msg("Mật khẩu phải có ít nhất 6 ký tự.", "error")
@@ -489,7 +481,7 @@ class RegisterPanel(QWidget):
             return
 
         self.reg_btn.setEnabled(False)
-        result = self.auth.register(username, password, fullname, phone)
+        result = self.auth.register(password, fullname, phone)
         self.reg_btn.setEnabled(True)
 
         if result["success"]:
@@ -557,9 +549,9 @@ class ForgotPanel(QWidget):
                 "border:none; background:transparent;")
             return l
 
-        layout.addWidget(_lbl("Tên đăng nhập"))
-        self.username_input = StyledInput("Nhập tên đăng nhập...")
-        layout.addWidget(self.username_input)
+        layout.addWidget(_lbl("Số điện thoại"))
+        self.phone_input = StyledInput("Nhập số điện thoại...")
+        layout.addWidget(self.phone_input)
 
         layout.addWidget(_lbl("Mật khẩu mới"))
         self.new_pass_input = StyledInput("Tối thiểu 6 ký tự...", is_password=True)
@@ -592,11 +584,11 @@ class ForgotPanel(QWidget):
         layout.addWidget(reset_btn)
 
     def _do_reset(self):
-        username = self.username_input.text().strip()
+        phone = self.phone_input.text().strip()
         new_pass = self.new_pass_input.text()
         confirm = self.confirm_input.text()
 
-        if not username or not new_pass:
+        if not phone or not new_pass:
             self._show_msg("Vui lòng điền đầy đủ thông tin.", "error")
             return
         if len(new_pass) < 6:
@@ -606,7 +598,7 @@ class ForgotPanel(QWidget):
             self._show_msg("Mật khẩu xác nhận không khớp.", "error")
             return
 
-        result = self.auth.reset_password(username, new_pass)
+        result = self.auth.reset_password(phone, new_pass)
         if result["success"]:
             self._show_msg("Đặt lại thành công! Đang quay lại...", "success")
             QTimer.singleShot(1500, self.go_login.emit)
@@ -889,7 +881,7 @@ class LoginWindow(QWidget):
     def _check_remembered(self):
         remembered = self.auth.get_remembered_user()
         if remembered:
-            self.login_panel.prefill_username(remembered)
+            self.login_panel.prefill_phone(remembered)
 
     def _on_login_success(self, user: dict):
         self.login_success.emit(user)

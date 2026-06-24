@@ -422,13 +422,13 @@ class Sidebar(QWidget):
         layout.addWidget(footer)
 
     def _build_user_info_block(self, user: dict) -> QWidget:
-        username  = user.get("username", "?")
-        full_name = user.get("full_name", username)
+        phone     = user.get("phone", "?")
+        full_name = user.get("full_name", phone)
         role      = user.get("role", "user")
         try:
             conn = get_connection()
             row = conn.execute(
-                "SELECT color FROM user_profiles WHERE username=?", (username,)
+                "SELECT color FROM user_profiles WHERE phone=?", (phone,)
             ).fetchone()
             conn.close()
             color = row["color"] if row and row["color"] else "#E8921A"
@@ -629,7 +629,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(
             f"Finance AI — "
-            f"{self.current_user.get('full_name', self.current_user.get('username', ''))}"
+            f"{self.current_user.get('full_name', self.current_user.get('phone', ''))}"
         )
         logo_path = Path(__file__).resolve().parent.parent.parent / "logo.png"
         if logo_path.exists():
@@ -808,13 +808,13 @@ class MainWindow(QMainWindow):
 
     # ── Event handlers ────────────────────────────────────────────────────────
 
-    def _on_profile_updated(self, username: str):
+    def _on_profile_updated(self, phone: str):
         try:
             from user_session import session
             if session.is_logged_in:
                 self.setWindowTitle(f"Finance AI — {session.full_name}")
                 self.sidebar._refresh_user_info(
-                    session.full_name, session.username, session.role)
+                    session.full_name, session.phone, session.role)
         except Exception:
             pass
 

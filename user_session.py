@@ -3,15 +3,15 @@
 Quản lý phiên đăng nhập hiện tại — singleton toàn app.
 
 Mục đích chính:
-  - Lưu user đang đăng nhập (username, full_name, role)
+  - Lưu user đang đăng nhập (phone, full_name, role)
   - Cung cấp DB_PATH và DATA_DIR động theo từng user
-  - Mỗi user có thư mục riêng: data/users/{username}/
+  - Mỗi user có thư mục riêng: data/users/{phone}/
 
 Cách dùng:
     from user_session import session
 
     # Sau khi đăng nhập thành công:
-    session.set_user({"username": "alice", "full_name": "Alice", "role": "user"})
+    session.set_user({"phone": "0912345678", "full_name": "Nguyễn Văn A", "role": "user"})
 
     # Lấy đường dẫn DB của user hiện tại:
     db_path = session.db_path
@@ -50,7 +50,7 @@ class _UserSession:
     def set_user(self, user: dict) -> None:
         """
         Gọi ngay sau khi đăng nhập thành công.
-        user: {"username": ..., "full_name": ..., "role": ...}
+        user: {"phone": ..., "full_name": ..., "role": ...}
         Tự động tạo thư mục data riêng cho user nếu chưa có.
         """
         self._user = user
@@ -67,14 +67,25 @@ class _UserSession:
         return self._user is not None
 
     @property
-    def username(self) -> str:
+    def phone(self) -> str:
+        """Số điện thoại — khóa chính định danh user."""
         if not self._user:
             raise RuntimeError("Chưa đăng nhập — gọi session.set_user() trước")
-        return self._user["username"]
+        return self._user["phone"]
+
+    @property
+    def username(self) -> str:
+        """Alias của phone — dùng để tương thích với code cũ."""
+        return self.phone
 
     @property
     def full_name(self) -> str:
         return (self._user or {}).get("full_name", "")
+
+    @property
+    def display_name(self) -> str:
+        """Tên hiển thị — ưu tiên full_name, fallback về phone."""
+        return self.full_name or self.phone
 
     @property
     def role(self) -> str:
@@ -93,8 +104,8 @@ class _UserSession:
 
     @property
     def data_dir(self) -> Path:
-        """Thư mục data của user hiện tại: data/users/{username}/"""
-        return self.users_root / self.username
+        """Thư mục data của user hiện tại: data/users/{phone}/"""
+        return self.users_root / self.phone
 
     @property
     def db_path(self) -> Path:
