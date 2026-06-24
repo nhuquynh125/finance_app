@@ -820,7 +820,6 @@ class MainWindow(QMainWindow):
 
     def refresh_all(self):
         """Refresh toàn bộ: settings, balance, và frame đang hiển thị."""
-        self._apply_window_settings()
         self._apply_auto_refresh_timer()
         self.sidebar.refresh_balance()
         frame = self._pages.get(self._current_page)

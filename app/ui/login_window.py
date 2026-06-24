@@ -683,9 +683,10 @@ class BrandingPanel(QWidget):
 
         features = [
             ("🤖", "AI Chatbot tư vấn tài chính"),
-            ("📈", "Dự báo chi tiêu theo tháng"),
-            ("⚠️", "Phát hiện giao dịch bất thường"),
-            ("📄", "Xuất báo cáo PDF tự động"),
+            ("🧠", "Phân loại giao dịch tự động"),
+            ("⚠️", "Phát hiện chi tiêu bất thường"),
+            ("💰", "Quản lý Ngân sách & Quỹ chung"),
+            ("📄", "Dự báo & Xuất báo cáo PDF"),
         ]
         for icon_char, feat_text in features:
             pill = QWidget()
