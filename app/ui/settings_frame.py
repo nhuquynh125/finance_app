@@ -60,6 +60,9 @@ class SettingsFrame(QWidget):
         self.auto_refresh_check.setChecked(bool(self.settings["auto_refresh"]))
         self.auto_classify_check.setChecked(bool(self.settings["auto_classification"]))
         self.anomaly_check.setChecked(bool(self.settings["anomaly_detection"]))
+        self._update_badge(self._auto_refresh_badge, bool(self.settings["auto_refresh"]))
+        self._update_badge(self._auto_classify_badge, bool(self.settings["auto_classification"]))
+        self._update_badge(self._anomaly_badge, bool(self.settings["anomaly_detection"]))
         self._set_combo_data(self.forecast_combo, self.settings["forecast_method"])
         self._set_combo_data(self.chat_engine_combo, self.settings["chat_engine"])
 
@@ -156,7 +159,11 @@ class SettingsFrame(QWidget):
 
         self.auto_refresh_check = QCheckBox("Tự động làm mới dữ liệu")
         self.auto_refresh_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 3, "Làm mới", self.auto_refresh_check)
+        self._auto_refresh_badge = self._make_status_badge()
+        row_w = self._check_with_badge(self.auto_refresh_check, self._auto_refresh_badge)
+        self.auto_refresh_check.stateChanged.connect(
+            lambda s: self._update_badge(self._auto_refresh_badge, bool(s)))
+        self._add_control(grid, 3, "Làm mới", row_w)
 
         self.body.addWidget(panel)
 
@@ -165,11 +172,19 @@ class SettingsFrame(QWidget):
 
         self.auto_classify_check = QCheckBox("Tự động phân loại giao dịch")
         self.auto_classify_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 0, "Phân loại", self.auto_classify_check)
+        self._auto_classify_badge = self._make_status_badge()
+        row_w2 = self._check_with_badge(self.auto_classify_check, self._auto_classify_badge)
+        self.auto_classify_check.stateChanged.connect(
+            lambda s: self._update_badge(self._auto_classify_badge, bool(s)))
+        self._add_control(grid, 0, "Phân loại", row_w2)
 
         self.anomaly_check = QCheckBox("Bật phát hiện bất thường")
         self.anomaly_check.setStyleSheet(self._check_style())
-        self._add_control(grid, 1, "Bất thường", self.anomaly_check)
+        self._anomaly_badge = self._make_status_badge()
+        row_w3 = self._check_with_badge(self.anomaly_check, self._anomaly_badge)
+        self.anomaly_check.stateChanged.connect(
+            lambda s: self._update_badge(self._anomaly_badge, bool(s)))
+        self._add_control(grid, 1, "Bất thường", row_w3)
 
         self.forecast_combo = QComboBox()
         self.forecast_combo.addItem("Tự động", "auto")
@@ -220,6 +235,9 @@ class SettingsFrame(QWidget):
         self.auto_refresh_check.setChecked(bool(self.settings["auto_refresh"]))
         self.auto_classify_check.setChecked(bool(self.settings["auto_classification"]))
         self.anomaly_check.setChecked(bool(self.settings["anomaly_detection"]))
+        self._update_badge(self._auto_refresh_badge, bool(self.settings["auto_refresh"]))
+        self._update_badge(self._auto_classify_badge, bool(self.settings["auto_classification"]))
+        self._update_badge(self._anomaly_badge, bool(self.settings["anomaly_detection"]))
         self._set_combo_data(self.forecast_combo, self.settings["forecast_method"])
         self._set_combo_data(self.chat_engine_combo, self.settings["chat_engine"])
 
@@ -347,7 +365,38 @@ class SettingsFrame(QWidget):
         """)
         return msg.exec()
 
-    # -- Helpers --
+    @staticmethod
+    def _make_status_badge() -> QLabel:
+        badge = QLabel("")  
+        badge.setFixedWidth(60)
+        return badge
+
+    @staticmethod
+    def _update_badge(badge: QLabel, is_on: bool):
+        if is_on:
+            badge.setText("● BẬT")
+            badge.setStyleSheet(
+                "QLabel { background:#EAF3DE; color:#3B6D11; border:none; "
+                "border-radius:10px; padding:2px 8px; font-size:14px; font-weight:bold; }")
+        else:
+            badge.setText("○ TẮT")
+            badge.setStyleSheet(
+                "QLabel { background:#F5F5F5; color:#999; border:none; "
+                "border-radius:10px; padding:2px 8px; font-size:14px; font-weight:bold; }")
+
+    @staticmethod
+    def _check_with_badge(checkbox: QCheckBox, badge: QLabel) -> QWidget:
+        """Gom checkbox + badge vào một widget hàng ngang."""
+        from PyQt6.QtWidgets import QHBoxLayout
+        w = QWidget()
+        w.setStyleSheet("background:transparent; border:none;")
+        hl = QHBoxLayout(w)
+        hl.setContentsMargins(0, 0, 0, 0)
+        hl.setSpacing(8)
+        hl.addWidget(checkbox)
+        hl.addWidget(badge)
+        hl.addStretch()
+        return w
 
     @staticmethod
     def _set_combo_data(combo, value):

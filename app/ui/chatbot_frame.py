@@ -548,11 +548,14 @@ class ChatbotFrame(QWidget):
         sb.setValue(sb.maximum())
 
     def _clear_chat(self):
-        # Xóa tất cả widget trong chat_layout (giữ stretch ở cuối)
-        while self.chat_layout.count() > 1:
+        # Xóa TOÀN BỘ item trong chat_layout (kể cả stretch)
+        while self.chat_layout.count() > 0:
             item = self.chat_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+
+        # Thêm lại stretch để đẩy tin nhắn xuống dưới
+        self.chat_layout.addStretch()
 
         # Reset engine history
         engine = get_engine()

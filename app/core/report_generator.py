@@ -27,6 +27,41 @@ from app.data.models import get_connection
 from config import EXPORTS_DIR
 
 
+# ── Đăng ký font hỗ trợ tiếng Việt ──────────────────────────────
+def _register_vietnamese_fonts() -> tuple[str, str]:
+    """
+    Đăng ký font TTF hỗ trợ Unicode/tiếng Việt.
+    Ưu tiên: Arial (Windows) → Tahoma → fallback Helvetica.
+    Trả về (font_regular, font_bold).
+    """
+    candidates = [
+        # (regular, bold, name)
+        ("C:/Windows/Fonts/arial.ttf",    "C:/Windows/Fonts/arialbd.ttf",   "Arial"),
+        ("C:/Windows/Fonts/tahoma.ttf",   "C:/Windows/Fonts/tahomabd.ttf",  "Tahoma"),
+        ("C:/Windows/Fonts/calibri.ttf",  "C:/Windows/Fonts/calibrib.ttf",  "Calibri"),
+        ("C:/Windows/Fonts/times.ttf",    "C:/Windows/Fonts/timesbd.ttf",   "TimesNew"),
+    ]
+    for reg_path, bold_path, name in candidates:
+        if os.path.exists(reg_path):
+            try:
+                pdfmetrics.registerFont(TTFont(name, reg_path))
+                bold_name = name + "-Bold"
+                if os.path.exists(bold_path):
+                    pdfmetrics.registerFont(TTFont(bold_name, bold_path))
+                else:
+                    bold_name = name  # fallback
+                from reportlab.pdfbase.pdfmetrics import registerFontFamily
+                registerFontFamily(name, normal=name, bold=bold_name)
+                return name, bold_name
+            except Exception:
+                continue
+    # Không tìm thấy font phù hợp → dùng Helvetica (không hỗ trợ tiếng Việt)
+    return "Helvetica", "Helvetica-Bold"
+
+
+_VN_FONT, _VN_FONT_BOLD = _register_vietnamese_fonts()
+
+
 # ── Màu sắc thương hiệu ───────────────────────────────────────
 C_BLUE      = colors.HexColor("#378ADD")
 C_GREEN     = colors.HexColor("#1D9E75")
@@ -503,7 +538,8 @@ class ReportGenerator:
     # ── Styles ────────────────────────────────────────────────
     def _styles(self) -> dict:
         base = getSampleStyleSheet()
-        font = "Helvetica"
+        font      = _VN_FONT        # font thường hỗ trợ tiếng Việt
+        font_bold = _VN_FONT_BOLD   # font đậm hỗ trợ tiếng Việt
 
         def ps(name, **kwargs):
             if "fontName" not in kwargs:
@@ -512,31 +548,31 @@ class ReportGenerator:
 
         return {
             "title":       ps("title", fontSize=16, textColor=colors.white,
-                              fontName="Helvetica-Bold", leading=20),
+                              fontName=font_bold, leading=20),
             "title_right": ps("title_right", fontSize=14, textColor=colors.white,
-                              fontName="Helvetica-Bold", alignment=TA_RIGHT, leading=20),
+                              fontName=font_bold, alignment=TA_RIGHT, leading=20),
             "section":     ps("section", fontSize=11, textColor=C_DARK,
-                              fontName="Helvetica-Bold", spaceBefore=4, leading=16,
+                              fontName=font_bold, spaceBefore=4, leading=16,
                               borderPad=4),
             "normal":      ps("normal", fontSize=9,  textColor=C_DARK, leading=14),
             "center":      ps("center", fontSize=9,  textColor=C_MUTED,
                               alignment=TA_CENTER, leading=14),
             "warning":     ps("warning", fontSize=10, textColor=C_RED,
-                              fontName="Helvetica-Bold", leading=14),
+                              fontName=font_bold, leading=14),
             "th":          ps("th", fontSize=8, textColor=C_MUTED,
-                              fontName="Helvetica-Bold", leading=12),
+                              fontName=font_bold, leading=12),
             "th_right":    ps("th_right", fontSize=8, textColor=C_MUTED,
-                              fontName="Helvetica-Bold", alignment=TA_RIGHT, leading=12),
+                              fontName=font_bold, alignment=TA_RIGHT, leading=12),
             "td":          ps("td", fontSize=9, textColor=C_DARK, leading=13),
             "td_small":    ps("td_small", fontSize=8, textColor=C_DARK, leading=11),
             "td_bold":     ps("td_bold", fontSize=9, textColor=C_DARK,
-                              fontName="Helvetica-Bold", leading=13),
+                              fontName=font_bold, leading=13),
             "td_right":    ps("td_right", fontSize=9, textColor=C_DARK,
                               alignment=TA_RIGHT, leading=13),
             "td_right_small": ps("td_right_small", fontSize=8, textColor=C_DARK,
                                   alignment=TA_RIGHT, leading=11),
             "td_right_bold":  ps("td_right_bold", fontSize=9, textColor=C_DARK,
-                                  fontName="Helvetica-Bold", alignment=TA_RIGHT, leading=13),
+                                  fontName=font_bold, alignment=TA_RIGHT, leading=13),
         }
 
     @staticmethod

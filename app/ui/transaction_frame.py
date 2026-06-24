@@ -28,21 +28,30 @@ class ClassifyWorker(QThread):
     def run(self):
         classified_count = 0
         try:
+            from app.core.settings_manager import load_settings
+            settings = load_settings()
+            auto_classify = settings.get("auto_classification", True)
+            anomaly_enabled = settings.get("anomaly_detection", True)
+
             from app.ai.classifier import TransactionClassifier
             from app.ai.anomaly_detector import AnomalyDetector
-            clf = TransactionClassifier()
-            det = AnomalyDetector()
-            with get_connection() as conn:
-                for tx in self.transactions:
-                    if not tx.get("category_id") and tx.get("description"):
-                        cat_id = clf.predict_category_id(tx["description"])
-                        if cat_id:
-                            conn.execute(
-                                "UPDATE transactions SET category_id=? WHERE id=?",
-                                (cat_id, tx["id"])
-                            )
-                            classified_count += 1
-                det.detect_and_mark()
+
+            if auto_classify:
+                clf = TransactionClassifier()
+                with get_connection() as conn:
+                    for tx in self.transactions:
+                        if not tx.get("category_id") and tx.get("description"):
+                            cat_id = clf.predict_category_id(tx["description"])
+                            if cat_id:
+                                conn.execute(
+                                    "UPDATE transactions SET category_id=? WHERE id=?",
+                                    (cat_id, tx["id"])
+                                )
+                                classified_count += 1
+
+            if anomaly_enabled:
+                AnomalyDetector().detect_and_mark()
+
         except Exception as e:
             from app.core.logger import get_logger
             get_logger(__name__).error(f"Lỗi phân loại AI: {e}", exc_info=True)
@@ -463,8 +472,10 @@ class TransactionFrame(QWidget, BusConnectMixin):
 
             if tx.get("category_id") != data.get("category_id"):
                 try:
-                    from app.ai.classifier import TransactionClassifier
-                    TransactionClassifier().retrain()
+                    from app.core.settings_manager import load_settings
+                    if load_settings().get("auto_classification", True):
+                        from app.ai.classifier import TransactionClassifier
+                        TransactionClassifier().retrain()
                 except Exception as e:
                     from app.core.logger import get_logger
                     get_logger(__name__).warning(f"Retrain thất bại: {e}")

@@ -35,6 +35,10 @@ class AnomalyWorker(QThread):
         self.month = month
     def run(self):
         try:
+            from app.core.settings_manager import load_settings
+            if not load_settings().get("anomaly_detection", True):
+                self.finished.emit([])
+                return
             self.finished.emit(AnomalyDetector().detect_and_mark(self.month))
         except Exception as e:
             self.error.emit(str(e))

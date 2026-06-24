@@ -641,6 +641,11 @@ class MainWindow(QMainWindow):
         # Build skeleton layout (sidebar + stack) — không import frame nặng ở đây
         self._build()
 
+        # Auto-refresh timer
+        self._auto_refresh_timer = QTimer(self)
+        self._auto_refresh_timer.timeout.connect(self._auto_refresh_tick)
+        self._apply_auto_refresh_timer()
+
         # Dùng singleShot(0) để nhường event-loop paint cửa sổ lần đầu,
         # sau đó mới bắt đầu load Dashboard.
         # delay=0 ms đủ để Qt flush paint queue trước khi import matplotlib.
@@ -816,10 +821,30 @@ class MainWindow(QMainWindow):
     def refresh_all(self):
         """Refresh toàn bộ: settings, balance, và frame đang hiển thị."""
         self._apply_window_settings()
+        self._apply_auto_refresh_timer()
         self.sidebar.refresh_balance()
         frame = self._pages.get(self._current_page)
         if frame and hasattr(frame, "refresh"):
             frame.refresh()
+
+    def _apply_auto_refresh_timer(self):
+        """Bật/tắt timer tự động làm mới dựa trên cài đặt auto_refresh."""
+        settings = load_settings()
+        auto_refresh = settings.get("auto_refresh", True)
+        if auto_refresh:
+            interval_ms = 30 * 1000  # 30 giây
+            if not self._auto_refresh_timer.isActive():
+                self._auto_refresh_timer.start(interval_ms)
+        else:
+            if self._auto_refresh_timer.isActive():
+                self._auto_refresh_timer.stop()
+
+    def _auto_refresh_tick(self):
+        """Được gọi mỗi 30 giây khi auto_refresh bật. Chỉ refresh frame hiện tại."""
+        frame = self._pages.get(self._current_page)
+        if frame and hasattr(frame, "refresh"):
+            frame.refresh()
+        self.sidebar.refresh_balance()
 
     # ── Window settings ───────────────────────────────────────────────────────
 
