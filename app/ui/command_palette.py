@@ -7,7 +7,7 @@ Shortcuts mặc định:
   Ctrl+N  — Thêm giao dịch mới
   Ctrl+F  — Focus search (trong transaction frame)
   Ctrl+K  — Mở command palette
-  Ctrl+1  — Dashboard
+  Ctrl+1  — Bảng điều khiển
   Ctrl+2  — Giao dịch
   Ctrl+3  — Ngân sách
   Ctrl+4  — Dự báo
@@ -291,7 +291,7 @@ class ShortcutManager:
     """
 
     PAGES = [
-        ("Dashboard",   "Ctrl+1"),
+        ("Bảng điều khiển",   "Ctrl+1"),
         ("Giao dịch",   "Ctrl+2"),
         ("Ngân sách",   "Ctrl+3"),
         ("Dự báo",      "Ctrl+4"),

@@ -167,7 +167,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         layout.setContentsMargins(20, 0, 20, 0)
         layout.setSpacing(12)
 
-        title = QLabel("Dashboard")
+        title = QLabel("Bảng điều khiển")
         title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setStyleSheet(f"color:{NAVY}; border:none;")
         layout.addWidget(title)
@@ -196,7 +196,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.cb_month.currentIndexChanged.connect(self.refresh)
         layout.addWidget(self.cb_month)
 
-        btn_add = QPushButton("+ Them giao dich")
+        btn_add = QPushButton("+ Thêm giao dịch")
         btn_add.setFixedHeight(36)
         btn_add.setStyleSheet(f"""
             QPushButton {{
@@ -223,10 +223,10 @@ class DashboardFrame(QWidget, BusConnectMixin):
         g.setSpacing(12)
 
         defs = [
-            ("Thu nhap",        MINT,     ""),
-            ("Chi tieu",        RED_SOFT, ""),
-            ("Tiet kiem",       NAVY_MID, ""),
-            ("AI du bao T.sau", ORANGE,   ""),
+            ("Thu nhập",        MINT,     ""),
+            ("Chi tiêu",        RED_SOFT, ""),
+            ("Tiết kiệm",       NAVY_MID, ""),
+            ("AI dự báo T.sau", ORANGE,   ""),
         ]
         for i, (label, color, icon) in enumerate(defs):
             card = MetricCard(label, "--", color, icon)
@@ -256,12 +256,12 @@ class DashboardFrame(QWidget, BusConnectMixin):
         bar_l.setSpacing(8)
 
         bar_header = QHBoxLayout()
-        t1 = QLabel("Thu chi 6 thang gan day")
+        t1 = QLabel("Thu chi 6 tháng gần đây")
         t1.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t1.setStyleSheet(f"color:{NAVY}; border:none;")
         bar_header.addWidget(t1)
         bar_header.addStretch()
-        for color, text in [(MINT, "Thu nhap"), (ORANGE, "Chi tieu")]:
+        for color, text in [(MINT, "Thu nhập"), (ORANGE, "Chi tiêu")]:
             dot = QLabel("*")
             dot.setStyleSheet(f"color:{color}; font-size:19px; border:none;")
             lbl = QLabel(text)
@@ -290,7 +290,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.pie_layout.setContentsMargins(18, 14, 18, 14)
         self.pie_layout.setSpacing(6)
 
-        t2 = QLabel("Danh muc chi tieu")
+        t2 = QLabel("Danh mục chi tiêu")
         t2.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t2.setStyleSheet(f"color:{NAVY}; border:none;")
         self.pie_layout.addWidget(t2)
@@ -316,13 +316,13 @@ class DashboardFrame(QWidget, BusConnectMixin):
         self.tx_layout.setSpacing(8)
 
         header = QHBoxLayout()
-        t = QLabel("Giao dich gan day")
+        t = QLabel("Giao dịch gần đây")
         t.setFont(QFont("Segoe UI", 17, QFont.Weight.Bold))
         t.setStyleSheet(f"color:{NAVY}; border:none;")
         header.addWidget(t)
         header.addStretch()
         if self.main_window:
-            btn = QPushButton("Xem tat ca ->")
+            btn = QPushButton("Xem tất cả ->")
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background:transparent; color:{NAVY_MID};
@@ -424,14 +424,14 @@ class DashboardFrame(QWidget, BusConnectMixin):
             prev_saving  = prev_income - prev_expense
 
         # Cap nhat metric cards
-        self._metric_cards["Thu nhap"].set_value(self._fmt(income))
-        self._metric_cards["Chi tieu"].set_value(self._fmt(expense))
-        self._metric_cards["Tiet kiem"].set_value(self._fmt(saving))
-        self._metric_cards["AI du bao T.sau"].set_value(self._fmt(data["fc"]))
+        self._metric_cards["Thu nhập"].set_value(self._fmt(income))
+        self._metric_cards["Chi tiêu"].set_value(self._fmt(expense))
+        self._metric_cards["Tiết kiệm"].set_value(self._fmt(saving))
+        self._metric_cards["AI dự báo T.sau"].set_value(self._fmt(data["fc"]))
 
-        self._update_trend("Thu nhap",        income,  prev_income)
-        self._update_trend("Chi tieu",         expense, prev_expense)
-        self._update_trend("Tiet kiem",        saving,  prev_saving)
+        self._update_trend("Thu nhập",        income,  prev_income)
+        self._update_trend("Chi tiêu",         expense, prev_expense)
+        self._update_trend("Tiết kiệm",        saving,  prev_saving)
 
         self._draw_bar(data["bar_months"], summaries)
         self._draw_pie(data["pie_data"])
@@ -447,9 +447,9 @@ class DashboardFrame(QWidget, BusConnectMixin):
         delta = current - previous
         pct   = (delta / previous) * 100
         arrow = "^" if delta > 0 else "v"
-        is_good = (delta > 0) if label != "Chi tieu" else (delta < 0)
+        is_good = (delta > 0) if label != "Chi tiêu" else (delta < 0)
         color = MINT if is_good else RED_SOFT
-        card.set_trend(f"{arrow} {abs(pct):.1f}% so voi thang truoc", color)
+        card.set_trend(f"{arrow} {abs(pct):.1f}% so với tháng trước", color)
 
     def _ensure_matplotlib_initialized(self):
         if self.bar_fig is not None:
@@ -567,7 +567,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
                 item.widget().deleteLater()
 
         if not txs:
-            lbl = QLabel("Chua co giao dich trong thang nay")
+            lbl = QLabel("Chưa có giao dịch trong tháng này")
             lbl.setStyleSheet(
                 "color:#4A6785; font-size:17px; padding:16px; border:none;"
             )
@@ -610,7 +610,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             dl.setContentsMargins(0, 0, 0, 0)
             dl.setSpacing(2)
 
-            desc_str  = tx.get("description") or "Khong co mo ta"
+            desc_str  = tx.get("description") or "Không có mô tả"
             cat_label = f"  [{tx['category_name']}]" if tx.get("category_name") else ""
             if tx.get("is_anomaly"):
                 desc_str += "  [!]"
@@ -654,7 +654,7 @@ class DashboardFrame(QWidget, BusConnectMixin):
             while m <= 0:
                 m += 12
                 y -= 1
-            self.cb_month.addItem(f"Thang {m}/{y}", userData=f"{y}-{m:02d}")
+            self.cb_month.addItem(f"Tháng {m}/{y}", userData=f"{y}-{m:02d}")
         self.cb_month.setCurrentIndex(self.cb_month.count() - 1)
 
     def _open_add_dialog(self):

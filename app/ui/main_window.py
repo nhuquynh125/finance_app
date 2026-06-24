@@ -338,13 +338,13 @@ class Sidebar(QWidget):
         nav_layout.setSpacing(2)
 
         sections = {
-            "CHÍNH": ["Dashboard", "Chi tiêu", "Giao dịch", "Ngân sách"],
+            "CHÍNH": ["Bảng điều khiển", "Chi tiêu", "Giao dịch", "Ngân sách"],
             "AI":    ["Dự báo", "Chatbot AI"],
             "NHÓM":  ["Quỹ"],
             "KHÁC":  ["Hồ sơ", "Báo cáo", "Cài đặt ứng dụng"],
         }
         icons = {
-            "Dashboard":  "📊",
+            "Bảng điều khiển":  "📊",
             "Chi tiêu":   "💸",
             "Giao dịch":  "💳",
             "Ngân sách":  "💰",
@@ -647,9 +647,9 @@ class MainWindow(QMainWindow):
         self._apply_auto_refresh_timer()
 
         # Dùng singleShot(0) để nhường event-loop paint cửa sổ lần đầu,
-        # sau đó mới bắt đầu load Dashboard.
+        # sau đó mới bắt đầu load Bảng điều khiển.
         # delay=0 ms đủ để Qt flush paint queue trước khi import matplotlib.
-        QTimer.singleShot(0, lambda: self._navigate("Dashboard"))
+        QTimer.singleShot(0, lambda: self._navigate("Bảng điều khiển"))
 
     # ── Build skeleton ────────────────────────────────────────────────────────
 
@@ -735,7 +735,7 @@ class MainWindow(QMainWindow):
 
     def _create_page(self, page: str) -> QWidget | None:
         """Factory tạo frame theo tên trang. Import lazy để tránh block startup."""
-        if page == "Dashboard":
+        if page == "Bảng điều khiển":
             from app.ui.dashboard_frame import DashboardFrame
             return DashboardFrame(main_window=self)
         if page == "Chi tiêu":
