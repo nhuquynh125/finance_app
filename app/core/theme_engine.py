@@ -126,16 +126,26 @@ QFrame {{
 /* ── MessageBox ─────────────────────────────────── */
 QMessageBox {{
     background: {t['bg_card']};
+    color: {t['text_primary']};
 }}
 QMessageBox QLabel {{
-    color: {t['text_primary']};
-    font-size: 14px;
-    font-weight: 500;
+    color: {t['text_primary']} !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    background: transparent;
 }}
 QMessageBox QPushButton {{
-    min-width: 80px;
-    font-size: 13px;
-    padding: 6px 16px;
+    background: {accent};
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    min-width: 90px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 18px;
+}}
+QMessageBox QPushButton:hover {{
+    background: {accent_hover};
 }}
 
 QFrame[frameShape="4"],

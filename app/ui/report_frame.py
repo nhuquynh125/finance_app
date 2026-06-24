@@ -399,11 +399,39 @@ class ReportFrame(QWidget):
         self.status_lbl.setStyleSheet("color:#1D9E75; border:none;")
         self._load_history()
 
-        reply = QMessageBox.question(
-            self, "Thành công",
-            f"Báo cáo đã được tạo!\n{path}\n\nMở file ngay?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply == QMessageBox.StandardButton.Yes:
+        mb = QMessageBox(self)
+        mb.setWindowTitle("Thành công")
+        mb.setText(f"Báo cáo đã được tạo!\n{path}\n\nMở file ngay?")
+        mb.setIcon(QMessageBox.Icon.Information)
+        mb.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        # Force dark text so it stays legible regardless of global QSS
+        mb.setStyleSheet("""
+            QMessageBox {
+                background-color: #FFFFFF;
+            }
+            QMessageBox QLabel {
+                color: #222222;
+                font-size: 15px;
+                font-weight: 600;
+                background: transparent;
+                border: none;
+            }
+            QMessageBox QPushButton {
+                color: #0B2A4A;
+                background: #E6F1FB;
+                border: 1px solid #B5D4F4;
+                border-radius: 6px;
+                padding: 6px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                min-width: 70px;
+            }
+            QMessageBox QPushButton:hover {
+                background: #B5D4F4;
+            }
+        """)
+        reply = mb.exec()
+        if reply == int(QMessageBox.StandardButton.Yes.value) or reply == int(QMessageBox.StandardButton.Yes):
             self._open_file(path)
 
     def _on_error(self, msg: str):

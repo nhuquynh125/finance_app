@@ -177,9 +177,10 @@ class FundFrame(QWidget):
         # Xóa tất cả widget hiện có trong layout
         while self.cl.count():
             item = self.cl.takeAt(0)
-            if item.widget():
-                item.widget().setParent(None)
-                item.widget().deleteLater()
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
 
         # Xây lại nội dung phù hợp
         if self.selected_group:
